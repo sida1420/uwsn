@@ -3,9 +3,9 @@ from point import Point
 import random
 import pickle
 import matplotlib.pyplot as plt
+from visual import Visual
 
-
-def plot_map_3d(map_, save_path="map_3d.png", show_ids=False):
+def plot_map_3d(map_, save_path="map_3d.svg", show_ids=False):
     sensors = map_["sensors"]
     sink = map_["base_pos"]
 
@@ -13,76 +13,17 @@ def plot_map_3d(map_, save_path="map_3d.png", show_ids=False):
     height = map_["height"]
     depth = map_["depth"]
 
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection="3d")
+    visual = Visual(width, height, depth, sensors, sink)
 
-    # Node: màu thể hiện độ sâu.
-    points = ax.scatter(
-        [p.x for p in sensors],
-        [p.y for p in sensors],
-        [p.z for p in sensors],
-        c=[p.z for p in sensors],
-        cmap="viridis_r",
-        vmin=0,
-        vmax=depth,
-        s=35,
-        alpha=0.85,
-        label="Sensor nodes",
-    )
+    visual.save(save_path)
 
-    # Sink ở trung tâm mặt nước nếu dùng base_pos mặc định.
-    ax.scatter(
-        [sink.x],
-        [sink.y],
-        [sink.z],
-        color="red",
-        marker="*",
-        s=250,
-        edgecolors="black",
-        label="Sink",
-        depthshade=False,
-    )
-
-    if show_ids:
-        for i, p in enumerate(sensors):
-            ax.text(p.x, p.y, p.z, str(i), fontsize=7)
-
-    ax.set_xlim(0, width)
-    ax.set_ylim(0, height)
-
-    # z = 0 ở phía trên; độ sâu tăng xuống dưới.
-    ax.set_zlim(depth, 0)
-
-    # Giữ đúng tỷ lệ kích thước không gian.
-    ax.set_box_aspect((width, height, depth))
-
-    ax.set_xlabel("X (m)")
-    ax.set_ylabel("Y (m)")
-    ax.set_zlabel("Depth (m)")
-    ax.set_title(f"UWSN 3D Map — {len(sensors)} sensor nodes")
-
-    ax.view_init(elev=25, azim=-60)
-    ax.legend(loc="upper left")
-
-    fig.colorbar(
-        points,
-        ax=ax,
-        label="Depth (m)",
-        shrink=0.6,
-        pad=0.12,
-    )
-
-    if save_path:
-        fig.savefig(save_path, dpi=300, bbox_inches="tight")
-
-    plt.show()
 
 
 def gen(
     width,
     height,
     depth,
-    num_nodes,
+    num_sensors,
     energy,
     radius,
     base_pos=None,
@@ -100,27 +41,27 @@ def gen(
             random.uniform(0, depth),
         )
 
-    nodes = [random_point() for _ in range(num_nodes)]
+    sensors = [random_point() for _ in range(num_sensors)]
 
     # Tâm cụm cũng phải có đủ 3 tọa độ.
     cluster_points = [random_point() for _ in range(num_cluster_points)]
 
     if cluster_points:
-        for i, node in enumerate(nodes):
+        for i, sensor in enumerate(sensors):
             nearest = min(
                 cluster_points,
-                key=lambda point: abs(point - node),
+                key=lambda point: abs(point - sensor),
             )
 
-            # Kéo node về phía tâm cụm gần nhất.
-            nodes[i] = node + (nearest - node) * random.uniform(0, 0.5)
+            # Kéo sensor về phía tâm cụm gần nhất.
+            sensors[i] = sensor + (nearest - sensor) * random.uniform(0, 0.5)
 
     return {
         "width": width,
         "height": height,
         "depth": depth,
         "base_pos": base_pos,
-        "sensors": nodes,
+        "sensors": sensors,
         "init_energy": energy,
         "radius": radius,
     }
@@ -131,7 +72,7 @@ def new_map():
         width=500,
         height=500,
         depth=500,
-        num_nodes=100,
+        num_sensors=100,
         energy=0.6,
         radius=100,
         num_cluster_points=0,
