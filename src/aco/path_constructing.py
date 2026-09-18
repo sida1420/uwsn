@@ -2,62 +2,39 @@ from evaluate import E_m
 import random
 from node import Node
 
-def make_path(num_CHs, start_node_idx, live_nodes, pheromone_matrix, dist_matrix, E_m_heuristic_matrix, residual_e, pheromone_w, beta, alpha):
-    
 
-    curr_node_idx=start_node_idx
-    CH_list=[curr_node_idx]
-    CH_set=set([curr_node_idx,])
 
-    while len(CH_list)<num_CHs:
-        allowed_nodes=[node_i for node_i in live_nodes if node_i not in CH_set]
-
-        if len(allowed_nodes)==0:
-            return None
-
-        vals=[(
-            pheromone_matrix[curr_node_idx][node_i]**pheromone_w
-            *(residual_e[node_i]/dist_matrix[curr_node_idx][node_i])**beta
-            * E_m_heuristic_matrix[curr_node_idx][node_i]
-        ) for node_i in allowed_nodes]
-
-        sum_vals=sum(vals)
-
-        probs=[val/sum_vals for val in vals]
-        probs=[prob+chaos[curr_node_idx]*alpha for prob in probs]
-        # sum_probs=sum(probs)
-        # probs=[prob/sum_probs for prob in probs]
-
-        curr_node_idx=random.choices(allowed_nodes, weights=probs,k=1)[0]
-        CH_list.append(curr_node_idx)
-        CH_set.add(curr_node_idx)
-
-    return CH_list
-
-def clustering(nodes, CHs, R_max, dist_matrix, residual_e):
+def greedy_clustering(sensors, CHs, R_max, dist_matrix, residual_e):
     CH_nodes=[Node(idx,isCH=True) for idx in CHs]
 
-    tree=kdtree.KDTree(True,sorted(CHs, key=lambda idx: nodes[idx].x), sorted(CHs,key=lambda idx: nodes[idx].y))
 
     CHs_lookup=set(CHs)
     CHs_mapping={node.idx:i for i, node in enumerate(CH_nodes)}
-    for i, node in enumerate(nodes):
+    for i, sensos in enumerate(sensors):
         if i in CHs_lookup or residual_e[i]<=0:
             continue
-        best,_=tree.nearest(nodes,i,None,1e9)
+
+        nearest=CHs[0]
+        nearest_dist=dist_matrix[i][nearest]
+        for j in CHs:
+            dist=dist_matrix[i][j]
+            if dist<nearest_dist:
+                nearest_dist=dist
+                nearest=j
+             
         
-        idx=CHs_mapping[best]
-        if dist_matrix[best][i]>R_max:
+        idx=CHs_mapping[nearest]
+        if nearest_dist>R_max:
             return None
-        node_node=Node(i)
-        CH_nodes[idx].branches.append(node_node)
-        node_node.set_parent(best)
+        node=Node(i)
+        CH_nodes[idx].branches.append(node)
+        node.set_parent(nearest)
 
     return CH_nodes
 
 
-def network_config(nodes, CHs, R_max, d0, base_pos, hopping_factor, base_dists, dist_matrix, residual_e):
-    CH_nodes=clustering(nodes,CHs, R_max, dist_matrix, residual_e)
+def direct_routing(sensors, CHs, R_max, base_dists, dist_matrix, residual_e):
+    CH_nodes=greedy_clustering(sensors,CHs, R_max, dist_matrix, residual_e)
     if CH_nodes is None:
         return None
     base=Node(-1)
@@ -68,35 +45,10 @@ def network_config(nodes, CHs, R_max, d0, base_pos, hopping_factor, base_dists, 
             base.branches.append(node)
             node.set_parent(base.idx)
         else:
-            #list all nodes closer to base and in communication range
-            candidates=[cnode for cnode in CH_nodes if cnode.idx!=node.idx and dist_matrix[node.idx][cnode.idx]<R_max and dist>base_dists[cnode.idx] and residual_e[cnode.idx]>0]
-
-            if len(candidates)==0:
-                # if dist<R_max:
-                #     base.branches.append(node)
-                #     node.set_parent(base.idx)
-
-                return None
-                # base.branches.append(node)
-                # node.set_parent(base.idx)
-                # continue
-
-            sum_candidates_e=sum([residual_e[cnode.idx] for cnode in candidates])
-
-            
-            costs=[hopping_factor*sum_candidates_e/residual_e[cnode.idx]
-                +(1-hopping_factor)*(dist_matrix[node.idx][cnode.idx]**2+base_dists[cnode.idx]**2)/base_dists[node.idx]**2 for cnode in candidates]
-
-            optimal_node_i=0
-
-            for i, cost in enumerate(costs):
-                if costs[optimal_node_i]>cost:
-                    optimal_node_i=i
-
-            candidates[optimal_node_i].branches.append(node)
-            node.set_parent(candidates[optimal_node_i].idx)
-
+            return None
     return base
+
+
 class ACO_routing:
     def __init__(self, n_nodes):
         self.n_nodes=n_nodes

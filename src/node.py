@@ -2,8 +2,8 @@
 
 
 class Node:
-    def __init__(self,id, prev=None, isCH=False):
-        self.id = id
+    def __init__(self,idx, prev=None, isCH=False):
+        self.id = idx
         self.prev = prev
         self.isCH = isCH
         self.nxts=[]

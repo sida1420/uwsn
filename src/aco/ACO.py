@@ -171,7 +171,37 @@ class ACOClustering(Module):
             map_view.draw_network(nodes, energy_consumptions_list[iter_best_path_i][0], networks[iter_best_path_i], 1)
             map_view.save(f"configurations/config{t}.svg")
 
+    def make_ant_path(self, start_sensor_idx):
 
+
+        curr_sensor_idx=start_sensor_idx
+        CH_list=[curr_sensor_idx]
+        CH_set=set([curr_sensor_idx,])
+
+        while len(CH_list)<self.hparameters.num_CHs:
+            allowed_nodes=[node_i for node_i in live_nodes if node_i not in CH_set]
+
+            if len(allowed_nodes)==0:
+                return None
+
+            vals=[(
+                self.pheromone_matrix[curr_sensor_idx][node_i]**pheromone_w
+                *(residual_e[node_i]/dist_matrix[curr_sensor_idx][node_i])**beta
+                * E_m_heuristic_matrix[curr_sensor_idx][node_i]
+            ) for node_i in allowed_nodes]
+
+            sum_vals=sum(vals)
+
+            probs=[val/sum_vals for val in vals]
+            probs=[prob+chaos[curr_node_idx]*alpha for prob in probs]
+            # sum_probs=sum(probs)
+            # probs=[prob/sum_probs for prob in probs]
+
+            curr_node_idx=random.choices(allowed_nodes, weights=probs,k=1)[0]
+            CH_list.append(curr_node_idx)
+            CH_set.add(curr_node_idx)
+
+        return CH_list
 
 
 run()
