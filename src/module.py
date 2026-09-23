@@ -15,4 +15,3 @@ class Module:
         self.height = height
         self.depth = depth
         self.radius = radius
-        
