@@ -10,6 +10,7 @@ __pycache__/
 .venv/
 venv/
 env/
+ENV/
 
 # Packaging and coverage output
 build/
@@ -27,4 +28,5 @@ Thumbs.db
 # Generated simulation output
 results_*.csv
 configurations/
-
+map.pkl
+map_3d.svg

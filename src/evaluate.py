@@ -62,7 +62,7 @@ class Evaluator:
         def visit(node):
             if node.id != -1:  # the base station itself doesn't "spend" energy
                 dist = dist_to_parent(node)
-                if node.nxts:
+                if node.isCH:
                     # cluster head: receive from + aggregate each member,
                     # then transmit the aggregated packet onward
                     energy = self.E_rx() * len(node.nxts) + self.E_da() + self.E_tx(dist)
