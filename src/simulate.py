@@ -2,7 +2,7 @@ import pandas as pd
 
 from evaluate import Evaluator
 
-
+from visual import Visual
 class Simulator:
     """
     Runs a ClusteringAlgorithm round by round on a NetworkInstance until
@@ -15,6 +15,7 @@ class Simulator:
     """
 
     def __init__(self, network, hparameters):
+        self.visualizer = Visual(network.width, network.height, network.depth, network.sensors, network.base_pos)
         self.network = network
         self.hparameters = hparameters
         self.evaluator = Evaluator(hparameters)
@@ -25,6 +26,7 @@ class Simulator:
         history = []
 
         for t in range(self.hparameters.T_max):
+            # print(residual_e)
             root = algorithm.plan_round(live_nodes, residual_e)
             if root is None:
                 if verbose:
@@ -34,6 +36,14 @@ class Simulator:
             consumption, total = self.evaluator.energy_consumption(
                 root, self.network.dist_matrix, self.network.base_dists
             )
+
+            if total <= 0:
+                self.visualizer.clear_routes()
+                self.visualizer.route(root)
+                self.visualizer.save(f"error_{algorithm.name}_round{t}.png")
+                self.visualizer.show()
+                assert False, f"Total energy consumption is non-positive: {total}"
+
             for idx, e in consumption.items():
                 residual_e[idx] = max(0.0, residual_e[idx] - e)
 
@@ -47,7 +57,7 @@ class Simulator:
 
             if verbose and t % 100 == 0:
                 print(f"[{algorithm.name}] round {t}: {len(live_nodes)} alive, "
-                      f"energy used this round {total:.6f}")
+                      f"energy used this round {total}")
 
             if not live_nodes:
                 if verbose:

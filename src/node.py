@@ -5,10 +5,11 @@ class Node:
     their children are member sensors.
     """
 
-    def __init__(self, idx, prev=None, isCH=False):
+    def __init__(self, idx, prev=None, isCH=False, isRelay=False):
         self.id = idx
         self.prev = prev
         self.isCH = isCH
+        self.isRelay = isRelay
         self.nxts = []
 
     def add_next(self, node):
@@ -18,4 +19,4 @@ class Node:
         self.prev = node
 
     def __repr__(self):
-        return f"Node(id={self.id}, isCH={self.isCH}, children={[n.id for n in self.nxts]})"
+        return f"Node(id={self.id}, isCH={self.isCH}, isRelay={self.isRelay}, children={[n.id for n in self.nxts]})"

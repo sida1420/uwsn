@@ -2,11 +2,12 @@ import random
 
 from algorithms.base import ClusteringAlgorithm
 from algorithms.aco.aco_parameters import ACOParameters
-from algorithms.clustering import multi_hop_routing
+from algorithms.routing import multi_hop_routing
+from algorithms.clustering import build_clusters
 from evaluate import Evaluator
 
 
-class ACOClustering(ClusteringAlgorithm):
+class SimpleACO(ClusteringAlgorithm):
     """
     Plain Ant Colony Optimization for cluster-head selection, paired
     with multi-hop clustering: sensors -> nearest CH -> relay CHs -> base
@@ -29,31 +30,48 @@ class ACOClustering(ClusteringAlgorithm):
         super().__init__(network, hparameters)
         self.params = aco_params or ACOParameters()
         self.evaluator = Evaluator(hparameters)
-        self.pheromone = [self.params.tau0] * network.N
+        self.pheromone = [[self.params.tau0] * network.N for _ in range(network.N)]  # pheromone[i][j] = pheromone on edge i->j
 
     def plan_round(self, live_nodes, residual_e):
         best_root, best_CHs, best_cost = None, None, float("inf")
 
         for _ in range(self.params.num_ants):
             CHs = self._pick_CHs(live_nodes, residual_e)
+
+            print(f"Selected CHs: {CHs}")
             if CHs is None:
                 continue
+            CH_nodes= None
+            root = None
 
-            root = multi_hop_routing(
-                CHs,
-                live_nodes,
-                self.network.dist_matrix,
-                self.network.base_dists,
-                residual_e,
-                self.network.radius,
-                self.params.hopping_factor,
-            )
+            # for _ in range(self.params.max_clusterting_attempts):
+            for _ in range(10): #temp fix
+
+                CH_nodes=build_clusters(CHs, live_nodes, self.network.dist_matrix, self.network.radius)
+                if CH_nodes is None:
+                    print("Failed to build clusters")
+                    continue
+                root = multi_hop_routing(
+                    CH_nodes,
+                    live_nodes,
+                    self.network.dist_matrix,
+                    self.network.base_dists,
+                    residual_e,
+                    self.network.radius,
+                    self.params.hopping_factor,
+                )
+                if root is not None:
+                    break
+            
             if root is None:
+                print("Failed to create routing tree")
                 continue
+
 
             _, cost = self.evaluator.energy_consumption(
                 root, self.network.dist_matrix, self.network.base_dists
             )
+            
             if cost < best_cost:
                 best_root, best_CHs, best_cost = root, CHs, cost
 
@@ -65,6 +83,7 @@ class ACOClustering(ClusteringAlgorithm):
 
     def _pick_CHs(self, live_nodes, residual_e):
         num_CHs = max(1, round(self.params.CH_proportion * len(live_nodes)))
+        print(f"Picking {num_CHs} CHs from {len(live_nodes)} live nodes with proportion {self.params.CH_proportion}")
         candidates = list(live_nodes)
         chosen = []
 

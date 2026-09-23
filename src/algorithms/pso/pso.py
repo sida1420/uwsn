@@ -1,7 +1,7 @@
 import random
 
 from algorithms.base import ClusteringAlgorithm
-from algorithms.clustering import multi_hop_routing
+from algorithms.routing import multi_hop_routing
 from algorithms.pso.pso_parameters import PSOParameters
 from evaluate import Evaluator
 
