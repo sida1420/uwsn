@@ -30,3 +30,5 @@ results_*.csv
 configurations/
 map.pkl
 map_3d.svg
+AGENTS.md
+.*
