@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -5,11 +6,21 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+=======
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+>>>>>>> origin/main
 
 # Virtual environments
 .venv/
 venv/
 env/
+<<<<<<< HEAD
 ENV/
 
 # Distribution / packaging
@@ -47,3 +58,23 @@ map.pkl
 results_*.csv
 map_3d.svg
 *.log
+=======
+
+# Packaging and coverage output
+build/
+dist/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Editors and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Generated simulation output
+results_*.csv
+configurations/
+
+>>>>>>> origin/main
