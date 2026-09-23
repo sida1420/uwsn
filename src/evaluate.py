@@ -4,8 +4,8 @@ from hparameter import HyperParameters
 class Evaluator:
     """
     Energy-cost model for a single round of communication, given the
-    routing tree built for that round (see clustering.direct_routing):
-    base station (root) -> cluster heads -> member sensors.
+    routing tree built for that round: base station (root) -> relay
+    cluster heads -> cluster heads/member sensors.
 
     Cost model per node:
       - an ordinary member only transmits its own reading to its CH

@@ -1,7 +1,7 @@
 import random
 
 from algorithms.base import ClusteringAlgorithm
-from algorithms.clustering import direct_routing
+from algorithms.clustering import multi_hop_routing
 from algorithms.pso.pso_parameters import PSOParameters
 from evaluate import Evaluator
 
@@ -10,12 +10,11 @@ class PSOClustering(ClusteringAlgorithm):
     """
     Particle Swarm Optimization for cluster-head selection.
 
-    A particle contains one continuous score for every live node that can
-    communicate directly with the base station. The nodes with the highest
-    scores are selected as cluster heads, keeping the number of cluster heads
-    fixed during a round. Feasible routing trees are ranked by energy use;
-    infeasible candidates receive a coverage penalty that guides the swarm
-    toward nodes capable of covering the remaining sensors.
+    A particle contains one continuous score for every live node. The nodes
+    with the highest scores are selected as cluster heads, keeping the number
+    of cluster heads fixed during a round. Cluster heads may relay through
+    other cluster heads toward the base. Feasible routing trees are ranked by
+    energy use; infeasible candidates receive a connectivity penalty.
     """
 
     name = "PSO"
@@ -29,13 +28,7 @@ class PSOClustering(ClusteringAlgorithm):
         if not live_nodes:
             return None
 
-        candidates = [
-            node_id
-            for node_id in live_nodes
-            if self.network.base_dists[node_id] <= self.network.radius
-        ]
-        if not candidates:
-            return None
+        candidates = list(live_nodes)
 
         num_CHs = max(1, round(self.params.CH_proportion * len(live_nodes)))
         num_CHs = min(num_CHs, len(candidates))
@@ -54,7 +47,7 @@ class PSOClustering(ClusteringAlgorithm):
         for _ in range(self.params.iterations):
             for particle in particles:
                 CHs = self._decode(particle["position"], candidates, num_CHs)
-                root, score = self._evaluate(CHs, live_nodes)
+                root, score = self._evaluate(CHs, live_nodes, residual_e)
 
                 if score < particle["best_score"]:
                     particle["best_score"] = score
@@ -96,13 +89,15 @@ class PSOClustering(ClusteringAlgorithm):
         )
         return [candidates[index] for index in ranked[:num_CHs]]
 
-    def _evaluate(self, CHs, live_nodes):
-        root = direct_routing(
+    def _evaluate(self, CHs, live_nodes, residual_e):
+        root = multi_hop_routing(
             CHs,
             live_nodes,
             self.network.dist_matrix,
             self.network.base_dists,
+            residual_e,
             self.network.radius,
+            self.params.hopping_factor,
         )
         if root is not None:
             _, cost = self.evaluator.energy_consumption(
@@ -112,10 +107,9 @@ class PSOClustering(ClusteringAlgorithm):
             )
             return root, cost
 
-        # All selected CHs are base-reachable, so infeasibility means at least
-        # one live sensor is outside every selected CH's communication radius.
-        # The excess-distance penalty gives PSO a useful ordering among such
-        # candidates while remaining much larger than any feasible energy cost.
+        # Penalize both uncovered sensors and CHs that lack a shorter hop
+        # toward the base. This gives the swarm useful direction even before
+        # it discovers its first fully feasible tree.
         uncovered_distance = sum(
             max(
                 0.0,
@@ -124,7 +118,25 @@ class PSOClustering(ClusteringAlgorithm):
             )
             for node_id in live_nodes
         )
-        return None, self.params.infeasible_penalty + uncovered_distance
+        relay_distance = 0.0
+        for ch in CHs:
+            if self.network.base_dists[ch] <= self.network.radius:
+                continue
+            closer_CHs = [
+                candidate
+                for candidate in CHs
+                if self.network.base_dists[candidate] < self.network.base_dists[ch]
+            ]
+            best_hop = min(
+                [self.network.base_dists[ch]]
+                + [self.network.dist_matrix[ch][candidate] for candidate in closer_CHs]
+            )
+            relay_distance += max(0.0, best_hop - self.network.radius)
+
+        return (
+            None,
+            self.params.infeasible_penalty + uncovered_distance + relay_distance,
+        )
 
     def _move(self, particle, global_best_position):
         p = self.params

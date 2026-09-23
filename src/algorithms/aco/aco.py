@@ -2,14 +2,14 @@ import random
 
 from algorithms.base import ClusteringAlgorithm
 from algorithms.aco.aco_parameters import ACOParameters
-from algorithms.clustering import direct_routing
+from algorithms.clustering import multi_hop_routing
 from evaluate import Evaluator
 
 
 class ACOClustering(ClusteringAlgorithm):
     """
     Plain Ant Colony Optimization for cluster-head selection, paired
-    with single-hop ("direct") clustering: sensors -> nearest CH -> base
+    with multi-hop clustering: sensors -> nearest CH -> relay CHs -> base
     station. Unlike the earlier AC-ACO version, there's no chaos term
     and no adaptive schedule -- pheromone evaporates at a constant rate
     and alpha/beta/CH-proportion stay fixed for the whole run.
@@ -39,9 +39,14 @@ class ACOClustering(ClusteringAlgorithm):
             if CHs is None:
                 continue
 
-            root = direct_routing(
-                CHs, live_nodes, self.network.dist_matrix,
-                self.network.base_dists, self.network.radius,
+            root = multi_hop_routing(
+                CHs,
+                live_nodes,
+                self.network.dist_matrix,
+                self.network.base_dists,
+                residual_e,
+                self.network.radius,
+                self.params.hopping_factor,
             )
             if root is None:
                 continue
