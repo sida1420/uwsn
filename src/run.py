@@ -10,9 +10,11 @@ from hparameter import HyperParameters
 from network import NetworkInstance
 from simulate import Simulator
 from algorithms.aco.aco import ACOClustering
+from algorithms.pso.pso import PSOClustering
 
 ALGORITHMS = [
     ACOClustering,
+    PSOClustering,
     # add more algorithms here to compare, e.g. LEACHClustering, ...
 ]
 
