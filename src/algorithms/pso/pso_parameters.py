@@ -10,4 +10,5 @@ class PSOParameters:
         self.social = 1.5
         self.velocity_max = 4.0
         self.infeasible_penalty = 1_000_000.0
+        self.hopping_factor = 0.4  # energy-versus-distance relay preference
 

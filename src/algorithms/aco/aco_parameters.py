@@ -15,3 +15,4 @@ class ACOParameters:
         self.tau0 = 1.0  # initial pheromone level
         self.tau_min = 0.1
         self.tau_max = 10.0
+        self.hopping_factor = 0.4  # energy-versus-distance relay preference
