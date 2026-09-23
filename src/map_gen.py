@@ -5,6 +5,7 @@ import pickle
 import matplotlib.pyplot as plt
 from visual import Visual
 
+
 def plot_map_3d(map_, save_path="map_3d.svg", show_ids=False):
     sensors = map_["sensors"]
     sink = map_["base_pos"]
@@ -16,7 +17,6 @@ def plot_map_3d(map_, save_path="map_3d.svg", show_ids=False):
     visual = Visual(width, height, depth, sensors, sink)
 
     visual.save(save_path)
-
 
 
 def gen(

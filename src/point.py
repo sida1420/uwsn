@@ -33,8 +33,6 @@ class Point:
 
     def __abs__(self):
         return sqrt(self.x**2 + self.y**2 + self.z**2)
-    
+
     def sq_abs(self):
-        return self.x**2 + self.y**2+self.z**2
-        
-        
+        return self.x**2 + self.y**2 + self.z**2
