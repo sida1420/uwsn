@@ -7,12 +7,15 @@ class ACOParameters:
 
     def __init__(self):
         self.num_ants = 20  # ants per round
-        self.CH_proportion = 0.05  # target fraction of live nodes made CH
+        self.CH_proportion = 0.2  # target fraction of live nodes made CH
         self.alpha = 1.0  # pheromone importance
         self.beta = 3.0  # heuristic (energy/distance) importance
+        self.gamma = 1.0  # residual energy importance
         self.rho = 0.1  # pheromone evaporation rate
         self.Q = 100.0  # pheromone deposit strength
         self.tau0 = 1.0  # initial pheromone level
         self.tau_min = 0.1
         self.tau_max = 10.0
         self.hopping_factor = 0.4  # energy-versus-distance relay preference
+
+        self.max_clustering_attempts = 20  # max attempts to build a feasible clustering tree

@@ -16,12 +16,12 @@ class ClusteringAlgorithm(ABC):
         self.hparameters = hparameters
 
     @abstractmethod
-    def plan_round(self, live_nodes, residual_e):
+    def plan_round(self, live_sensors, residual_e):
         """
         Decide this round's routing tree.
 
         Args:
-            live_nodes: list of ids of sensors still alive
+            live_sensors: list of ids of sensors still alive
             residual_e: list (indexed by sensor id) of remaining energy
 
         Returns:

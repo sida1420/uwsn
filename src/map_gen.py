@@ -74,7 +74,7 @@ def new_map():
         depth=500,
         num_sensors=100,
         energy=0.6,
-        radius=100,
+        radius=200,
         num_cluster_points=0,
     )
 
