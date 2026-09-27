@@ -1,6 +1,7 @@
 import random
 
 from algorithms.base import ClusteringAlgorithm
+from algorithms.clustering import build_clusters
 from algorithms.routing import multi_hop_routing
 from algorithms.pso.pso_parameters import PSOParameters
 from evaluate import Evaluator
@@ -90,9 +91,17 @@ class PSOClustering(ClusteringAlgorithm):
         return [candidates[index] for index in ranked[:num_CHs]]
 
     def _evaluate(self, CHs, live_nodes, residual_e):
-        root = multi_hop_routing(
+        CH_nodes, nodes, outliers = build_clusters(
             CHs,
             live_nodes,
+            self.network.dist_matrix,
+            self.network.radius,
+        )
+        root = multi_hop_routing(
+            CH_nodes,
+            nodes,
+            live_nodes,
+            outliers,
             self.network.dist_matrix,
             self.network.base_dists,
             residual_e,

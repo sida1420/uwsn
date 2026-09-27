@@ -14,7 +14,7 @@ from algorithms.pso.pso import PSOClustering
 
 ALGORITHMS = [
     SimpleACO,
-    #PSOClustering,
+    PSOClustering,
     # add more algorithms here to compare, e.g. LEACHClustering, ...
 ]
 
