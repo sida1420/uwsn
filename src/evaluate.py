@@ -74,8 +74,8 @@ class Evaluator:
                 if node.isCH:
                     # cluster head: receive from + aggregate each member,
                     # then transmit the aggregated packet onward
-                    energy += self.E_da(received_packets)
-                    num_packets+= 1
+                    energy += self.E_da()
+                    num_packets = 1
                 elif node.isRelay:
                     num_packets += received_packets
 

@@ -1,192 +1,155 @@
+"""AC-ACO search using the repository's shared clustering and routing helpers."""
+
 from dataclasses import dataclass
-from math import exp, isfinite, log, sqrt
+from math import exp, isfinite, log
 import random
 
-from algorithms.ac_aco.adaptive import (
-    heuristic_weight,
-)
-from algorithms.ac_aco.objective import phase1_cost
+from algorithms.ac_aco.adaptive import chaos_strength, evaporation_rate, heuristic_weight
 from algorithms.ac_aco.pheromone import initial_chaos, update_pheromone
+from algorithms.clustering import build_clusters
+from algorithms.routing import multi_hop_routing
 from evaluate import Evaluator
 
 
 @dataclass(frozen=True)
 class ClusterSolution:
-    aco_heads: tuple
     cluster_heads: tuple
-    assignments: dict
+    root: object
     cost: float
+    path_length: float
     target_head_count: int
 
 
 class ACACOOptimizer:
-    """Edge-pheromone AC-ACO optimizer for an ordered CH construction path."""
+    """Construct ordered CH paths and retain the lowest-energy feasible route."""
 
     def __init__(self, network, hparameters, parameters):
         self.network = network
         self.parameters = parameters
         self.evaluator = Evaluator(hparameters)
         self.rng = random.Random(parameters.random_seed)
-        self.diagonal = max(
-            sqrt(network.width**2 + network.height**2 + network.depth**2),
-            1e-12,
-        )
-        self.start_pheromone = [parameters.tau0] * network.N
-        self.pheromone = [
-            [parameters.tau0] * network.N for _ in range(network.N)
-        ]
-        self.chaos = initial_chaos(
-            network.N, parameters.chaos_seed, parameters.chaos_r
-        )
-        self.coverage = [
-            {j for j in range(network.N) if network.dist_matrix[i][j] <= network.radius}
-            for i in range(network.N)
-        ]
+        self.pheromone = [[parameters.tau0] * network.N for _ in range(network.N)]
+        self.chaos = initial_chaos(network.N, parameters.chaos_seed, parameters.chaos_r)
 
-    def optimize(self, live_nodes, residual_e, allowed_heads=None):
-        live = tuple(i for i in live_nodes if residual_e[i] > 0)
+    def optimize(self, live_nodes, residual_e):
+        live = tuple(node_id for node_id in live_nodes if residual_e[node_id] > 0)
         if not live:
             return None
-        candidate_pool = tuple(
-            i for i in (allowed_heads if allowed_heads is not None else live)
-            if i in live
-        )
-        if not candidate_pool:
-            return None
-        target = min(
-            len(candidate_pool),
-            max(1, round(self.parameters.ch_proportion * len(live))),
-        )
-        global_best = None
 
-        for iteration in range(self.parameters.num_iterations):
-            progress = iteration / max(self.parameters.num_iterations - 1, 1)
-            beta = heuristic_weight(
-                progress,
-                self.parameters.beta_min,
-                self.parameters.beta_max,
-                self.parameters.beta_slope,
-            )
-            solutions = []
-            for _ in range(self.parameters.num_ants):
-                aco_heads = self._construct_candidate(
-                    candidate_pool, residual_e, target, beta
-                )
-                heads = aco_heads
-                if self.parameters.ensure_member_coverage:
-                    heads = self._repair_coverage(
-                        heads, live, candidate_pool, residual_e
-                    )
-                if heads is None:
-                    continue
-                assignments = self._assign_members(heads, live)
-                if assignments is None:
-                    continue
-                cost = phase1_cost(
-                    self.network,
-                    self.evaluator,
-                    self.parameters,
-                    heads,
-                    assignments,
-                    live,
-                    residual_e,
-                    target,
-                    self.diagonal,
-                )
-                candidate = ClusterSolution(
-                    tuple(aco_heads), tuple(heads), assignments, cost, target
-                )
-                solutions.append(candidate)
-                if global_best is None or cost < global_best.cost:
-                    global_best = candidate
-            if solutions:
-                update_pheromone(
-                    self.start_pheromone,
-                    self.pheromone,
-                    self.chaos,
-                    solutions,
-                    live,
-                    residual_e,
-                    self.network,
-                    self.parameters,
-                    progress,
-                )
-        return global_best
+        target = min(len(live), max(1, round(self.parameters.ch_proportion * len(live))))
+        best_global = None
+        seen_costs = []
+        previous_cost = None
+        for iteration in range(1, self.parameters.num_iterations + 1):
+            rho = evaporation_rate(iteration, self.parameters.num_iterations,
+                                   self.parameters.rho_min, self.parameters.rho_max)
+            beta = heuristic_weight(iteration, self.parameters.num_iterations,
+                                    self.parameters.beta_min, self.parameters.beta_max,
+                                    self.parameters.beta_slope)
+            strength = chaos_strength(previous_cost, min(seen_costs, default=None),
+                                      max(seen_costs, default=None),
+                                      self.parameters.chaos_min, self.parameters.chaos_max)
+            candidates = [solution for solution in (
+                self._evaluate(self._construct_candidate(live, residual_e, target, beta, strength),
+                               live, residual_e, target)
+                for _ in range(self.parameters.num_ants)
+            ) if solution is not None]
+            best_iteration = min(candidates, key=lambda item: (item.cost, item.cluster_heads), default=None)
+            if best_iteration is not None:
+                seen_costs.extend(solution.cost for solution in candidates)
+                previous_cost = best_iteration.cost
+                if best_global is None or (best_iteration.cost, best_iteration.cluster_heads) < (
+                    best_global.cost, best_global.cluster_heads
+                ):
+                    best_global = best_iteration
+            update_pheromone(self.pheromone, self.chaos, live, self.parameters, rho,
+                             strength, best_iteration)
+        return best_global
 
-    def _construct_candidate(self, live, residual_e, target, beta):
+    def _construct_candidate(self, live, residual_e, target, beta, strength):
         available = list(live)
-        selected = []
-        max_energy = max(residual_e[i] for i in live)
+        selected = [self.rng.choice(available)]
+        available.remove(selected[0])
         while available and len(selected) < target:
-            previous = selected[-1] if selected else None
-            log_weights = [
-                self._transition_log_weight(
-                    previous, node, residual_e, max_energy, beta
-                )
-                for node in available
-            ]
-            max_log = max(log_weights)
-            weights = [exp(value - max_log) for value in log_weights]
-            pick = (
-                self.rng.choices(available, weights=weights, k=1)[0]
-                if sum(weights) > 0
-                else self.rng.choice(available)
-            )
-            selected.append(pick)
-            available.remove(pick)
-        return selected
+            selected.append(self._choose_next(selected[-1], available, residual_e, beta, strength))
+            available.remove(selected[-1])
+        return tuple(selected)
 
-    def _transition_log_weight(self, previous, node_id, residual_e, max_energy, beta):
-        if previous is None:
-            trail = self.start_pheromone[node_id]
-            distance = self.network.base_dists[node_id]
-        else:
-            trail = self.pheromone[previous][node_id]
-            distance = self.network.dist_matrix[previous][node_id]
-        energy_ratio = residual_e[node_id] / max(max_energy, 1e-12)
-        distance_ratio = max(distance / self.diagonal, 1e-9)
-        eta = max(energy_ratio / distance_ratio, 1e-12)
-        energy_term = 1.0 / (1.0 + self.evaluator.E_tx(distance))
-        value = (
-            self.parameters.pheromone_weight * log(max(trail, 1e-300))
-            + beta * log(eta)
-            + self.parameters.energy_cost_weight * log(max(energy_term, 1e-300))
+    def _choose_next(self, source, available, residual_e, beta, strength):
+        probabilities = self._transition_probabilities(
+            source, available, residual_e, beta, strength
         )
-        return value if isfinite(value) else -1e300
+        return self.rng.choices(available, weights=probabilities, k=1)[0]
 
-    def _repair_coverage(self, heads, live, candidate_pool, residual_e):
-        selected = list(heads)
-        selected_set = set(selected)
-        live_set = set(live)
-        covered = set().union(*(self.coverage[ch] & live_set for ch in selected))
-        uncovered = live_set - covered
-        while uncovered:
-            candidates = set(candidate_pool) - selected_set
-            if not candidates:
-                return None
-            pick = max(
-                candidates,
-                key=lambda node_id: (
-                    len(self.coverage[node_id] & uncovered),
-                    residual_e[node_id],
-                    -self.network.base_dists[node_id],
-                    -node_id,
-                ),
+    def _transition_probabilities(self, source, available, residual_e, beta, strength):
+        """Eq. (20) probabilities, including the explicit chaos normalization."""
+        log_weights = []
+        for target in available:
+            distance = max(self.network.dist_matrix[source][target], 1e-12)
+            eta = max(residual_e[target], 0.0) / distance
+            energy = self.evaluator.E_m(distance)
+            tau = self.pheromone[source][target]
+            if tau <= 0 or eta <= 0 or energy <= 0 or not isfinite(energy):
+                log_weights.append(float("-inf"))
+                continue
+            log_weights.append(
+                self.parameters.pheromone_exponent * log(tau)
+                + beta * log(eta)
+                - self.parameters.energy_cost_exponent * log(energy)
             )
-            selected.append(pick)
-            selected_set.add(pick)
-            uncovered -= self.coverage[pick]
-        return selected
+        greatest = max(log_weights)
+        if not isfinite(greatest):
+            return [1.0 / len(available)] * len(available)
+        weights = [exp(weight - greatest) if isfinite(weight) else 0.0 for weight in log_weights]
+        total = sum(weights)
+        if total <= 0:
+            return [1.0 / len(available)] * len(available)
+        probabilities = [weight / total for weight in weights]
+        chaos = strength * self.chaos[source]
+        weights = [probability + chaos for probability in probabilities]
+        total = sum(weights)
+        return [weight / total for weight in weights]
 
-    def _assign_members(self, heads, live):
-        assignments = {}
-        for node_id in live:
-            ch_id = min(heads, key=lambda ch: self.network.dist_matrix[node_id][ch])
-            if (
-                self.parameters.ensure_member_coverage
-                and self.network.dist_matrix[node_id][ch_id] > self.network.radius
-            ):
-                return None
-            assignments[node_id] = ch_id
-        return assignments
+    def _evaluate(self, cluster_heads, live, residual_e, target):
+        ch_nodes, nodes, outliers = build_clusters(
+            cluster_heads, live, self.network.dist_matrix, self.network.radius
+        )
+        root = multi_hop_routing(
+            ch_nodes, nodes, live, outliers, self.network.dist_matrix,
+            self.network.base_dists, residual_e, self.network.radius,
+            self.parameters.hopping_factor,
+        )
+        if not self._valid_tree(root, live):
+            return None
+        _, cost = self.evaluator.energy_consumption(
+            root, self.network.dist_matrix, self.network.base_dists
+        )
+        if not isfinite(cost) or cost <= 0:
+            return None
+        path_length = max(sum(
+            self.network.dist_matrix[left][right]
+            for left, right in zip(cluster_heads, cluster_heads[1:])
+        ), 1e-12)
+        return ClusterSolution(cluster_heads, root, cost, path_length, target)
 
+    def _valid_tree(self, root, live):
+        if root is None or root.id != -1:
+            return False
+        expected = set(live)
+        found, visiting = set(), set()
+
+        def visit(node):
+            if node.id != -1:
+                if node.id not in expected or node.id in found or node.id in visiting:
+                    return False
+                found.add(node.id)
+                parent = node.prev
+                distance = self.network.base_dists[node.id] if parent.id == -1 else self.network.dist_matrix[node.id][parent.id]
+                if distance > self.network.radius:
+                    return False
+            visiting.add(node.id)
+            valid = all(child.prev is node and visit(child) for child in node.nxts)
+            visiting.remove(node.id)
+            return valid
+
+        return visit(root) and found == expected
