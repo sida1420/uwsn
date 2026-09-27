@@ -24,18 +24,30 @@ class Evaluator:
         # (and the exponent especially) blows up for any realistic
         # sensor-field distance.
         dist_km = dist / 1000
-        A_d = dist_km**self.hparameter.spreadking_factor * self.hparameter.attenuation_coeff**dist_km
-        return self.hparameter.P_0 * A_d * self.hparameter.packet_size * num_packets / self.hparameter.trasmission_rate
+        A_d = (
+            dist_km**self.hparameter.spreadking_factor
+            * self.hparameter.attenuation_coeff**dist_km
+        )
+        return (
+            self.hparameter.P_0
+            * A_d
+            * self.hparameter.packet_size
+            * num_packets
+            / self.hparameter.trasmission_rate
+        )
 
     def E_rx(self, num_packets=1):
         return self.hparameter.packet_size * self.hparameter.E_elec * num_packets
-
 
     def E_da(self, num_packets=1):
         return self.hparameter.packet_size * self.hparameter.E_integrate * num_packets
 
     def E_m(self, dist, num_packets=1):
-        return self.E_tx(dist, num_packets) + self.E_rx(num_packets) + self.E_da(num_packets)
+        return (
+            self.E_tx(dist, num_packets)
+            + self.E_rx(num_packets)
+            + self.E_da(num_packets)
+        )
 
     def energy_consumption(self, root, dist_matrix, base_dists):
         """
@@ -60,7 +72,6 @@ class Evaluator:
                 return base_dists[node.id]
             return dist_matrix[node.id][parent.id]
 
-
         def visit(node):
             num_packets = 1
             received_packets = 0
@@ -74,12 +85,12 @@ class Evaluator:
                 if node.isCH:
                     # cluster head: receive from + aggregate each member,
                     # then transmit the aggregated packet onward
-                    energy += self.E_da()
-                    num_packets = 1
+                    energy += self.E_da(received_packets)
+                    num_packets += 1
                 elif node.isRelay:
                     num_packets += received_packets
 
-                energy += self.E_rx(received_packets) 
+                energy += self.E_rx(received_packets)
                 # ordinary member: just send its own reading to its CH
                 energy += self.E_tx(dist, num_packets)
 

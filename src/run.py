@@ -18,8 +18,8 @@ from algorithms.ac_aco import ACACOClustering, ACACOParameters
 
 ALGORITHMS = [
     ACACOClustering,
-    # SimpleACO,
-    # PSOClustering,
+    SimpleACO,
+    PSOClustering,
 ]
 
 

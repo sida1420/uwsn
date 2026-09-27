@@ -1,6 +1,4 @@
-
-"""Shared direct and multi-hop routing helpers."""
-import heapq
+"""plus direct and multi-hop CH routing."""
 
 from node import Node
 
@@ -27,7 +25,6 @@ from node import Node
 #     return base
 
 
-
 def multi_hop_routing(
     CH_nodes,
     nodes,
@@ -45,10 +42,11 @@ def multi_hop_routing(
     Ordinary sensors are assigned to their nearest cluster head by
     build_clusters before this runs. A cluster head -- or an outlier
     sensor that build_clusters couldn't assign to any cluster -- that
-    cannot reach the base directly relays through a bounded-hop path of
-    available live nodes. The path search starts at the base, so every
-    created edge points toward an already rooted node and cannot form a
-    cycle.
+    cannot reach the base directly relays through the nearest available
+    node, of *any* kind (cluster head, ordinary sensor, or another
+    outlier), that is both within communication range and strictly
+    closer to the base. The strict distance reduction guarantees that
+    relay links cannot form a cycle.
 
     Outliers take part in routing the same way a cluster head does,
     instead of causing the round to be marked infeasible.
@@ -65,58 +63,51 @@ def multi_hop_routing(
     # have to know about outliers in advance
     nodes = {**nodes, **outlier_nodes}
 
-    connected = set()
+    for id, node in (CH_nodes | outlier_nodes).items():
+        distance_to_base = base_dists[id]
+        if distance_to_base <= radius:
+            node.set_previous(base)
+            base.add_next(node)
+            continue
 
-    def detach(node):
-        if node.prev is not None:
-            node.prev.nxts.remove(node)
-
-    def paths_from_base():
-        """Return a lowest-cost rooted predecessor for every reachable sensor."""
-        total_energy = sum(max(residual_e[node_id], 0.0) for node_id in live_sensors)
-        costs, parents, queue = {}, {}, []
-        for node_id in live_sensors:
-            if base_dists[node_id] <= radius:
-                cost = (1 - hopping_factor) * base_dists[node_id] / max(radius, 1e-12)
-                costs[node_id], parents[node_id] = cost, -1
-                heapq.heappush(queue, (cost, node_id))
-        while queue:
-            cost, node_id = heapq.heappop(queue)
-            if cost != costs[node_id]:
+        candidates = []
+        for candidate_id in live_sensors:
+            if candidate_id == id:
                 continue
-            for neighbor_id in live_sensors:
-                if neighbor_id == node_id or dist_matrix[node_id][neighbor_id] > radius:
-                    continue
-                edge_cost = (
-                    hopping_factor * total_energy / max(residual_e[neighbor_id], 1e-12)
-                    + (1 - hopping_factor) * dist_matrix[node_id][neighbor_id] / max(radius, 1e-12)
-                )
-                candidate_cost = cost + edge_cost
-                if candidate_cost < costs.get(neighbor_id, float("inf")):
-                    costs[neighbor_id], parents[neighbor_id] = candidate_cost, node_id
-                    heapq.heappush(queue, (candidate_cost, neighbor_id))
-        return parents
+            if dist_matrix[id][candidate_id] > radius:
+                continue
 
-    parents = paths_from_base()
-    for node_id in CH_nodes | outlier_nodes:
-        if node_id not in parents:
+            if base_dists[candidate_id] > distance_to_base:
+                continue
+            if residual_e[candidate_id] <= 0:
+                continue
+            if (
+                not nodes[candidate_id].isCH
+                and nodes[candidate_id].prev is not None
+                and nodes[candidate_id].prev.isCH
+                and distance_to_base <= base_dists[nodes[candidate_id].prev.id]
+            ):
+                continue
+
+            candidates.append(candidate_id)
+        if not candidates:
             return None
-        path = []
-        current = node_id
-        while current != -1:
-            path.append(current)
-            current = parents[current]
-        for child_id in reversed(path):
-            parent_id = parents[child_id]
-            if child_id in connected:
-                continue
-            child = nodes[child_id]
-            detach(child)
-            parent = base if parent_id == -1 else nodes[parent_id]
-            if parent_id != -1 and not parent.isCH:
-                parent.isRelay = True
-            child.set_previous(parent)
-            parent.add_next(child)
-            connected.add(child_id)
+
+        total_candidate_energy = sum(
+            residual_e[candidate_id] for candidate_id in candidates
+        )
+
+        def relay_cost(candidate_id):
+            energy_cost = total_candidate_energy / max(residual_e[candidate_id], 1e-12)
+            distance_cost = (
+                dist_matrix[id][candidate_id] ** 2 + base_dists[candidate_id] ** 2
+            ) / max(distance_to_base**2, 1e-12)
+            return hopping_factor * energy_cost + (1 - hopping_factor) * distance_cost
+
+        parent_id = min(candidates, key=relay_cost)
+        parent = nodes[parent_id]
+        parent.isRelay = True
+        node.set_previous(parent)
+        parent.add_next(node)
 
     return base
