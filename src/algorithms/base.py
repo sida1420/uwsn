@@ -15,6 +15,11 @@ class ClusteringAlgorithm(ABC):
         self.network = network
         self.hparameters = hparameters
 
+        self.failed_clustering_attempts=0
+        self.failed_routing_attempts=0
+        self.total_clustering_attempts=0
+        self.total_routing_attempts=0
+
     @abstractmethod
     def plan_round(self, live_sensors, residual_e):
         """

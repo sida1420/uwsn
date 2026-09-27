@@ -65,14 +65,17 @@ class SimpleACO(ClusteringAlgorithm):
             for _ in range(self.params.max_clustering_attempts):
             # for _ in range(10):  # temp fix
                 CHs = self._make_path(live_sensors, residual_e, start)
+                self.total_clustering_attempts+=1
 
                 if CHs is None:
+                    self.failed_clustering_attempts+=1
                     break
 
                 CH_nodes, nodes, outliers = build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
                 if CH_nodes is None:
-                    print("Failed to build clusters")
+                    self.failed_clustering_attempts+=1
                     continue
+                self.total_routing_attempts+=1
                 root = multi_hop_routing(
                     CH_nodes,
                     nodes,
@@ -88,7 +91,7 @@ class SimpleACO(ClusteringAlgorithm):
                     break
 
             if root is None:
-                print("Failed to create routing tree")
+                self.failed_routing_attempts+=1
                 continue
 
             _, cost = self.evaluator.energy_consumption(
