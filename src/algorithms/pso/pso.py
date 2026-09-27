@@ -24,6 +24,10 @@ class PSOClustering(ClusteringAlgorithm):
         super().__init__(network, hparameters)
         self.params = pso_params or PSOParameters()
         self.evaluator = Evaluator(hparameters)
+        self._warm_start = []
+        self.last_evaluation_requests = 0
+        self.last_unique_evaluations = 0
+        self.last_iterations = 0
 
     def plan_round(self, live_nodes, residual_e):
         if not live_nodes:
@@ -35,20 +39,36 @@ class PSOClustering(ClusteringAlgorithm):
         num_CHs = min(num_CHs, len(candidates))
         dimensions = len(candidates)
 
-        particles = [
-            self._new_particle(dimensions)
-            for _ in range(self.params.swarm_size)
-        ]
+        particles = []
+        for index in range(self.params.swarm_size):
+            previous = self._warm_start[index] if index < len(self._warm_start) else None
+            particles.append(self._new_particle(dimensions, candidates, previous))
 
         global_best_position = None
         global_best_score = float("inf")
         best_feasible_root = None
         best_feasible_score = float("inf")
+        iterations_without_improvement = 0
+        evaluation_cache = {}
+        self.last_evaluation_requests = 0
+        self.last_unique_evaluations = 0
+        self.last_iterations = 0
 
-        for _ in range(self.params.iterations):
+        for iteration in range(self.params.iterations):
+            self.last_iterations = iteration + 1
+            score_before_iteration = best_feasible_score
+
             for particle in particles:
                 CHs = self._decode(particle["position"], candidates, num_CHs)
-                root, score = self._evaluate(CHs, live_nodes, residual_e)
+                cache_key = tuple(sorted(CHs))
+                self.last_evaluation_requests += 1
+
+                if cache_key in evaluation_cache:
+                    root, score = evaluation_cache[cache_key]
+                else:
+                    root, score = self._evaluate(CHs, live_nodes, residual_e)
+                    evaluation_cache[cache_key] = (root, score)
+                    self.last_unique_evaluations += 1
 
                 if score < particle["best_score"]:
                     particle["best_score"] = score
@@ -62,21 +82,54 @@ class PSOClustering(ClusteringAlgorithm):
                     best_feasible_root = root
                     best_feasible_score = score
 
+            if best_feasible_root is not None:
+                if best_feasible_score < score_before_iteration:
+                    iterations_without_improvement = 0
+                else:
+                    iterations_without_improvement += 1
+
+                patience = self.params.early_stopping_patience
+                if patience > 0 and iterations_without_improvement >= patience:
+                    break
+
             if global_best_position is None:
                 continue
 
             for particle in particles:
                 self._move(particle, global_best_position)
 
+        # Reuse the swarm's positions and velocities next round. Values are
+        # stored by sensor id because the candidate list shrinks as nodes die.
+        # Personal/global fitness is deliberately reset: residual energy and
+        # therefore the objective change between simulation rounds.
+        self._warm_start = [
+            {
+                "position": dict(zip(candidates, particle["position"])),
+                "velocity": dict(zip(candidates, particle["velocity"])),
+            }
+            for particle in particles
+        ]
+
         return best_feasible_root
 
-    def _new_particle(self, dimensions):
+    def _new_particle(self, dimensions, candidates=None, previous=None):
+        positions = []
+        velocities = []
+
+        for index in range(dimensions):
+            node_id = candidates[index] if candidates is not None else index
+            if previous is not None and node_id in previous["position"]:
+                positions.append(previous["position"][node_id])
+                velocities.append(previous["velocity"][node_id])
+            else:
+                positions.append(random.random())
+                velocities.append(
+                    random.uniform(-self.params.velocity_max, self.params.velocity_max)
+                )
+
         return {
-            "position": [random.random() for _ in range(dimensions)],
-            "velocity": [
-                random.uniform(-self.params.velocity_max, self.params.velocity_max)
-                for _ in range(dimensions)
-            ],
+            "position": positions,
+            "velocity": velocities,
             "best_position": None,
             "best_score": float("inf"),
         }
