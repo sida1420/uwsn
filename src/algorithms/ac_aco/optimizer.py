@@ -11,7 +11,7 @@ from algorithms.ac_aco.adaptive import (
 )
 from algorithms.ac_aco.pheromone import initial_chaos, update_pheromone
 from algorithms.clustering import build_clusters
-from algorithms.routing import multi_hop_routing
+from algorithms.routing import multi_hop_routing, dropping_member_multi_hop_routing
 from evaluate import Evaluator
 
 
@@ -252,64 +252,6 @@ class ACACOOptimizer:
 
         return [weight / total for weight in weights]
 
-    def _prepare_clusters_for_routing(self, ch_nodes, nodes, outliers, live, residual_e):
-        """Release one blocked relay only when a routing node has no usable parent."""
-        base_dists = self.network.base_dists
-        # Match shared routing order; appended releases also need routing support.
-        pending = list(ch_nodes) + list(outliers)
-        for node_id in pending:
-            distance_to_base = base_dists[node_id]
-            if distance_to_base <= self.network.radius:
-                continue
-
-            blocked = []
-            has_parent = False
-            for candidate_id in live:
-                if candidate_id == node_id:
-                    continue
-                if self.network.dist_matrix[node_id][candidate_id] > self.network.radius:
-                    continue
-                if base_dists[candidate_id] > distance_to_base:
-                    continue
-                if residual_e[candidate_id] <= 0:
-                    continue
-
-                # Outliers are absent here; shared routing creates their Nodes.
-                candidate = nodes.get(candidate_id)
-                if (
-                    candidate is not None
-                    and not candidate.isCH
-                    and candidate.prev is not None
-                    and candidate.prev.isCH
-                    and distance_to_base <= base_dists[candidate.prev.id]
-                ):
-                    blocked.append(candidate_id)
-                else:
-                    has_parent = True
-                    break
-
-            if has_parent or not blocked:
-                continue
-
-            # All physically eligible parents are blocked members at this dead end.
-            total_candidate_energy = sum(residual_e[i] for i in blocked)
-
-            def relay_cost(candidate_id):
-                energy_cost = total_candidate_energy / max(residual_e[candidate_id], 1e-12)
-                distance_cost = (
-                    self.network.dist_matrix[node_id][candidate_id] ** 2
-                    + base_dists[candidate_id] ** 2
-                ) / max(distance_to_base**2, 1e-12)
-                factor = self.parameters.hopping_factor
-                return factor * energy_cost + (1 - factor) * distance_cost
-
-            member_id = min(blocked, key=relay_cost)
-            member = nodes.pop(member_id)
-            # set_previous does not remove the old parent's child link.
-            member.prev.nxts.remove(member)
-            member.set_previous(None)
-            outliers.append(member_id)
-            pending.append(member_id)
 
     def _evaluate(
         self,
@@ -325,9 +267,9 @@ class ACACOOptimizer:
             self.network.radius,
         )
 
-        self._prepare_clusters_for_routing(ch_nodes, nodes, outliers, live, residual_e)
+        # self._prepare_clusters_for_routing(ch_nodes, nodes, outliers, live, residual_e)
 
-        root = multi_hop_routing(
+        root = dropping_member_multi_hop_routing(
             ch_nodes,
             nodes,
             live,
