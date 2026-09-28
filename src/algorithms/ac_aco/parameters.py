@@ -7,9 +7,9 @@ from typing import Optional
 class ACACOParameters:
     """AC-ACO controls; names separate pheromone and chaos weights."""
 
-    num_ants: int = 10
+    num_ants: int = 20
     num_iterations: int = 5
-    ch_proportion: float = 0.10
+    ch_proportion: float = 0.20
     pheromone_exponent: float = 1.0
     energy_cost_exponent: float = 0.10
     beta_min: float = 1.0

@@ -11,25 +11,26 @@ def initial_chaos(count, seed, r):
 
 
 def update_pheromone(pheromone, chaos, live_nodes, parameters, rho, strength, path):
-    """Apply Eq. (12) once, then deposit Q/Lk on the iteration-best path."""
+    """Bound the complete Eq. (12), using Q/energy on the round-best path."""
+    if path is None or path.cost <= 0:
+        deposit = 0.0
+        reinforced_edges = set()
+    else:
+        deposit = parameters.Q / max(path.cost, 1e-12)
+        reinforced_edges = set(zip(path.cluster_heads, path.cluster_heads[1:]))
+
     for source in live_nodes:
         disturbance = strength * chaos[source]
         for target in live_nodes:
             if source == target:
                 continue
             pheromone[source][target] = _bounded(
-                (1.0 - rho) * pheromone[source][target] + disturbance,
+                (1.0 - rho) * pheromone[source][target]
+                + (deposit if (source, target) in reinforced_edges else 0.0)
+                + disturbance,
                 parameters,
             )
         chaos[source] = logistic_step(chaos[source], parameters.chaos_r)
-
-    if path is None or path.path_length <= 0:
-        return
-    deposit = parameters.Q / path.path_length
-    for source, target in zip(path.cluster_heads, path.cluster_heads[1:]):
-        pheromone[source][target] = _bounded(
-            pheromone[source][target] + deposit, parameters
-        )
 
 
 def _bounded(value, parameters):

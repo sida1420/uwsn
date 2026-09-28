@@ -107,3 +107,87 @@ def multi_hop_routing(
         parent.add_next(node)
 
     return base
+def dropping_member_multi_hop_routing(
+    CH_nodes,
+    nodes,
+    live_sensors,
+    outliers,
+    dist_matrix,
+    base_dists,
+    residual_e,
+    radius,
+    hopping_factor=0.4,
+):
+    """
+    Greedy multi-hop routing that can drop one blocked cluster member out
+    of its cluster when a routing node has no usable parent.
+
+    Returns the base Node (id=-1), or None if some node has no parent even
+    after a drop.
+    """
+    base = Node(-1)
+
+    outlier_nodes = {oid: Node(oid) for oid in outliers}
+    nodes = {**nodes, **outlier_nodes}                   # local copy
+    routing_ids = set(CH_nodes) | set(outlier_nodes)     # never droppable
+
+    def is_blocked(candidate, distance_to_base):
+        return (
+            not candidate.isCH
+            and candidate.prev is not None
+            and candidate.prev.isCH
+            and distance_to_base <= base_dists[candidate.prev.id]
+        )
+
+    def cheapest(node_id, distance_to_base, pool):
+        if len(pool) == 1:
+            return pool[0]
+        total_energy = sum(residual_e[c] for c in pool)
+        d2 = max(distance_to_base ** 2, 1e-12)
+
+        def cost(c):
+            energy_cost = total_energy / max(residual_e[c], 1e-12)
+            distance_cost = (dist_matrix[node_id][c] ** 2 + base_dists[c] ** 2) / d2
+            return hopping_factor * energy_cost + (1 - hopping_factor) * distance_cost
+
+        return min(pool, key=cost)
+
+    queue = list((CH_nodes | outlier_nodes).items())     # dropped members get appended
+
+    for node_id, node in queue:
+        distance_to_base = base_dists[node_id]
+        if distance_to_base <= radius:
+            node.set_previous(base)
+            base.add_next(node)
+            continue
+
+        candidates, droppable = [], []
+        row = dist_matrix[node_id]
+        for c in live_sensors:
+            if c == node_id or row[c] > radius:
+                continue
+            if base_dists[c] > distance_to_base or residual_e[c] <= 0:
+                continue
+            if not is_blocked(nodes[c], distance_to_base):
+                candidates.append(c)
+            elif c not in routing_ids:
+                droppable.append(c)
+
+        if not candidates:
+            if not droppable:
+                return None
+            member_id = cheapest(node_id, distance_to_base, droppable)
+            member = nodes[member_id]
+            member.prev.nxts.remove(member)   # set_previous doesn't unlink the old parent
+            member.set_previous(None)
+            routing_ids.add(member_id)
+            queue.append((member_id, member))
+            candidates = [member_id]          # only unblocked eligible parent now
+
+        parent_id = cheapest(node_id, distance_to_base, candidates)
+        parent = nodes[parent_id]
+        parent.isRelay = True
+        node.set_previous(parent)
+        parent.add_next(node)
+
+    return base
