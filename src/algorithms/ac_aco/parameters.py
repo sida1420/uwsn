@@ -7,8 +7,9 @@ from typing import Optional
 class ACACOParameters:
     """AC-ACO controls; names separate pheromone and chaos weights."""
 
-    num_ants: int = 20
-    num_iterations: int = 5
+    num_ants: int = 40
+    max_clustering_attempts: int = 10  # max attempts to build a feasible clustering tree
+
     ch_proportion: float = 0.20
     pheromone_exponent: float = 1.0
     energy_cost_exponent: float = 1 ##
@@ -30,7 +31,6 @@ class ACACOParameters:
 
     def __post_init__(self):
         self._positive_integer("num_ants", self.num_ants)
-        self._positive_integer("num_iterations", self.num_iterations)
         if not 0 < self.ch_proportion <= 1:
             raise ValueError("ch_proportion must be in (0, 1]")
         self._bounds("rho", self.rho_min, self.rho_max, strict_low=True, upper=1)

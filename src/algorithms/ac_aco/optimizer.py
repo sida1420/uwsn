@@ -88,7 +88,7 @@ class ACACOOptimizer:
 
         candidates = []
         for _ in range(self.parameters.num_ants):
-            for _attempt in range(20):
+            for _attempt in range(self.parameters.max_clustering_attempts):
                 cluster_heads = self._construct_candidate(
                     live, residual_e, target, beta, strength,
                 )
