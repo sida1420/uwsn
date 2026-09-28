@@ -31,6 +31,7 @@ class ACACOOptimizer:
         self.network = network
         self.parameters = parameters
         self.evaluator = Evaluator(hparameters)
+        self.total_iterations = hparameters.T_max
 
         self.rng = random.Random(parameters.random_seed)
 
@@ -42,7 +43,15 @@ class ACACOOptimizer:
             parameters.chaos_r,
         )
 
+        # Simulator.run -> plan_round -> optimize occurs once per network round.
+        # Keep one-based schedule state for this optimizer's simulation run.
+        self.iteration = 0
+        self.previous_cost = None
+        self.lower_cost = None
+        self.upper_cost = None
+
     def optimize(self, live_nodes, residual_e):
+        self.iteration += 1
         live = tuple(node_id for node_id in live_nodes if residual_e[node_id] > 0)
 
         if not live:
@@ -56,104 +65,78 @@ class ACACOOptimizer:
             ),
         )
 
-        best_global = None
+        rho = evaporation_rate(
+            self.iteration,
+            self.total_iterations,
+            self.parameters.rho_min,
+            self.parameters.rho_max,
+        )
+        beta = heuristic_weight(
+            self.iteration,
+            self.total_iterations,
+            self.parameters.beta_min,
+            self.parameters.beta_max,
+            self.parameters.beta_slope,
+        )
+        strength = chaos_strength(
+            self.previous_cost,
+            self.lower_cost,
+            self.upper_cost,
+            self.parameters.chaos_min,
+            self.parameters.chaos_max,
+        )
 
-        # Lưu các cost hợp lệ đã tìm thấy.
-        seen_costs = []
-
-        # Cost tốt nhất của iteration ngay trước.
-        previous_cost = None
-
-        for iteration in range(
-            1,
-            self.parameters.num_iterations + 1,
-        ):
-            rho = evaporation_rate(
-                iteration,
-                self.parameters.num_iterations,
-                self.parameters.rho_min,
-                self.parameters.rho_max,
-            )
-
-            beta = heuristic_weight(
-                iteration,
-                self.parameters.num_iterations,
-                self.parameters.beta_min,
-                self.parameters.beta_max,
-                self.parameters.beta_slope,
-            )
-
-            strength = chaos_strength(
-                previous_cost,
-                min(seen_costs, default=None),
-                max(seen_costs, default=None),
-                self.parameters.chaos_min,
-                self.parameters.chaos_max,
-            )
-
-            candidates = []
-
-            # Mỗi ant tạo một candidate solution.
-            for _ in range(self.parameters.num_ants):
+        candidates = []
+        for _ in range(self.parameters.num_ants):
+            for _attempt in range(20):
                 cluster_heads = self._construct_candidate(
-                    live,
-                    residual_e,
-                    target,
-                    beta,
-                    strength,
+                    live, residual_e, target, beta, strength,
                 )
+                solution = self._evaluate(cluster_heads, live, residual_e, target)
+                if solution is None:
+                    continue
+                candidates.append(solution)
+                break
 
-                solution = self._evaluate(
-                    cluster_heads,
-                    live,
-                    residual_e,
-                    target,
-                )
+        best_iteration = min(
+            candidates,
+            key=lambda item: (item.cost, item.cluster_heads),
+            default=None,
+        )
+        if candidates:
+            round_low = min(solution.cost for solution in candidates)
+            round_high = max(solution.cost for solution in candidates)
+            self.lower_cost = round_low if self.lower_cost is None else min(self.lower_cost, round_low)
+            self.upper_cost = round_high if self.upper_cost is None else max(self.upper_cost, round_high)
+        self.previous_cost = best_iteration.cost if best_iteration is not None else None
 
-                if solution is not None:
-                    candidates.append(solution)
+        update_pheromone(
+            self.pheromone,
+            self.chaos,
+            live,
+            self.parameters,
+            rho,
+            strength,
+            best_iteration,
+        )
 
-            # Best solution của iteration hiện tại.
-            best_iteration = min(
-                candidates,
-                key=lambda item: (
-                    item.cost,
-                    item.cluster_heads,
-                ),
-                default=None,
+        if self.iteration == 1 or self.iteration % 100 == 0 or best_iteration is None:
+            values = [
+                self.pheromone[source][target]
+                for source in live for target in live if source != target
+            ] or [self.pheromone[live[0]][live[0]]]
+            best_energy = f"{best_iteration.cost:.6g}" if best_iteration is not None else "None"
+            print(
+                f"[AC-ACO DEBUG] iter={self.iteration} "
+                f"alpha={self.parameters.pheromone_exponent:.6g} beta={beta:.6g} "
+                f"gamma={self.parameters.energy_cost_exponent:.6g} rho={rho:.6g} "
+                f"chaos={strength:.6g} ants={self.parameters.num_ants} ch={target} "
+                f"feasible={len(candidates)} best_energy={best_energy} "
+                f"tau_min={min(values):.6g} tau_max={max(values):.6g} "
+                f"tau_mean={sum(values) / len(values):.6g}"
             )
 
-            # Lưu tất cả candidate cost hợp lệ.
-            seen_costs.extend(solution.cost for solution in candidates)
-
-            # Update global best.
-            if best_iteration is not None:
-                if best_global is None or (
-                    best_iteration.cost,
-                    best_iteration.cluster_heads,
-                ) < (
-                    best_global.cost,
-                    best_global.cluster_heads,
-                ):
-                    best_global = best_iteration
-
-            # Quan trọng:
-            # Nếu iteration này không tìm được solution,
-            # iteration sau phải nhận previous_cost = None.
-            previous_cost = best_iteration.cost if best_iteration is not None else None
-
-            # Update pheromone một lần sau mỗi iteration.
-            update_pheromone(
-                self.pheromone,
-                self.chaos,
-                live,
-                self.parameters,
-                rho,
-                strength,
-                best_iteration,
-            )
-
-        return best_global
+        return best_iteration
 
     def _construct_candidate(
         self,
@@ -269,6 +252,65 @@ class ACACOOptimizer:
 
         return [weight / total for weight in weights]
 
+    def _prepare_clusters_for_routing(self, ch_nodes, nodes, outliers, live, residual_e):
+        """Release one blocked relay only when a routing node has no usable parent."""
+        base_dists = self.network.base_dists
+        # Match shared routing order; appended releases also need routing support.
+        pending = list(ch_nodes) + list(outliers)
+        for node_id in pending:
+            distance_to_base = base_dists[node_id]
+            if distance_to_base <= self.network.radius:
+                continue
+
+            blocked = []
+            has_parent = False
+            for candidate_id in live:
+                if candidate_id == node_id:
+                    continue
+                if self.network.dist_matrix[node_id][candidate_id] > self.network.radius:
+                    continue
+                if base_dists[candidate_id] > distance_to_base:
+                    continue
+                if residual_e[candidate_id] <= 0:
+                    continue
+
+                # Outliers are absent here; shared routing creates their Nodes.
+                candidate = nodes.get(candidate_id)
+                if (
+                    candidate is not None
+                    and not candidate.isCH
+                    and candidate.prev is not None
+                    and candidate.prev.isCH
+                    and distance_to_base <= base_dists[candidate.prev.id]
+                ):
+                    blocked.append(candidate_id)
+                else:
+                    has_parent = True
+                    break
+
+            if has_parent or not blocked:
+                continue
+
+            # All physically eligible parents are blocked members at this dead end.
+            total_candidate_energy = sum(residual_e[i] for i in blocked)
+
+            def relay_cost(candidate_id):
+                energy_cost = total_candidate_energy / max(residual_e[candidate_id], 1e-12)
+                distance_cost = (
+                    self.network.dist_matrix[node_id][candidate_id] ** 2
+                    + base_dists[candidate_id] ** 2
+                ) / max(distance_to_base**2, 1e-12)
+                factor = self.parameters.hopping_factor
+                return factor * energy_cost + (1 - factor) * distance_cost
+
+            member_id = min(blocked, key=relay_cost)
+            member = nodes.pop(member_id)
+            # set_previous does not remove the old parent's child link.
+            member.prev.nxts.remove(member)
+            member.set_previous(None)
+            outliers.append(member_id)
+            pending.append(member_id)
+
     def _evaluate(
         self,
         cluster_heads,
@@ -283,6 +325,8 @@ class ACACOOptimizer:
             self.network.radius,
         )
 
+        self._prepare_clusters_for_routing(ch_nodes, nodes, outliers, live, residual_e)
+
         root = multi_hop_routing(
             ch_nodes,
             nodes,
@@ -295,7 +339,7 @@ class ACACOOptimizer:
             self.parameters.hopping_factor,
         )
 
-        if not self._valid_tree(root, live):
+        if root is None:
             return None
 
         _, cost = self.evaluator.energy_consumption(
@@ -325,51 +369,3 @@ class ACACOOptimizer:
             path_length,
             target,
         )
-
-    def _valid_tree(self, root, live):
-        if root is None or root.id != -1:
-            return False
-
-        expected = set(live)
-
-        found = set()
-        visiting = set()
-
-        def visit(node):
-            if node.id != -1:
-                if node.id not in expected or node.id in found or node.id in visiting:
-                    return False
-
-                found.add(node.id)
-
-                parent = node.prev
-
-                # Tránh AttributeError nếu routing tạo node
-                # chưa có parent.
-                if parent is None:
-                    return False
-
-                if parent.id == -1:
-                    distance = self.network.base_dists[node.id]
-                else:
-                    distance = self.network.dist_matrix[node.id][parent.id]
-
-                if distance > self.network.radius:
-                    return False
-
-            visiting.add(node.id)
-
-            for child in node.nxts:
-                if child.prev is not node:
-                    visiting.remove(node.id)
-                    return False
-
-                if not visit(child):
-                    visiting.remove(node.id)
-                    return False
-
-            visiting.remove(node.id)
-
-            return True
-
-        return visit(root) and found == expected

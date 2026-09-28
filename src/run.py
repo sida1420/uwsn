@@ -14,7 +14,7 @@ from simulate import Simulator
 from algorithms.aco.simple_aco import SimpleACO
 from algorithms.pso.pso import PSOClustering
 from algorithms.ac_aco import ACACOClustering, ACACOParameters
-
+import random
 
 ALGORITHMS = [
     ACACOClustering,

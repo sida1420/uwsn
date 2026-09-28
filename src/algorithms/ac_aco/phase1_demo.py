@@ -9,8 +9,8 @@ def main():
     parser = argparse.ArgumentParser(description="Run one AC-ACO routing plan")
     parser.add_argument("--map", default="map.pkl", help="Network pickle path")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--ants", type=int, default=10)
-    parser.add_argument("--iterations", type=int, default=5)
+    parser.add_argument("--ants", type=int, default=20)
+    parser.add_argument("--iterations", type=int, default=5, help="Legacy inner-iteration count (unused)")
     args = parser.parse_args()
 
     network = NetworkInstance.from_pickle(args.map)
@@ -27,7 +27,7 @@ def main():
     if solution is None:
         print("No feasible AC-ACO routing solution found.")
         return 1
-    print(f"candidate evaluations: {params.num_ants * params.num_iterations}")
+    print(f"candidate evaluations: {params.num_ants}")
     print(f"target CHs: {solution.target_head_count}")
     print(f"selected CHs: {len(solution.cluster_heads)}")
     print(f"acoustic round energy: {solution.cost:.6f}")
