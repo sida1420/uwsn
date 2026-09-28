@@ -11,14 +11,14 @@ class ACACOParameters:
     num_iterations: int = 5
     ch_proportion: float = 0.20
     pheromone_exponent: float = 1.0
-    energy_cost_exponent: float = 0.10
+    energy_cost_exponent: float = 1 ##
     beta_min: float = 1.0
     beta_max: float = 5.0
     beta_slope: float = 5.0
     rho_min: float = 0.10
     rho_max: float = 0.90
-    chaos_min: float = 0.05
-    chaos_max: float = 0.30
+    chaos_min: float = 0.05 ##
+    chaos_max: float = 0.30 ##
     chaos_r: float = 3.61
     chaos_seed: float = 0.37
     Q: float = 100.0

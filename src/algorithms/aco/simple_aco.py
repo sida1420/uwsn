@@ -2,7 +2,7 @@ import random
 
 from algorithms.base import ClusteringAlgorithm
 from algorithms.aco.aco_parameters import ACOParameters
-from algorithms.routing import multi_hop_routing
+from algorithms.routing import multi_hop_routing, dropping_member_multi_hop_routing
 from algorithms.clustering import build_clusters
 from evaluate import Evaluator
 
@@ -76,7 +76,7 @@ class SimpleACO(ClusteringAlgorithm):
                     self.failed_clustering_attempts+=1
                     continue
                 self.total_routing_attempts+=1
-                root = multi_hop_routing(
+                root = dropping_member_multi_hop_routing(
                     CH_nodes,
                     nodes,
                     live_sensors,

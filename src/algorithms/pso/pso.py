@@ -2,7 +2,7 @@ import random
 
 from algorithms.base import ClusteringAlgorithm
 from algorithms.clustering import build_clusters
-from algorithms.routing import multi_hop_routing
+from algorithms.routing import multi_hop_routing, dropping_member_multi_hop_routing
 from algorithms.pso.pso_parameters import PSOParameters
 from evaluate import Evaluator
 
@@ -168,7 +168,7 @@ class PSOClustering(ClusteringAlgorithm):
         
         if CHs is not None:
             self.total_routing_attempts+=1
-            root = multi_hop_routing(
+            root = dropping_member_multi_hop_routing(
                 CH_nodes,
                 nodes,
                 live_nodes,
