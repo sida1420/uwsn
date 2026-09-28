@@ -158,30 +158,38 @@ class PSOClustering(ClusteringAlgorithm):
         return [candidates[index] for index in ranked[:num_CHs]]
 
     def _evaluate(self, CHs, live_nodes, residual_e):
+        self.total_clustering_attempts+=1
         CH_nodes, nodes, outliers = build_clusters(
             CHs,
             live_nodes,
             self.network.dist_matrix,
             self.network.radius,
         )
-        root = multi_hop_routing(
-            CH_nodes,
-            nodes,
-            live_nodes,
-            outliers,
-            self.network.dist_matrix,
-            self.network.base_dists,
-            residual_e,
-            self.network.radius,
-            self.params.hopping_factor,
-        )
-        if root is not None:
-            _, cost = self.evaluator.energy_consumption(
-                root,
+        
+        if CHs is not None:
+            self.total_routing_attempts+=1
+            root = multi_hop_routing(
+                CH_nodes,
+                nodes,
+                live_nodes,
+                outliers,
                 self.network.dist_matrix,
                 self.network.base_dists,
+                residual_e,
+                self.network.radius,
+                self.params.hopping_factor,
             )
-            return root, cost
+            if root is not None:
+                _, cost = self.evaluator.energy_consumption(
+                    root,
+                    self.network.dist_matrix,
+                    self.network.base_dists,
+                )
+                return root, cost
+            else:
+                self.failed_routing_attempts+=1
+        else:
+            self.failed_clustering_attempts+=1
 
         # Penalize both uncovered sensors and CHs that lack a shorter hop
         # toward the base. This gives the swarm useful direction even before
