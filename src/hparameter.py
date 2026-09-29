@@ -7,7 +7,7 @@ class HyperParameters:
     """
 
     def __init__(self):
-        self.T_max = 350  # max number of simulation rounds (network lifetime)
+        self.T_max = 3000  # max number of simulation rounds (network lifetime)
         self.P_0 = 0.1  # control bit sent to check communication first
         self.E_elec = 5 * 1e-8
         self.E_integrate = 5 * 1e-9

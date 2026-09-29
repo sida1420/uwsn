@@ -56,7 +56,7 @@ def main(map_path="map.pkl"):
         history = simulator.run(algorithm)
 
         history.to_csv(
-            f"results_{algorithm.name}.csv",
+            f"runs/results_{algorithm.name}.csv",
             index=False,
         )
 
