@@ -121,6 +121,5 @@ Khoảng cách trong map dùng mét, nhưng attenuation đổi sang kilomet: `d_
 - SimpleACO và PSO chưa đặt seed, nên benchmark không tái lập hoàn toàn.
 - Map mặc định có thể dừng ngay round 0 do không tìm được route multi-hop hợp lệ.
 - Chưa có dependency manifest, CLI hay file cấu hình ngoài mã nguồn.
-- Gói dữ liệu CH không tăng theo số member; `E_da` chỉ tính một lần cho CH.
 - Ở round cuối, `round_energy` có thể lớn hơn năng lượng còn lại trước round vì chi phí được tính toàn bộ rồi năng lượng được chặn về 0.
 - `rounds_survived = len(history)` không cho biết lý do dừng (hết node, hết route hay đạt `T_max`).
