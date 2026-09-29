@@ -2,8 +2,8 @@ class PSOParameters:
     """Hyperparameters for particle-swarm cluster-head selection."""
 
     def __init__(self):
-        self.swarm_size = 15
-        self.iterations = 10
+        self.swarm_size = 20
+        self.iterations = 20
         self.early_stopping_patience = 3
         # Fraction of the worst particles discarded after each simulation
         # round. Their slots are filled by random particles next round.
