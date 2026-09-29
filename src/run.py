@@ -7,7 +7,7 @@ To try a new algorithm in the future: subclass Algorithm
 nothing else in this file needs to change (unless it needs extra
 constructor arguments, see create_algorithm).
 """
-
+from datetime import datetime
 import random
 
 from hparameter import HyperParameters
@@ -55,8 +55,11 @@ def main(map_path="map.pkl"):
 
         history = simulator.run(algorithm)
 
+        now = datetime.now()
+        datetime_string = now.strftime("%Y%m%d%H")
+
         history.to_csv(
-            f"runs/results_{algorithm.name}.csv",
+            f"runs/{datetime_string}_{SEED}_{algorithm.name}.csv",
             index=False,
         )
 
