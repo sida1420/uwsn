@@ -109,7 +109,12 @@ class PSO(Algorithm):
                 continue
 
             for particle in particles:
-                self.clustering.move(particle, global_best_position)
+                self.clustering.move(
+                    particle,
+                    global_best_position,
+                    iteration,
+                    self.params.iterations,
+                )
 
         # Always let the swarm retain its survivors, even if this round failed.
         self.clustering.post_round(
@@ -159,4 +164,15 @@ class PSO(Algorithm):
             self.network.dist_matrix,
             self.network.base_dists,
         )
-        return root, consumption, cost
+        return root, consumption, self._lifetime_score(cost, consumption, residual_e)
+
+    def _lifetime_score(self, total_cost, consumption, residual_e):
+        """Balance total energy against the most endangered sensor."""
+        if not consumption:
+            return float("inf")
+
+        max_depletion = max(
+            energy / max(residual_e[node_id], 1e-12)
+            for node_id, energy in consumption.items()
+        )
+        return total_cost + self.params.depletion_weight * max_depletion
