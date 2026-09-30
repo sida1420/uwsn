@@ -26,7 +26,6 @@ htmlcov/
 Thumbs.db
 
 # Generated simulation output
-runs/
 *.csv
 
 configurations/
