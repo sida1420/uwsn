@@ -79,7 +79,7 @@ def multi_hop_routing(
             if dist_matrix[id][candidate_id] > radius:
                 continue
                 
-            if base_dists[candidate_id] > distance_to_base:
+            if base_dists[candidate_id] >= distance_to_base:
                 continue
             if residual_e[candidate_id] <= 0:
                 continue
@@ -166,7 +166,7 @@ def dropping_member_multi_hop_routing(
         for c in live_sensors:
             if c == node_id or row[c] > radius:
                 continue
-            if base_dists[c] > distance_to_base or residual_e[c] <= 0:
+            if base_dists[c] >= distance_to_base or residual_e[c] <= 0:
                 continue
             if not is_blocked(nodes[c], distance_to_base):
                 candidates.append(c)
