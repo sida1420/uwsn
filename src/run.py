@@ -9,6 +9,7 @@ constructor arguments, see create_algorithm).
 """
 from datetime import datetime
 import random
+import os
 
 from hparameter import HyperParameters
 from network import NetworkInstance
@@ -35,10 +36,14 @@ def create_algorithm(algo_cls, network, hparameters):
 
 
 def main(map_path="map.pkl"):
+
+
     network = NetworkInstance.from_pickle(map_path)
     hparameters = HyperParameters()
 
     results = {}
+
+    os.makedirs("runs", exist_ok=True)
 
     for algo_cls in ALGORITHMS:
         # SimpleACO (and later PSO) draw from the global RNG; reseed so each
@@ -57,6 +62,8 @@ def main(map_path="map.pkl"):
 
         now = datetime.now()
         datetime_string = now.strftime("%Y%m%d%H")
+
+        
 
         history.to_csv(
             f"runs/{datetime_string}_{SEED}_{algorithm.name}.csv",
