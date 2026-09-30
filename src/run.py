@@ -43,7 +43,7 @@ def main(map_path="map.pkl"):
 
     results = {}
 
-    os.makedirs("../runs", exist_ok=True)
+    os.makedirs("runs", exist_ok=True)
 
     for algo_cls in ALGORITHMS:
         # SimpleACO (and later PSO) draw from the global RNG; reseed so each
