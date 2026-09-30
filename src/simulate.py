@@ -5,13 +5,18 @@ from evaluate import Evaluator
 from visual import Visual
 class Simulator:
     """
-    Runs a ClusteringAlgorithm round by round on a NetworkInstance until
-    either every node has died or hparameters.T_max rounds have passed,
-    tracking residual energy and how many nodes stay alive.
+    Runs an Algorithm round by round on a NetworkInstance until either
+    every node has died, no feasible routing is found, or
+    hparameters.T_max rounds have passed, tracking residual energy and
+    how many nodes stay alive.
 
     Each call to run() gives the algorithm a fresh copy of residual
     energy, so multiple algorithms can be compared fairly on the same
     network (see run.py).
+
+    Algorithm.plan_round returns (root, consumption); the Evaluator is
+    only used as a fallback when an algorithm returns a tree without its
+    per-node consumption.
     """
 
     def __init__(self, network, hparameters):
@@ -26,16 +31,18 @@ class Simulator:
         history = []
 
         for t in range(self.hparameters.T_max):
-            # print(residual_e)
-            root = algorithm.plan_round(live_nodes, residual_e)
+            root, consumption = algorithm.plan_round(live_nodes, residual_e)
             if root is None:
                 if verbose:
                     print(f"[{algorithm.name}] round {t}: no feasible routing found, stopping")
                 break
 
-            consumption, total = self.evaluator.energy_consumption(
-                root, self.network.dist_matrix, self.network.base_dists
-            )
+            if consumption:
+                total = sum(consumption.values())
+            else:
+                consumption, total = self.evaluator.energy_consumption(
+                    root, self.network.dist_matrix, self.network.base_dists
+                )
 
             if total <= 0:
                 self.visualizer.clear_routes()
@@ -57,7 +64,7 @@ class Simulator:
 
             if verbose and t % 100 == 0:
                 print(f"[{algorithm.name}] round {t}: {len(live_nodes)} alive, "
-                      f"energy used this round {total}")
+                      f"energy used this round {total:.6f}")
 
             if not live_nodes:
                 if verbose:

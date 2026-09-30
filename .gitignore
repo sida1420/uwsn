@@ -26,7 +26,8 @@ htmlcov/
 Thumbs.db
 
 # Generated simulation output
-results_*.csv
+*.csv
+
 configurations/
 map.pkl
 map_3d.svg

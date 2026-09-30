@@ -1,17 +1,20 @@
-from dataclasses import dataclass
-from math import isfinite
-from typing import Optional
 
+from dataclasses import dataclass
+from math import exp, isfinite, log
+# --------------------------------------------------------------------------
+# Parameters
+# --------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class ACACOParameters:
     """AC-ACO controls; names separate pheromone and chaos weights."""
 
-    num_ants: int = 20
-    num_iterations: int = 5
+    num_ants: int = 40
+    max_clustering_attempts: int = 10  # attempts per ant to build a feasible tree
+
     ch_proportion: float = 0.20
-    pheromone_exponent: float = 1.0
-    energy_cost_exponent: float = 0.10
+    pheromone_exponent: float = 1.0  # "alpha" on tau
+    energy_cost_exponent: float = 1.0  # "gamma" on 1 / E_m
     beta_min: float = 1.0
     beta_max: float = 5.0
     beta_slope: float = 5.0
@@ -26,11 +29,10 @@ class ACACOParameters:
     tau_min: float = 0.10
     tau_max: float = 10.0
     hopping_factor: float = 0.40
-    random_seed: Optional[int] = 42
 
     def __post_init__(self):
         self._positive_integer("num_ants", self.num_ants)
-        self._positive_integer("num_iterations", self.num_iterations)
+        self._positive_integer("max_clustering_attempts", self.max_clustering_attempts)
         if not 0 < self.ch_proportion <= 1:
             raise ValueError("ch_proportion must be in (0, 1]")
         self._bounds("rho", self.rho_min, self.rho_max, strict_low=True, upper=1)
@@ -51,10 +53,6 @@ class ACACOParameters:
             raise ValueError("Q must be finite and > 0")
         if not self.tau_min <= self.tau0 <= self.tau_max:
             raise ValueError("tau0 must be in [tau_min, tau_max]")
-        if self.random_seed is not None and (
-            isinstance(self.random_seed, bool) or not isinstance(self.random_seed, int)
-        ):
-            raise ValueError("random_seed must be an integer or None")
 
     @staticmethod
     def _positive_integer(name, value):

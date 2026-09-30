@@ -1,19 +1,17 @@
 import random
 
-from algorithms.base import ClusteringAlgorithm
-from algorithms.aco.aco_parameters import ACOParameters
-from algorithms.routing import multi_hop_routing
+from algorithms.base.base import ClusteringAlgorithm
+from algorithms.clustering.aco.parameters import ACOParameters
 from algorithms.clustering import build_clusters
 from evaluate import Evaluator
 
 
-class SimpleACO(ClusteringAlgorithm):
+class ACOClustering(ClusteringAlgorithm):
     """
-    Plain Ant Colony Optimization for cluster-head selection, paired
-    with multi-hop clustering: sensors -> nearest CH -> relay CHs -> base
-    station. Unlike the earlier AC-ACO version, there's no chaos term
-    and no adaptive schedule -- pheromone evaporates at a constant rate
-    and alpha/beta/gamma/CH-proportion stay fixed for the whole run.
+    Plain Ant Colony Optimization for cluster-head selection. Unlike the
+    earlier AC-ACO version, there's no chaos term and no adaptive
+    schedule -- pheromone evaporates at a constant rate and
+    alpha/beta/gamma/CH-proportion stay fixed for the whole run.
 
     CH selection is a *path*, not an independent pick per node: each ant
     starts at a random live node and walks node-to-node, picking the
@@ -22,16 +20,13 @@ class SimpleACO(ClusteringAlgorithm):
     across -- the same three factors as the old AC-ACO's make_path,
     just without the chaos term.
 
-    Each round:
-      1. `num_ants` ants each start from a distinct random live node and
-         walk out a CH path, edge by edge.
-      2. Every candidate CH path is turned into a routing tree and
-         scored by Evaluator.energy_consumption.
-      3. The best tree found this round is returned, and pheromone is
-         deposited along the edges of its CH path.
+    Round lifecycle (driven by the SimpleACO algorithm):
+      pre_round      -> pick `num_ants` distinct random start nodes
+      create_clusters-> one ant walk (CH path) + build_clusters
+      post_round     -> evaporate pheromone, deposit along best CH path
     """
 
-    name = "SimpleACO"
+    name = "ACOClustering"
 
     def __init__(self, network, hparameters, aco_params: ACOParameters = None):
         super().__init__(network, hparameters)
@@ -53,59 +48,24 @@ class SimpleACO(ClusteringAlgorithm):
                     cost = self.evaluator.E_m(self.network.dist_matrix[i][j])
                     self.E_m_heuristic[i][j] = (1 / cost) ** self.params.beta
 
-    def plan_round(self, live_sensors, residual_e):
-        best_root, best_CHs, best_cost = None, None, float("inf")
+    def pre_round(self, live_sensors, residual_e):
+        return random.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
 
-        starts = random.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
+    def create_clusters(self, live_sensors, residual_e, start):
+        """
+        One clustering attempt for one ant.
 
-        for start in starts:
-
-            root = None
-            CHs= None
-            for _ in range(self.params.max_clustering_attempts):
-            # for _ in range(10):  # temp fix
-                CHs = self._make_path(live_sensors, residual_e, start)
-                self.total_clustering_attempts+=1
-
-                if CHs is None:
-                    self.failed_clustering_attempts+=1
-                    break
-
-                CH_nodes, nodes, outliers = build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
-                if CH_nodes is None:
-                    self.failed_clustering_attempts+=1
-                    continue
-                self.total_routing_attempts+=1
-                root = multi_hop_routing(
-                    CH_nodes,
-                    nodes,
-                    live_sensors,
-                    outliers,
-                    self.network.dist_matrix,
-                    self.network.base_dists,
-                    residual_e,
-                    self.network.radius,
-                    self.params.hopping_factor,
-                )
-                if root is not None:
-                    break
-
-            if root is None:
-                self.failed_routing_attempts+=1
-                continue
-
-            _, cost = self.evaluator.energy_consumption(
-                root, self.network.dist_matrix, self.network.base_dists
-            )
-
-            if cost < best_cost:
-                best_root, best_CHs, best_cost = root, CHs, cost
-
-        if best_root is None:
+        Returns (CH_nodes, nodes, outliers), or None if the ant could not
+        build a CH path. The CH path order is the key order of CH_nodes.
+        """
+        CHs = self._make_path(live_sensors, residual_e, start)
+        if CHs is None:
             return None
 
-        self._update_pheromone(best_CHs, best_cost)
-        return best_root
+        return build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
+
+    def post_round(self, live_sensors, residual_e, consumption, CH_list):
+        self._update_pheromone(CH_list, sum(consumption.values()))
 
     def _make_path(self, live_nodes, residual_e, start_node):
         """
@@ -137,8 +97,6 @@ class SimpleACO(ClusteringAlgorithm):
             curr = random.choices(allowed, weights=weights, k=1)[0]
             CH_list.append(curr)
             CH_set.add(curr)
-
-        
 
         return CH_list
 
