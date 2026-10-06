@@ -110,10 +110,12 @@ tau(i, j) <- clamp( (1 - rho) * tau(i, j)
                     tau_min, tau_max )
 ```
 
-`cost` is the total energy of the winning routing tree. Then `chaos[i]`
-advances by one logistic step for each live `i`. If every ant failed, there is
-no deposit, but evaporation and chaos still apply. Relay and outlier edges are
-never reinforced, because ants only choose the CH path.
+`cost` is the total energy of the winning routing tree. Each successful ant
+also deposits `Q / (cost * num_ants)` immediately after its route is scored.
+Then `chaos[i]` advances by one logistic step for each live `i`. If every ant
+failed, there is no per-ant deposit, but evaporation and chaos still apply.
+Relay and outlier edges are never reinforced, because ants only choose the CH
+path.
 
 ## Usage
 

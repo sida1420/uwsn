@@ -171,7 +171,9 @@ class ACACOClustering(ClusteringAlgorithm):
             self.upper_cost = round_high if self.upper_cost is None else max(self.upper_cost, round_high)
         self.previous_cost = best_cost
 
-        self._update_pheromone(state, CH_list, best_cost)
+        self._update_pheromone(state)
+        if CH_list is not None:
+            self.deposit(CH_list, best_cost, per_ant=False)
 
         if self.iteration == 1 or self.iteration % 100 == 0 or best_cost is None:
             live = state.live
@@ -238,15 +240,21 @@ class ACACOClustering(ClusteringAlgorithm):
 
     # ---- pheromone -------------------------------------------------------
 
-    def _update_pheromone(self, state, CH_list, cost):
-        """Bounded Eq. (12): evaporation + Q/cost on the best CH path + chaos."""
+    def deposit(self, CH_list, cost, per_ant=True):
+        """Deposit pheromone for a successful route."""
+        if not CH_list or cost is None or cost <= 0:
+            return
+
+        amount = self.params.Q / cost
+        if per_ant:
+            amount /= self.params.num_ants
+
+        for source, target in zip(CH_list, CH_list[1:]):
+            self.pheromone[source][target] += amount
+
+    def _update_pheromone(self, state):
+        """Apply evaporation and chaos without adding any pheromone deposit."""
         p = self.params
-        if CH_list is None or cost is None or cost <= 0:
-            deposit = 0.0
-            reinforced = set()
-        else:
-            deposit = p.Q / max(cost, 1e-12)
-            reinforced = set(zip(CH_list, CH_list[1:]))
 
         for source in state.live:
             disturbance = state.strength * self.chaos[source]
@@ -255,7 +263,6 @@ class ACACOClustering(ClusteringAlgorithm):
                     continue
                 value = (
                     (1.0 - state.rho) * self.pheromone[source][target]
-                    + (deposit if (source, target) in reinforced else 0.0)
                     + disturbance
                 )
                 self.pheromone[source][target] = min(max(value, p.tau_min), p.tau_max)
