@@ -1,0 +1,577 @@
+{
+  "description": "Frozen final ACO39 state, identical replayed ACO pheromone for both methods; AC beta=5, chaos strength=.08. Tests construction robustness, not full-run lifetime.",
+  "summary": {
+    "aco": {
+      "failures": 2,
+      "runs": 40,
+      "mean_attempts": 388.425
+    },
+    "ac": {
+      "failures": 0,
+      "runs": 40,
+      "mean_attempts": 233.625
+    }
+  },
+  "details": [
+    {
+      "seed": 0,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 384,
+      "cost": 0.022089887985495923
+    },
+    {
+      "seed": 0,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 217,
+      "cost": 0.01629218985231166
+    },
+    {
+      "seed": 1,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 397,
+      "cost": 0.02099571341141654
+    },
+    {
+      "seed": 1,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 243,
+      "cost": 0.016960139097053597
+    },
+    {
+      "seed": 2,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 376,
+      "cost": 0.021558115318871498
+    },
+    {
+      "seed": 2,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 242,
+      "cost": 0.016461608932633844
+    },
+    {
+      "seed": 3,
+      "kind": "aco",
+      "feasible": false,
+      "attempts": 400,
+      "cost": null
+    },
+    {
+      "seed": 3,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 214,
+      "cost": 0.016135029986786748
+    },
+    {
+      "seed": 4,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 392,
+      "cost": 0.02631583956052098
+    },
+    {
+      "seed": 4,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 273,
+      "cost": 0.017107137574449562
+    },
+    {
+      "seed": 5,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 385,
+      "cost": 0.02012417440753361
+    },
+    {
+      "seed": 5,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 221,
+      "cost": 0.01674604376996492
+    },
+    {
+      "seed": 6,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 374,
+      "cost": 0.020068792992027847
+    },
+    {
+      "seed": 6,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 270,
+      "cost": 0.016919946574321488
+    },
+    {
+      "seed": 7,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 384,
+      "cost": 0.019684684992662103
+    },
+    {
+      "seed": 7,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 221,
+      "cost": 0.016345392529741563
+    },
+    {
+      "seed": 8,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 385,
+      "cost": 0.019345119509436803
+    },
+    {
+      "seed": 8,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 258,
+      "cost": 0.016789246744485384
+    },
+    {
+      "seed": 9,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 385,
+      "cost": 0.02056202503100372
+    },
+    {
+      "seed": 9,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 233,
+      "cost": 0.016255111266492157
+    },
+    {
+      "seed": 10,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 400,
+      "cost": 0.02443626226565103
+    },
+    {
+      "seed": 10,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 230,
+      "cost": 0.01672006994247608
+    },
+    {
+      "seed": 11,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 395,
+      "cost": 0.022717361133902048
+    },
+    {
+      "seed": 11,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 250,
+      "cost": 0.016879043937442575
+    },
+    {
+      "seed": 12,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 381,
+      "cost": 0.019168216782853225
+    },
+    {
+      "seed": 12,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 199,
+      "cost": 0.01701354336879325
+    },
+    {
+      "seed": 13,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 392,
+      "cost": 0.024758755559238222
+    },
+    {
+      "seed": 13,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 209,
+      "cost": 0.016929601925038142
+    },
+    {
+      "seed": 14,
+      "kind": "aco",
+      "feasible": false,
+      "attempts": 400,
+      "cost": null
+    },
+    {
+      "seed": 14,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 248,
+      "cost": 0.016808946629359268
+    },
+    {
+      "seed": 15,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 387,
+      "cost": 0.018304352844751327
+    },
+    {
+      "seed": 15,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 219,
+      "cost": 0.015591697901993452
+    },
+    {
+      "seed": 16,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 397,
+      "cost": 0.025657173298855324
+    },
+    {
+      "seed": 16,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 234,
+      "cost": 0.016394827274247386
+    },
+    {
+      "seed": 17,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 391,
+      "cost": 0.0237324393857582
+    },
+    {
+      "seed": 17,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 210,
+      "cost": 0.01647578100856951
+    },
+    {
+      "seed": 18,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 382,
+      "cost": 0.020045855779209365
+    },
+    {
+      "seed": 18,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 231,
+      "cost": 0.01735466034582004
+    },
+    {
+      "seed": 19,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 391,
+      "cost": 0.0255149145164703
+    },
+    {
+      "seed": 19,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 258,
+      "cost": 0.016277542375857244
+    },
+    {
+      "seed": 20,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 389,
+      "cost": 0.01974800099872454
+    },
+    {
+      "seed": 20,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 212,
+      "cost": 0.017092291828648035
+    },
+    {
+      "seed": 21,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 391,
+      "cost": 0.020449162869797192
+    },
+    {
+      "seed": 21,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 200,
+      "cost": 0.0169630679543132
+    },
+    {
+      "seed": 22,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 373,
+      "cost": 0.019821275462948932
+    },
+    {
+      "seed": 22,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 250,
+      "cost": 0.016964417377174284
+    },
+    {
+      "seed": 23,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 380,
+      "cost": 0.018395972788507915
+    },
+    {
+      "seed": 23,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 250,
+      "cost": 0.01728044098406781
+    },
+    {
+      "seed": 24,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 388,
+      "cost": 0.02038442270254583
+    },
+    {
+      "seed": 24,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 256,
+      "cost": 0.01717068197778855
+    },
+    {
+      "seed": 25,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 390,
+      "cost": 0.021491895997108604
+    },
+    {
+      "seed": 25,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 231,
+      "cost": 0.016384810934112235
+    },
+    {
+      "seed": 26,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 389,
+      "cost": 0.022616445056261075
+    },
+    {
+      "seed": 26,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 182,
+      "cost": 0.01695978473501531
+    },
+    {
+      "seed": 27,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 389,
+      "cost": 0.020358088744142834
+    },
+    {
+      "seed": 27,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 233,
+      "cost": 0.016157075458079793
+    },
+    {
+      "seed": 28,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 382,
+      "cost": 0.019148145197978333
+    },
+    {
+      "seed": 28,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 246,
+      "cost": 0.016711732601141144
+    },
+    {
+      "seed": 29,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 398,
+      "cost": 0.021958735643842032
+    },
+    {
+      "seed": 29,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 252,
+      "cost": 0.016831478262099412
+    },
+    {
+      "seed": 30,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 392,
+      "cost": 0.021605769549843636
+    },
+    {
+      "seed": 30,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 225,
+      "cost": 0.01718019595486071
+    },
+    {
+      "seed": 31,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 397,
+      "cost": 0.019978305502725717
+    },
+    {
+      "seed": 31,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 209,
+      "cost": 0.01620625097006605
+    },
+    {
+      "seed": 32,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 392,
+      "cost": 0.022469999742983235
+    },
+    {
+      "seed": 32,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 265,
+      "cost": 0.016428132002347853
+    },
+    {
+      "seed": 33,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 375,
+      "cost": 0.020024919661719723
+    },
+    {
+      "seed": 33,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 231,
+      "cost": 0.017315846915755734
+    },
+    {
+      "seed": 34,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 389,
+      "cost": 0.020969023840237154
+    },
+    {
+      "seed": 34,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 240,
+      "cost": 0.017212035604346997
+    },
+    {
+      "seed": 35,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 392,
+      "cost": 0.020945209459110496
+    },
+    {
+      "seed": 35,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 252,
+      "cost": 0.016779063879112942
+    },
+    {
+      "seed": 36,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 378,
+      "cost": 0.019730265167116963
+    },
+    {
+      "seed": 36,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 200,
+      "cost": 0.016953745346152266
+    },
+    {
+      "seed": 37,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 387,
+      "cost": 0.019789575994413444
+    },
+    {
+      "seed": 37,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 224,
+      "cost": 0.017159056828620282
+    },
+    {
+      "seed": 38,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 394,
+      "cost": 0.02072305704812417
+    },
+    {
+      "seed": 38,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 261,
+      "cost": 0.016770464367128816
+    },
+    {
+      "seed": 39,
+      "kind": "aco",
+      "feasible": true,
+      "attempts": 394,
+      "cost": 0.030459231426867454
+    },
+    {
+      "seed": 39,
+      "kind": "ac",
+      "feasible": true,
+      "attempts": 246,
+      "cost": 0.016360361503589337
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "description": "Actual AC39 post-round2000 residuals and geometry; uniform tau isolates beta and chaos. Not a replay of full pheromone.",
+  "stats": {
+    "beta1-chaos0": {
+      "min": 6.364073852940131e-05,
+      "max": 0.03929175270662975,
+      "mean": 0.0010945574931492798,
+      "std": 0.004247053453328654,
+      "variance": 1.8037463035430846e-05
+    },
+    "beta5-chaos0": {
+      "min": 9.730280471840792e-12,
+      "max": 0.0015767983583336717,
+      "mean": 1.75405018563866e-05,
+      "std": 0.0001589052354245549,
+      "variance": 2.5250873845333212e-08
+    },
+    "beta5-chaos0.08": {
+      "min": 0.007282468596420066,
+      "max": 0.009099130310886406,
+      "mean": 0.008352036443135223,
+      "std": 0.0005881378217884618,
+      "variance": 3.459060974180765e-07
+    }
+  }
+}

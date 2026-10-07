@@ -8,6 +8,7 @@ nothing else in this file needs to change (unless it needs extra
 constructor arguments, see create_algorithm).
 """
 from datetime import datetime
+import argparse
 import random
 import os
 
@@ -20,7 +21,7 @@ from algorithms.ac_aco import ACACO
 from algorithms.node_aco import NodeACO
 from algorithms.pso import PSO
 
-SEED = random.randint(0,100)
+SEED = 0
 
 ALGORITHMS = [
     NodeACO,
@@ -28,27 +29,29 @@ ALGORITHMS = [
 ]
 
 
-def create_algorithm(algo_cls, network, hparameters):
-    if algo_cls is ACACO:
-        return ACACO(network, hparameters, seed=SEED)
+def create_algorithm(algo_cls, network, hparameters, seed=None):
+    seed = SEED if seed is None else seed
+    if algo_cls in (ACACO, SimpleACO):
+        return algo_cls(network, hparameters, seed=seed)
 
     return algo_cls(network, hparameters)
 
 
-def main(map_path="map.pkl"):
+def main(map_path="map.pkl", seed=None):
 
 
     network = NetworkInstance.from_pickle(map_path)
     hparameters = HyperParameters()
+    seed = SEED if seed is None else seed
 
     results = {}
 
     os.makedirs("runs", exist_ok=True)
 
     for algo_cls in ALGORITHMS:
-        # SimpleACO (and later PSO) draw from the global RNG; reseed so each
-        # algorithm's run is reproducible regardless of run order.
-        random.seed(SEED)
+        # Legacy algorithms use the global RNG; ACO/AC-ACO receive this
+        # same seed explicitly and own their random state.
+        random.seed(seed)
 
         simulator = Simulator(network, hparameters)
 
@@ -56,6 +59,7 @@ def main(map_path="map.pkl"):
             algo_cls,
             network,
             hparameters,
+            seed=seed,
         )
 
         history = simulator.run(algorithm)
@@ -66,7 +70,7 @@ def main(map_path="map.pkl"):
         
 
         history.to_csv(
-            f"runs/{datetime_string}_{SEED}_{algorithm.name}.csv",
+            f"runs/{datetime_string}_{seed}_{algorithm.name}.csv",
             index=False,
         )
 
@@ -92,4 +96,7 @@ def summarize(results):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Run a reproducible UWSN benchmark.")
+    parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--map", default="map.pkl", dest="map_path")
+    main(**vars(parser.parse_args()))

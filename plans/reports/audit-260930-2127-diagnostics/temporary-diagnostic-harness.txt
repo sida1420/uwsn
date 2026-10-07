@@ -1,0 +1,165 @@
+
+import sys, os, json, random, math, time, hashlib, io, contextlib, collections
+from pathlib import Path
+sys.dont_write_bytecode=True
+ROOT=Path(r"C:\Users\LOQ\Desktop\uwsn")
+sys.path.insert(0,str(ROOT/"src"))
+os.environ["MPLBACKEND"]="Agg"
+import numpy as np
+from point import Point
+from network import NetworkInstance
+from hparameter import HyperParameters
+from evaluate import Evaluator
+from algorithms.ac_aco import ACACO
+from algorithms.aco import SimpleACO
+from algorithms.pso import PSO
+from algorithms.clustering import build_clusters
+from algorithms.routing.routing import dropping_member_multi_hop_routing
+from algorithms.clustering.ac_aco.ac_aco import heuristic_weight, evaporation_rate
+
+OUT=ROOT/"plans"/"reports"/"audit-260930-2127-diagnostics"
+OUT.mkdir(parents=True,exist_ok=True)
+def stats(a):
+ a=np.asarray(a,dtype=float)
+ return dict(min=float(a.min()),max=float(a.max()),mean=float(a.mean()),std=float(a.std()),variance=float(a.var()))
+def network(flat=False):
+ n=NetworkInstance.from_pickle(ROOT/"map.pkl")
+ if flat:
+  n=NetworkInstance([Point(p.x,p.y,0) for p in n.sensors],Point(n.base_pos.x,n.base_pos.y,0),n.init_energy,n.width,n.height,n.depth,n.radius)
+ return n
+def geometry(n,live=None):
+ live=list(range(n.N)) if live is None else live
+ dm=np.asarray(n.dist_matrix); bd=np.asarray(n.base_dists)
+ deg=[sum(j!=i and dm[i,j]<=n.radius for j in live) for i in live]
+ reach=set(i for i in live if bd[i]<=n.radius)
+ again=True
+ while again:
+  again=False
+  for i in live:
+   if i not in reach and any(dm[i,j]<=n.radius and bd[j]<bd[i] for j in reach):
+    reach.add(i);again=True
+ return {"degree":stats(deg),"sink_neighbors":[i for i in live if bd[i]<=n.radius],
+ "monotonic_unreachable":[i for i in live if i not in reach],
+ "no_closer_neighbors":[i for i in live if bd[i]>n.radius and not any(j!=i and dm[i,j]<=n.radius and bd[j]<bd[i] for j in live)]}
+def scan():
+ result={}
+ for flat in [False,True]:
+  n=network(flat); dm=np.asarray(n.dist_matrix); bd=np.asarray(n.base_dists); mask=~np.eye(n.N,dtype=bool)
+  hp=HyperParameters(); ev=Evaluator(hp); ac=ACACO(n,hp,seed=42); c=ac.clustering
+  state=c.pre_round(list(range(n.N)),[n.init_energy]*n.N)
+  costs=np.exp(c._log_edge_costs); eta=n.init_energy/c._distances
+  ratios=[]; before=[]; after=[]; edge_prob=[]; raw_weights=[]; out_range_pre=[]; out_range_post=[]
+  for source in range(n.N):
+   avail=[i for i in range(n.N) if i!=source]; ds=dm[source,avail]
+   e=eta[source,avail]; em=costs[source,avail]
+   w=e/em; p=w/w.sum()
+   q=np.asarray(c._transition_probabilities(source,avail,[n.init_energy]*n.N,1,state.strength))
+   ratios.append(1/(1+len(avail)*state.strength*c.chaos[source]))
+   before.extend(p);after.extend(q); raw_weights.extend(w)
+   out_range_pre.append(float(p[ds>n.radius].sum()));out_range_post.append(float(q[ds>n.radius].sum()))
+  manual=max(abs(dm[i,j]-math.sqrt((n.sensors[i].x-n.sensors[j].x)**2+(n.sensors[i].y-n.sensors[j].y)**2+(n.sensors[i].z-n.sensors[j].z)**2)) for i in range(n.N) for j in range(n.N))
+  result["flat" if flat else "3d"]=dict(N=n.N,energy=n.init_energy,radius=n.radius,sink=vars(n.base_pos),distance=stats(dm[mask]),base_distance=stats(bd),
+   eta=stats(eta[mask]),inverse_cost=stats(1/costs[mask]),edge_cost=stats(costs[mask]),initial_raw_weights=stats(raw_weights),chaos=stats(c.chaos),
+   retained_signal=stats(ratios),prob_before=stats(before),prob_after=stats(after),out_of_range_pre=stats(out_range_pre),out_of_range_post=stats(out_range_post),manual_max_error=manual,geometry=geometry(n),
+   node_details={str(i):dict(pos=vars(n.sensors[i]),sink_dist=n.base_dists[i],neighbors=[j for j in range(n.N) if j!=i and n.dist_matrix[i][j]<=n.radius]) for i in range(n.N)})
+ result["schedule"]=[dict(iteration=i,beta=heuristic_weight(i,3000,1,5,5),rho=evaporation_rate(i,3000,.1,.9)) for i in [1,100,1000,1498,1499,1500,1501,1502,2000,2182,3000]]
+ (OUT/"scan.json").write_text(json.dumps(result,indent=2))
+ print(json.dumps({k:{kk:vv for kk,vv in v.items() if kk!="node_details"} if isinstance(v,dict) else v for k,v in result.items()},indent=2))
+def traced_failure(n,chs,live,residual):
+ clusters=build_clusters(chs,live,n.dist_matrix,n.radius)
+ found=[]
+ def trace(frame,event,arg):
+  if frame.f_code is dropping_member_multi_hop_routing.__code__ and event=="return" and arg is None:
+   loc=frame.f_locals; i=loc.get("node_id")
+   if i is not None:
+    found.append(dict(node_id=i,base_dist=n.base_dists[i],CHs=list(chs),candidates=loc.get("candidates"),droppable=loc.get("droppable"),
+     live_neighbors=[j for j in live if j!=i and n.dist_matrix[i][j]<=n.radius],
+     all_neighbors=[dict(id=j,dist=n.dist_matrix[i][j],base_dist=n.base_dists[j],energy=residual[j]) for j in range(n.N) if j!=i and n.dist_matrix[i][j]<=n.radius]))
+  return trace
+ sys.settrace(trace)
+ try: dropping_member_multi_hop_routing(*clusters[:2],live,clusters[2],n.dist_matrix,n.base_dists,residual,n.radius,.4)
+ finally:sys.settrace(None)
+ return found
+def run_one(kind,seed,flat=False,ablation="",limit=None):
+ n=network(flat);hp=HyperParameters()
+ random.seed(seed)
+ if kind=="ac":
+  if ablation=="no-chaos":
+   from dataclasses import replace
+   from algorithms.clustering.ac_aco.parameters import ACACOParameters
+   a=ACACO(n,hp,replace(ACACOParameters(),chaos_min=0,chaos_max=0),seed=seed)
+  else:a=ACACO(n,hp,seed=seed)
+ elif kind=="aco": a=SimpleACO(n,hp)
+ else:a=PSO(n,hp)
+ live=list(range(n.N));res=[n.init_energy]*n.N
+ rounds=[];snapshots=[];deaths=[];chosen=[];last_attempts=[];candidate_costs=[];candidate_consumptions=[];current={}
+ c=a.clustering; orig_create=c.create_clusters;orig_energy=a.evaluator.energy_consumption
+ orig_post=c.post_round
+ def create(*args,**kw):
+  out=orig_create(*args,**kw)
+  if out is not None:
+   last_attempts.append(list(out[0]))
+   current.setdefault("outliers",[]).append(len(out[2]))
+  return out
+ def energy(*args,**kw):
+  out=orig_energy(*args,**kw);candidate_costs.append(out[1]);candidate_consumptions.append(out[0])
+  return out
+ def post(*args,**kw):
+  if kind=="ac":
+   current["chosen"]=list(kw.get("CH_list") or [])
+   s=kw["state"];current["state"]=dict(beta=s.beta,rho=s.rho,strength=s.strength)
+  elif kind=="aco":current["chosen"]=list(args[3])
+  return orig_post(*args,**kw)
+ c.create_clusters=create;a.evaluator.energy_consumption=energy;c.post_round=post
+ begin=time.perf_counter()
+ reason="T_max"
+ with open(os.devnull,"w") as sink,contextlib.redirect_stdout(sink):
+  for t in range(hp.T_max if limit is None else limit):
+   current={};last_attempts=[];candidate_costs=[];candidate_consumptions=[]
+   oldc=a.total_clustering_attempts;oldr=a.total_routing_attempts
+   root,cons=a.plan_round(live,res)
+   rec=dict(round=t,attempts=a.total_clustering_attempts-oldc,routing_attempts=a.total_routing_attempts-oldr,
+      feasible=len(candidate_costs),candidate_costs=stats(candidate_costs) if candidate_costs else None,
+      outlier_stats=stats(current.get("outliers",[0])),**current)
+   if root is None:
+    reason="no_route"
+    rec["failure"]=traced_failure(n,last_attempts[0],live,res) if last_attempts else []
+    snapshots.append(rec);break
+   nodes={};edges=[]
+   def visit(node):
+    for child in node.nxts:
+     assert child.id not in nodes and child.prev is node
+     assert (n.base_dists[child.id] if node.id==-1 else n.dist_matrix[child.id][node.id])<=n.radius
+     nodes[child.id]=child;edges.append([child.id,node.id]);visit(child)
+   visit(root)
+   assert set(nodes)==set(live)==set(cons)
+   cost=sum(cons.values()); before=list(live)
+   for i,e in cons.items():res[i]=max(0,res[i]-e)
+   live=[i for i in live if res[i]>0]
+   dead=[i for i in before if i not in live]
+   if dead:deaths.append(dict(round=t,nodes=dead,remaining_energy=sum(res)))
+   row=dict(round=t,alive_nodes=len(live),round_energy=cost,chs=current.get("chosen",sorted(i for i,node in nodes.items() if node.isCH)),
+    edges_hash=hashlib.sha256(json.dumps(sorted(edges)).encode()).hexdigest(),attempts=rec["attempts"],feasible=rec["feasible"])
+   rounds.append(row)
+   if t<3 or t%250==0 or dead:
+    tau=np.asarray(c.pheromone) if kind!="pso" else np.ones((n.N,n.N))
+    vals=tau[np.ix_(before,before)];mask=~np.eye(len(before),dtype=bool);vals=vals[mask]
+    rec.update(cost=cost,deposit=100/cost,tau=stats(vals),tau_at_min=float(np.mean(vals<=.1000000001)),tau_at_max=float(np.mean(vals>=9.999999999)),
+      residual=list(res),consumption=dict(cons),edges=edges,
+      candidate_max_energy=stats([max(x.values()) for x in candidate_consumptions]))
+    if kind=="ac":
+     s=current["state"]["strength"]; signal=[1/(1+(len(before)-1)*s*c.chaos[i]) for i in before]
+     rec.update(retained_signal=stats(signal),cost_window=[c.lower_cost,c.upper_cost])
+    snapshots.append(rec)
+   if not live:reason="all_dead";break
+ result=dict(kind=kind,seed=seed,flat=flat,ablation=ablation,rounds=len(rounds),reason=reason,last_alive=len(live),
+ total_energy=sum(r["round_energy"] for r in rounds),first_death=deaths[0] if deaths else None,deaths=deaths,
+ geometry_final=geometry(n,live),residual=res,history=rounds,snapshots=snapshots,
+ total_attempts=a.total_clustering_attempts,total_routing_attempts=a.total_routing_attempts,
+ failed_routing_counter=a.failed_routing_attempts,elapsed=time.perf_counter()-begin)
+ name=f"{kind}-{seed}-{'flat' if flat else '3d'}{('-'+ablation) if ablation else ''}{('-limit'+str(limit)) if limit else ''}"
+ (OUT/(name+".json")).write_text(json.dumps(result))
+ print(json.dumps({k:v for k,v in result.items() if k not in ["history","snapshots","residual"]}),flush=True)
+if __name__=="__main__":
+ if sys.argv[1]=="scan":scan()
+ else:run_one(sys.argv[1],int(sys.argv[2]),"flat" in sys.argv[3:],"no-chaos" if "no-chaos" in sys.argv[3:] else "",next((int(x[5:]) for x in sys.argv[3:] if x.startswith("limit")),None))

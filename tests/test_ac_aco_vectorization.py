@@ -12,6 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from algorithms.ac_aco import ACACO
+from evaluate import Evaluator
 from hparameter import HyperParameters
 from network import NetworkInstance
 from point import Point
@@ -24,24 +25,21 @@ class ACACOVectorizationTests(unittest.TestCase):
         self.live = list(range(self.network.N))
         self.residual = [self.network.init_energy] * self.network.N
 
-    def test_seeded_rounds_keep_recorded_energy_and_candidate_count(self):
-        expected_costs = (
-            0.016821386429811486,
-            0.017200815068502497,
-            0.016628742411225098,
-            0.01680795162319645,
-            0.016860344911641973,
-            0.017586454445611525,
-            0.016942108589113724,
-            0.01721483500419933,
-            0.0172196228708459,
-            0.01765641073622438,
-        )
+    def test_seeded_rounds_repeat_energy_and_cover_live_nodes(self):
+        repeat = ACACO(self.network, HyperParameters(), seed=39)
+        evaluator = Evaluator(HyperParameters())
         with redirect_stdout(StringIO()):
-            for expected in expected_costs:
+            for _ in range(10):
                 root, consumption = self.algorithm.plan_round(self.live, self.residual)
+                other_root, other = repeat.plan_round(self.live, self.residual)
                 self.assertIsNotNone(root)
-                self.assertAlmostEqual(sum(consumption.values()), expected, places=12)
+                self.assertIsNotNone(other_root)
+                self.assertEqual(consumption, other)
+                self.assertEqual(set(consumption), set(self.live))
+                recomputed, _ = evaluator.energy_consumption(
+                    root, self.network.dist_matrix, self.network.base_dists
+                )
+                self.assertEqual(consumption, recomputed)
                 for node_id, energy in consumption.items():
                     self.residual[node_id] = max(0.0, self.residual[node_id] - energy)
                 self.live = [node_id for node_id in self.live if self.residual[node_id] > 0]

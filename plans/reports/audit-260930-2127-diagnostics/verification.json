@@ -1,0 +1,92 @@
+{
+  "head": "e9c773f282dd996fa6bf6a39b63acbb6232af38b",
+  "branch": "fix-ac-aco-long-time",
+  "python": "3.12.14",
+  "numpy": "2.5.3",
+  "pandas": "3.0.6",
+  "matplotlib": "3.11.2",
+  "map_sha256": "ebe729265598746b30af09715e239a9891b2ac95ac66656096dc712e6c34fdcc",
+  "method": "Implementation unchanged. Temporary harness calls real plan_round and evaluator; copies Simulator energy/alive update exactly, validates tree IDs/parents/ranges, records candidates and snapshots. Original run39 CSV is used as a full-run oracle.",
+  "source_sha256": {
+    "src\\enviroment.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src\\evaluate.py": "e448478de8710dc2f247cb801912954789bb2d2ca431abe71e0194c014a25f4c",
+    "src\\hparameter.py": "c039b9492ee355a28975729cd76d6deaffc47adadd7138e4971768a0250f4d61",
+    "src\\map_gen.py": "d8ff7eb9e5ea231df44ef12e9a78077bb6955ab0e7cd104241e31264668dd7cf",
+    "src\\module.py": "ad1013f5f641bc11210450a1ae04b4ceb7b6320f705f8a710b263b4c9354b0cb",
+    "src\\network.py": "e13cd5193d24bd7cc942c8bcc89b5aa49b080b8d64f77b653889a7fc0f8fd931",
+    "src\\node.py": "a3115d62c6ed04ffbaaf472caed4af3dc7b87bf56b0272dcce1df8bf9cf4cec9",
+    "src\\point.py": "774b9820b1878f9eab3cce0fc0c5bafd0c79d0ad94d91cc17b124b63b84b2e10",
+    "src\\run.py": "8a1f577387321a9892ae3f64af86b331ad5d32917ea50b2d2eaeef7c03b0f92d",
+    "src\\simulate.py": "fb1ee61f62d2f19ef625661c3900d5200c644d1ac8007499a1220bdfee24362a",
+    "src\\visual.py": "8460989c60ec03170783485dd0c16c18689f7071d6f1b9419e7fffec5d456d7d",
+    "src\\algorithms\\aco.py": "d3a8248e3a1b5592bdc53fa7c1aaf70c07c15aab53aaa018ffdcb9a472db6df6",
+    "src\\algorithms\\ac_aco.py": "850ada585beaa5eaf1aee4ec118c462209fd5b0c6e9513d92475d4e6fb91ad09",
+    "src\\algorithms\\pso.py": "9e03098022f49b88cc516dde54ac9db42536042516bb41a7a59f54d1db433dc5",
+    "src\\algorithms\\base\\base.py": "2100360acceb67d87de7656ae2e35b9dbbeceb2a2b1ad2725ce2e147de7292dd",
+    "src\\algorithms\\base\\__init__.py": "e467dec31dc36910eb0cc984d8e3011b0f6162f5f11b51179cea62a463b10b30",
+    "src\\algorithms\\clustering\\clustering.py": "a457ca08fd68d7972de8e1e6f278fe28147dce8651c4c12c03ab9d0647b7d81b",
+    "src\\algorithms\\clustering\\__init__.py": "816727ef64f27656f3b773bb7af50e12e21d3444a4dd248596b5422fb9117b88",
+    "src\\algorithms\\routing\\routing.py": "61cc27a9cc63ccd3a23cb024e1ac60d70489a6ea9f13fa32568a9389feeca338",
+    "src\\algorithms\\routing\\__init__.py": "fa615cae83ba27f5858a2cc4d1a05a96d9c206fb3ec3bca436a8575949d6c5fb",
+    "src\\algorithms\\clustering\\aco\\aco.py": "b6be33a8593aa74960fdda33f99ae32e8106db84d0b3cf344a221590f144cf2a",
+    "src\\algorithms\\clustering\\aco\\parameters.py": "d5b2e7a6c39ebf33c624824213d351a6602a79796f6d500bb2c048ca1c1c5848",
+    "src\\algorithms\\clustering\\ac_aco\\ac_aco.py": "3ab8f99db7d8f92e46ade4c91370652b5e98dd3194b782617f68475774a44aa7",
+    "src\\algorithms\\clustering\\ac_aco\\parameters.py": "e378deba817437e67bd4e2f791d29983c3d1a908817ffed066fbee9158d66e7a",
+    "src\\algorithms\\clustering\\pso\\parameters.py": "8bccd05933732e1c3960801882e2034171e937ec9d20c60498e0d29e3622410e",
+    "src\\algorithms\\clustering\\pso\\pso.py": "16d8bdb0fe13c4fc2d13301337b221c8b294942c8941439cd3d0a7ba7202866e"
+  },
+  "full_run39_vs_existing_csv": {
+    "ac": {
+      "rounds_match": true,
+      "alive_match": true,
+      "max_energy_error": 1.3877787807814457e-17
+    },
+    "aco": {
+      "rounds_match": true,
+      "alive_match": true,
+      "max_energy_error": 1.3877787807814457e-17
+    }
+  },
+  "seed42_actual_simulator_order_check": {
+    "rounds": 10,
+    "orders": [
+      [
+        "ac",
+        "aco",
+        "pso"
+      ],
+      [
+        "pso",
+        "aco",
+        "ac"
+      ]
+    ],
+    "histories_and_counters_equal": true,
+    "network_coordinates_distances_configuration_sha256_unchanged": true,
+    "AC_attempts": 400,
+    "ACO_attempts": 400,
+    "PSO_unique_evaluations_total": 751,
+    "PSO_last_round_requests": 80,
+    "PSO_last_round_unique": 36,
+    "PSO_last_round_iterations": 4
+  },
+  "existing_tests": {
+    "command": "python -B -m unittest discover -s tests -v",
+    "tests": 4,
+    "passed": 4
+  },
+  "final_source_hashes_unchanged": true,
+  "final_map_hash_unchanged": true,
+  "full_run47_vs_existing_csv": {
+    "ac": {
+      "rounds_match": true,
+      "alive_match": true,
+      "max_energy_error": 1.3877787807814457e-17
+    },
+    "aco": {
+      "rounds_match": true,
+      "alive_match": true,
+      "max_energy_error": 1.734723475976807e-17
+    }
+  }
+}

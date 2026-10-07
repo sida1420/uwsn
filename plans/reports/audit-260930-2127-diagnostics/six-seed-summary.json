@@ -1,0 +1,294 @@
+[
+  {
+    "seed": 0,
+    "ac": {
+      "rounds": 2166,
+      "first_death_index": 1474,
+      "energy_first1000": 0.01600443703752917,
+      "node65_energy_at_first_death": 0.2804704992338134,
+      "final_node65_energy": 0,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1474,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 36.39963126655077
+        },
+        {
+          "round": 2165,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 25.0436467987871
+        }
+      ]
+    },
+    "aco": {
+      "rounds": 2250,
+      "first_death_index": 1416,
+      "energy_first1000": 0.01679971122909263,
+      "node65_energy_at_first_death": 0.30059917177336204,
+      "final_node65_energy": 0.0032107651390705424,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1416,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 36.128348453259576
+        },
+        {
+          "round": 2249,
+          "nodes": [
+            18
+          ],
+          "remaining_energy": 21.34030757037394
+        }
+      ]
+    }
+  },
+  {
+    "seed": 21,
+    "ac": {
+      "rounds": 2171,
+      "first_death_index": 1493,
+      "energy_first1000": 0.01600049496006021,
+      "node65_energy_at_first_death": 0.276558069777534,
+      "final_node65_energy": 0,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1493,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 36.127125844764684
+        },
+        {
+          "round": 2170,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 24.96853229678091
+        }
+      ]
+    },
+    "aco": {
+      "rounds": 2175,
+      "first_death_index": 1452,
+      "energy_first1000": 0.016837568942397428,
+      "node65_energy_at_first_death": 0.2926450451662421,
+      "final_node65_energy": 0.0024744514478919136,
+      "final_alive": 99,
+      "death_events": [
+        {
+          "round": 1452,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 35.42000633006849
+        }
+      ]
+    }
+  },
+  {
+    "seed": 39,
+    "ac": {
+      "rounds": 2182,
+      "first_death_index": 1476,
+      "energy_first1000": 0.01596656693278489,
+      "node65_energy_at_first_death": 0.27984177970047736,
+      "final_node65_energy": 0,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1476,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 36.43770923979778
+        },
+        {
+          "round": 2181,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 24.857564286389277
+        }
+      ]
+    },
+    "aco": {
+      "rounds": 2210,
+      "first_death_index": 1442,
+      "energy_first1000": 0.016668374630956582,
+      "node65_energy_at_first_death": 0.2989397292566289,
+      "final_node65_energy": 0.0024541189139049733,
+      "final_alive": 99,
+      "death_events": [
+        {
+          "round": 1442,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 35.79785838658523
+        }
+      ]
+    }
+  },
+  {
+    "seed": 42,
+    "ac": {
+      "rounds": 2201,
+      "first_death_index": 1499,
+      "energy_first1000": 0.01597304234452105,
+      "node65_energy_at_first_death": 0.2749597942873302,
+      "final_node65_energy": 0,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1499,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 36.05770537282774
+        },
+        {
+          "round": 2200,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 24.57253254727316
+        }
+      ]
+    },
+    "aco": {
+      "rounds": 2036,
+      "first_death_index": 1434,
+      "energy_first1000": 0.016662749504907717,
+      "node65_energy_at_first_death": 0.2975953501016241,
+      "final_node65_energy": 0.020160672414990106,
+      "final_alive": 99,
+      "death_events": [
+        {
+          "round": 1434,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 35.81018328020784
+        }
+      ]
+    }
+  },
+  {
+    "seed": 47,
+    "ac": {
+      "rounds": 2176,
+      "first_death_index": 1507,
+      "energy_first1000": 0.01598495850028934,
+      "node65_energy_at_first_death": 0.27188111027841166,
+      "final_node65_energy": 0,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1507,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 35.92172971680235
+        },
+        {
+          "round": 2175,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 24.93363030837195
+        }
+      ]
+    },
+    "aco": {
+      "rounds": 2285,
+      "first_death_index": 1415,
+      "energy_first1000": 0.01689385409622282,
+      "node65_energy_at_first_death": 0.3004329440356234,
+      "final_node65_energy": 0,
+      "final_alive": 97,
+      "death_events": [
+        {
+          "round": 1415,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 35.95029835863413
+        },
+        {
+          "round": 2228,
+          "nodes": [
+            91
+          ],
+          "remaining_energy": 21.36046881983782
+        },
+        {
+          "round": 2284,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 20.300302833105533
+        }
+      ]
+    }
+  },
+  {
+    "seed": 48,
+    "ac": {
+      "rounds": 2204,
+      "first_death_index": 1497,
+      "energy_first1000": 0.01602107448554378,
+      "node65_energy_at_first_death": 0.27853199321719635,
+      "final_node65_energy": 0,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1497,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 36.03268024896553
+        },
+        {
+          "round": 2203,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 24.395038126468048
+        }
+      ]
+    },
+    "aco": {
+      "rounds": 2123,
+      "first_death_index": 1515,
+      "energy_first1000": 0.01678994737031528,
+      "node65_energy_at_first_death": 0.28033970534292785,
+      "final_node65_energy": 0,
+      "final_alive": 98,
+      "death_events": [
+        {
+          "round": 1515,
+          "nodes": [
+            33
+          ],
+          "remaining_energy": 34.3909512206945
+        },
+        {
+          "round": 2122,
+          "nodes": [
+            65
+          ],
+          "remaining_energy": 23.369815634642208
+        }
+      ]
+    }
+  }
+]

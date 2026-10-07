@@ -23,7 +23,8 @@ network round (`T_max` rounds at most). There is no inner iteration loop.
    round 0), drops nodes with no energy, and computes `target =
    min(live, max(1, round(ch_proportion * live)))`, `rho`, `beta` and the chaos
    strength. Returns a `RoundState`, or `None` if nothing is alive.
-2. For each of `num_ants` ants, up to `max_clustering_attempts` tries:
+2. Sample distinct start nodes, up to `min(num_ants, live_count)`. For each
+   start, up to `max_clustering_attempts` tries, keeping that same start:
    `create_clusters` walks an ordered CH path and calls `build_clusters`;
    `dropping_member_multi_hop_routing` builds the tree; the tree is scored by
    `Evaluator.energy_consumption`. The first feasible attempt (root exists,
@@ -45,12 +46,12 @@ The counters `total_/failed_clustering_attempts` and
 | `max_clustering_attempts` | 10 | Retries per ant until routing is feasible |
 | `ch_proportion` | 0.20 | Target fraction of live nodes that become CHs |
 | `pheromone_exponent` | 1.0 | Exponent on tau (labelled `alpha` in the debug line) |
-| `energy_cost_exponent` | 1.0 | Exponent on the inverse hop cost (`gamma` in the debug line) |
+| `energy_cost_exponent` | 0.5 | Tuned ACO exponent on the inverse hop cost (`gamma` in the debug line) |
 | `beta_min`, `beta_max`, `beta_slope` | 1, 5, 5 | Eq. (14) heuristic-weight schedule |
 | `rho_min`, `rho_max` | 0.10, 0.90 | Eq. (13) evaporation schedule |
 | `chaos_min`, `chaos_max` | 0.05, 0.30 | Range of the chaos strength (Eq. 15) |
 | `chaos_r`, `chaos_seed` | 3.61, 0.37 | Logistic map parameter and seed |
-| `Q`, `tau0` | 100, 1 | Deposit constant and initial pheromone |
+| `Q`, `tau0` | 0.07, 1 | Tuned ACO deposit constant and initial pheromone |
 | `tau_min`, `tau_max` | 0.10, 10 | Pheromone bounds |
 | `hopping_factor` | 0.40 | Energy/distance trade-off in the shared router |
 
@@ -58,7 +59,7 @@ Parameters are validated in `__post_init__` (bounds, `chaos_r` in (3.57, 4), etc
 
 ## Ant walk
 
-The first CH is chosen uniformly from the live nodes. Each next CH `j`, from
+Ant starts are sampled uniformly without replacement from live nodes. Each next CH `j`, from
 the previous CH `i`, is sampled from the remaining live nodes with weight
 
 ```text
@@ -68,9 +69,11 @@ tau(i, j)^pheromone_exponent
 ```
 
 computed in log space for numerical stability. The normalized probabilities
-then receive the chaotic disturbance `p_j + strength * chaos[i]` and are
-renormalized, which mixes the distribution towards uniform:
-`(p_j + c) / (1 + n*c)` for `n` candidates.
+then receive the original chaotic disturbance `p_j + strength * chaos[i]` and
+are renormalized: `(p_j + c) / (1 + n*c)` for `n` candidates and
+`c = strength * chaos[i]`. Its uniform-exploration mass depends on candidate
+count. A `(p_j+c/n)/(1+c)` trial weakened exploration and shortened routing
+service in three paired seeds; it was rejected from the final transfer.
 
 ## Performance-critical data
 
@@ -79,7 +82,9 @@ NumPy arrays and computes `E_m(distance)` plus its logarithm once for every
 edge. During each ant walk, `_transition_probabilities` indexes those cached
 arrays for the currently available targets and evaluates the log weights in a
 vectorized NumPy operation. This preserves the selection formula while
-removing repeated scalar `E_m` calculations from the hot path.
+removing repeated scalar `E_m` calculations from the hot path. Each per-ant
+deposit also updates the pheromone array immediately, so later ants learn from
+successful candidates within the same round, as in tuned ACO.
 
 The optimization requires `numpy` (declared in the repository-root
 `requirements.txt`). It does not vectorize clustering or multi-hop routing;
@@ -112,7 +117,9 @@ tau(i, j) <- clamp( (1 - rho) * tau(i, j)
 
 `cost` is the total energy of the winning routing tree. Each successful ant
 also deposits `Q / (cost * num_ants)` immediately after its route is scored.
-Then `chaos[i]` advances by one logistic step for each live `i`. If every ant
+Each deposit is clamped to the pheromone bounds; the evaporation/chaos update
+is clamped separately before the winning-path deposit. Then `chaos[i]`
+advances by one logistic step for each live `i`. If every ant
 failed, there is no per-ant deposit, but evaporation and chaos still apply.
 Relay and outlier edges are never reinforced, because ants only choose the CH
 path.
@@ -127,7 +134,12 @@ algorithm = ACACO(network, hparameters, ACACOParameters(), seed=42)
 root, consumption = algorithm.plan_round(live_sensors, residual_e)
 ```
 
-`seed` (default `None`) seeds the ant RNG; the same seed and map reproduce a run. Use a fresh instance per simulation run: the round counter, pheromone and
+Explicit `seed` creates a private RNG; the same seed and map reproduce a run.
+With `seed=None`, draws use global `random`, preserving `random.seed` callers.
+`SimpleACO` now accepts the same explicit seed API. `run.py --seed 0` supplies
+one seed consistently; its algorithm list remains unchanged. For a focused
+five-seed ACO/AC-ACO experiment, use the comparison script linked below.
+Use a fresh instance per simulation run: the round counter, pheromone and
 chaos state persist across `plan_round` calls.
 
 ## Debug output
@@ -142,11 +154,16 @@ mean over live directed edges (taken after the update).
 - AC-ACO: `tau^alpha * (residual/distance)^beta(t) * E_m^-gamma`.
   SimpleACO: `tau^alpha * (residual/distance)^gamma * E_m^-beta`. The exponent
   names are swapped between the two, so do not compare labels alone.
-- AC-ACO adds a chaos term, decaying `rho`, growing `beta`, and samples start
-  nodes with replacement. SimpleACO uses fixed parameters and distinct starts.
+- AC-ACO adds a chaos term, decaying `rho`, and growing `beta`. Both now use
+  distinct starts, the tuned inverse-energy exponent .5 and Q=.07.
 - Both keep pheromone across rounds, clamp it, deposit `Q / cost` on the
   round-best CH path, and select the minimum current-round energy, which does
   not directly optimize lifetime.
 
 These are implementation differences, not evidence that either algorithm
 performs better.
+
+Audit, parameter-role mapping and controlled ablations are in
+[the transfer report](../../../../plans/reports/audit-261007-0810-tuned-aco-transfer.md).
+[The comparison harness](../../../../plans/reports/aco-transfer-261007-0810/compare.py)
+preserves the old AC-ACO source and uses identical seeds, topology and model.

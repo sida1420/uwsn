@@ -1,0 +1,134 @@
+[
+  {
+    "seed": 0,
+    "kind": "ac",
+    "attempts": 40,
+    "unique_starts": 29,
+    "path_distance_mean": 272.0827620825184,
+    "construction_long_fraction": 0.6684210526315789,
+    "energy": 0.016726859746055336,
+    "node33_cost": 0.0003353011426965029,
+    "node65_cost": 8.057381581952163e-05
+  },
+  {
+    "seed": 0,
+    "kind": "aco",
+    "attempts": 40,
+    "unique_starts": 40,
+    "path_distance_mean": 161.69374628317368,
+    "construction_long_fraction": 0.2986842105263158,
+    "energy": 0.01805661038924359,
+    "node33_cost": 0.0003353011426965029,
+    "node65_cost": 8.057381581952163e-05
+  },
+  {
+    "seed": 21,
+    "kind": "ac",
+    "attempts": 40,
+    "unique_starts": 32,
+    "path_distance_mean": 268.4366659897192,
+    "construction_long_fraction": 0.6592105263157895,
+    "energy": 0.017119590432681346,
+    "node33_cost": 0.0003353011426965029,
+    "node65_cost": 8.057381581952163e-05
+  },
+  {
+    "seed": 21,
+    "kind": "aco",
+    "attempts": 40,
+    "unique_starts": 40,
+    "path_distance_mean": 155.59283022016913,
+    "construction_long_fraction": 0.26973684210526316,
+    "energy": 0.018937635328593168,
+    "node33_cost": 0.0004110644754086459,
+    "node65_cost": 0.0001991674902854839
+  },
+  {
+    "seed": 39,
+    "kind": "ac",
+    "attempts": 40,
+    "unique_starts": 33,
+    "path_distance_mean": 267.84615681643425,
+    "construction_long_fraction": 0.6592105263157895,
+    "energy": 0.016821386429811486,
+    "node33_cost": 0.00036606447540864586,
+    "node65_cost": 8.057381581952163e-05
+  },
+  {
+    "seed": 39,
+    "kind": "aco",
+    "attempts": 40,
+    "unique_starts": 40,
+    "path_distance_mean": 157.34842261890685,
+    "construction_long_fraction": 0.2736842105263158,
+    "energy": 0.018416381003468207,
+    "node33_cost": 0.00036606447540864586,
+    "node65_cost": 8.057381581952163e-05
+  },
+  {
+    "seed": 42,
+    "kind": "ac",
+    "attempts": 40,
+    "unique_starts": 33,
+    "path_distance_mean": 279.9543699861382,
+    "construction_long_fraction": 0.6894736842105263,
+    "energy": 0.017498663541287533,
+    "node33_cost": 0.00036606447540864586,
+    "node65_cost": 8.057381581952163e-05
+  },
+  {
+    "seed": 42,
+    "kind": "aco",
+    "attempts": 40,
+    "unique_starts": 40,
+    "path_distance_mean": 150.32297688598786,
+    "construction_long_fraction": 0.2513157894736842,
+    "energy": 0.017845573125929708,
+    "node33_cost": 0.0003353011426965029,
+    "node65_cost": 0.0002237093824348034
+  },
+  {
+    "seed": 47,
+    "kind": "ac",
+    "attempts": 40,
+    "unique_starts": 34,
+    "path_distance_mean": 277.00607221585693,
+    "construction_long_fraction": 0.6868421052631579,
+    "energy": 0.01744241502981584,
+    "node33_cost": 0.00043306447540864587,
+    "node65_cost": 0.0001991674902854839
+  },
+  {
+    "seed": 47,
+    "kind": "aco",
+    "attempts": 40,
+    "unique_starts": 40,
+    "path_distance_mean": 152.369796931581,
+    "construction_long_fraction": 0.2631578947368421,
+    "energy": 0.01800627767789336,
+    "node33_cost": 0.0001991674902854839,
+    "node65_cost": 0.0004804187648696068
+  },
+  {
+    "seed": 48,
+    "kind": "ac",
+    "attempts": 40,
+    "unique_starts": 39,
+    "path_distance_mean": 275.8139532695304,
+    "construction_long_fraction": 0.7,
+    "energy": 0.01705474512039713,
+    "node33_cost": 0.00020283376736473152,
+    "node65_cost": 8.057381581952163e-05
+  },
+  {
+    "seed": 48,
+    "kind": "aco",
+    "attempts": 40,
+    "unique_starts": 40,
+    "path_distance_mean": 145.78904983171194,
+    "construction_long_fraction": 0.23026315789473684,
+    "energy": 0.019273879566398724,
+    "node33_cost": 0.00036606447540864586,
+    "node65_cost": 8.057381581952163e-05
+  }
+]

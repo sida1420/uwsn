@@ -28,9 +28,11 @@ class ACOClustering(ClusteringAlgorithm):
 
     name = "ACOClustering"
 
-    def __init__(self, network, hparameters, aco_params: ACOParameters = None):
+    def __init__(self, network, hparameters, aco_params: ACOParameters = None, seed=None):
         super().__init__(network, hparameters)
         self.params = aco_params or ACOParameters()
+        # Preserve random.seed callers; explicit seeds isolate benchmark runs.
+        self.rng = random if seed is None else random.Random(seed)
         self.evaluator = Evaluator(hparameters)
 
         # pheromone[i][j] = pheromone on the directed edge i -> j
@@ -49,7 +51,7 @@ class ACOClustering(ClusteringAlgorithm):
                     self.E_m_heuristic[i][j] = (1 / cost) ** self.params.beta
 
     def pre_round(self, live_sensors, residual_e):
-        return random.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
+        return self.rng.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
 
     def create_clusters(self, live_sensors, residual_e, start):
         """
@@ -107,7 +109,7 @@ class ACOClustering(ClusteringAlgorithm):
             if sum(weights) <= 0:
                 return None
 
-            curr = random.choices(allowed, weights=weights, k=1)[0]
+            curr = self.rng.choices(allowed, weights=weights, k=1)[0]
             CH_list.append(curr)
             CH_set.add(curr)
 

@@ -8,7 +8,7 @@ clustering part (pheromone, chaos, schedules). The per-round orchestration
 """
 
 from dataclasses import dataclass
-from math import exp
+from math import exp, isfinite
 import random
 
 import numpy as np
@@ -72,6 +72,7 @@ class RoundState:
     rho: float
     beta: float
     strength: float
+    starts: tuple = ()  # distinct starts, reused for retries of each ant
 
 
 class ACACOClustering(ClusteringAlgorithm):
@@ -94,7 +95,7 @@ class ACACOClustering(ClusteringAlgorithm):
         self.params = params or ACACOParameters()
         self.evaluator = Evaluator(hparameters)
         self.total_iterations = hparameters.T_max
-        self.rng = random.Random(seed)
+        self.rng = random if seed is None else random.Random(seed)
 
         self.pheromone = [[self.params.tau0] * network.N for _ in range(network.N)]
         self._distances = np.maximum(np.asarray(network.dist_matrix, dtype=float), 1e-12)
@@ -142,16 +143,17 @@ class ACACOClustering(ClusteringAlgorithm):
             strength=chaos_strength(
                 self.previous_cost, self.lower_cost, self.upper_cost, p.chaos_min, p.chaos_max
             ),
+            starts=tuple(self.rng.sample(live, min(p.num_ants, len(live)))),
         )
 
-    def create_clusters(self, live_sensors, residual_e, state: RoundState):
+    def create_clusters(self, live_sensors, residual_e, state: RoundState, start=None):
         """
         One ant: build an ordered CH path, then build_clusters over the
         round's live nodes (state.live). The CH path order is the key order
         of the returned CH_nodes. Never returns None (kept for the base
         contract).
         """
-        CHs = self._construct_candidate(state, self._residual_array)
+        CHs = self._construct_candidate(state, self._residual_array, start=start)
         return build_clusters(CHs, state.live, self.network.dist_matrix, self.network.radius)
 
     def post_round(self, live_sensors, residual_e, consumption, state=None,
@@ -193,9 +195,9 @@ class ACACOClustering(ClusteringAlgorithm):
 
     # ---- ant walk --------------------------------------------------------
 
-    def _construct_candidate(self, state, residual_e):
+    def _construct_candidate(self, state, residual_e, start=None):
         available = list(state.live)
-        selected = [self.rng.choice(available)]
+        selected = [self.rng.choice(available) if start is None else start]
         available.remove(selected[0])
 
         while available and len(selected) < state.target:
@@ -209,7 +211,7 @@ class ACACOClustering(ClusteringAlgorithm):
         return tuple(selected)
 
     def _transition_probabilities(self, source, available, residual_e, beta, strength):
-        """Eq. (20) probabilities, including explicit chaos normalization."""
+        """Log-space tuned ACO weights plus the original AC-ACO chaos rule."""
         targets = np.asarray(available, dtype=np.intp)
         distance = self._distances[source, targets]
         eta = np.maximum(np.asarray(residual_e, dtype=float)[targets], 0.0) / distance
@@ -235,6 +237,9 @@ class ACACOClustering(ClusteringAlgorithm):
             return [1.0 / len(available)] * len(available)
 
         probabilities = weights / total
+        # Preserve AC-ACO's per-candidate disturbance. A total-mass variant
+        # weakened spatial exploration and shortened routing service in the
+        # multi-seed validation; it is not part of the tuned-core transfer.
         disturbed = probabilities + strength * self.chaos[source]
         return (disturbed / disturbed.sum()).tolist()
 
@@ -242,7 +247,7 @@ class ACACOClustering(ClusteringAlgorithm):
 
     def deposit(self, CH_list, cost, per_ant=True):
         """Deposit pheromone for a successful route."""
-        if not CH_list or cost is None or cost <= 0:
+        if not CH_list or cost is None or not isfinite(cost) or cost <= 0:
             return
 
         amount = self.params.Q / cost
@@ -250,7 +255,13 @@ class ACACOClustering(ClusteringAlgorithm):
             amount /= self.params.num_ants
 
         for source, target in zip(CH_list, CH_list[1:]):
-            self.pheromone[source][target] += amount
+            value = min(max(self.pheromone[source][target] + amount,
+                            self.params.tau_min), self.params.tau_max)
+            self.pheromone[source][target] = value
+            # Later ants must see successful ants' deposits this round,
+            # as they do in tuned ACO; the NumPy snapshot is a copy.
+            if hasattr(self, "_pheromone_array"):
+                self._pheromone_array[source, target] = value
 
     def _update_pheromone(self, state):
         """Apply evaporation and chaos without adding any pheromone deposit."""
@@ -266,4 +277,5 @@ class ACACOClustering(ClusteringAlgorithm):
                     + disturbance
                 )
                 self.pheromone[source][target] = min(max(value, p.tau_min), p.tau_max)
+                self._pheromone_array[source, target] = self.pheromone[source][target]
             self.chaos[source] = logistic_step(self.chaos[source], p.chaos_r)

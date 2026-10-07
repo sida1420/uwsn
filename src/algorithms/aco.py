@@ -21,14 +21,17 @@ class SimpleACO(Algorithm):
 
     name = "SimpleACO"
 
-    def __init__(self, network, hparameters, aco_params: ACOParameters = None):
+    def __init__(self, network, hparameters, aco_params: ACOParameters = None, seed=None):
         self._aco_params = aco_params
+        self._seed = seed
         super().__init__(network, hparameters)
 
     def init_params(self):
         self.params = self._aco_params or ACOParameters()
         self.evaluator = Evaluator(self.hparameters)
-        self.clustering = ACOClustering(self.network, self.hparameters, self.params)
+        self.clustering = ACOClustering(
+            self.network, self.hparameters, self.params, seed=self._seed
+        )
 
     def plan_round(self, live_sensors, residual_e):
         best_root, best_CHs, best_cost, best_consumption = None, None, float("inf"), {}
