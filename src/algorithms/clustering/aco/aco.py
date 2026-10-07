@@ -65,7 +65,20 @@ class ACOClustering(ClusteringAlgorithm):
         return build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
 
     def post_round(self, live_sensors, residual_e, consumption, CH_list):
-        self._update_pheromone(CH_list, sum(consumption.values()))
+        self._update_pheromone()
+        self.deposit(CH_list, sum(consumption.values()), per_ant=False)
+
+    def deposit(self, CH_list, cost, per_ant=True):
+        """Deposit pheromone for a successful route."""
+        if not CH_list or cost is None or cost <= 0:
+            return
+
+        amount = self.params.Q / cost
+        if per_ant:
+            amount /= self.params.num_ants
+
+        for a, b in zip(CH_list, CH_list[1:]):
+            self.pheromone[a][b] += amount
 
     def _make_path(self, live_nodes, residual_e, start_node):
         """
@@ -100,16 +113,13 @@ class ACOClustering(ClusteringAlgorithm):
 
         return CH_list
 
-    def _update_pheromone(self, CH_list, cost):
+    def _update_pheromone(self):
+        """Evaporate pheromone without adding any new deposit."""
         rho = self.params.rho
-        deposit = self.params.Q / cost if cost > 0 else 0.0
 
         for i in range(self.network.N):
             for j in range(self.network.N):
                 self.pheromone[i][j] *= (1 - rho)
-
-        for a, b in zip(CH_list, CH_list[1:]):
-            self.pheromone[a][b] += deposit
 
         lo, hi = self.params.tau_min, self.params.tau_max
         for i in range(self.network.N):

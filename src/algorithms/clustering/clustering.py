@@ -35,4 +35,3 @@ def build_clusters(CHs, live_sensors, dist_matrix, radius):
         CH_nodes[nearest_ch].add_next(member)
 
     return CH_nodes, nodes, outliers
-

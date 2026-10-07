@@ -7,17 +7,18 @@ Prototype Python mô phỏng mạng cảm biến không dây dưới nước (Un
 | Thành phần | Trạng thái | Ghi chú |
 | --- | --- | --- |
 | `SimpleACO` | Được benchmark mặc định | Ant Colony Optimization; chọn CH và duy trì pheromone qua các round. |
+| `NodeACO` | Được benchmark mặc định | ACO tương tự SimpleACO nhưng pheromone gắn với từng node CH thay vì từng cạnh. |
 | `PSO` | Được benchmark mặc định | Particle Swarm Optimization; chọn CH bằng quần thể particle. |
 | `AC-ACO` | Được benchmark mặc định | Adaptive Chaotic ACO; chọn CH bằng pheromone, chaos và chi phí năng lượng. Xem [tài liệu riêng](src/algorithms/clustering/ac_aco/AC_ACO_README.md). |
 
-Cả ba thuật toán benchmark dùng route đa chặng: sensor thành viên nối tới CH gần nhất trong bán kính, sau đó CH nối thẳng sink hoặc relay qua một CH gần sink hơn. Mọi hop phải không vượt quá bán kính liên lạc.
+Các thuật toán benchmark dùng route đa chặng: sensor thành viên nối tới CH gần nhất trong bán kính, sau đó CH nối thẳng sink hoặc relay qua một CH gần sink hơn. Mọi hop phải không vượt quá bán kính liên lạc.
 
 ## Kiến trúc và luồng chạy
 
 ```text
 map.pkl -> NetworkInstance -> Simulator
                               |
-        ACACO / SimpleACO / PSO
+        ACACO / SimpleACO / NodeACO / PSO
                               |
            sink (-1) <- CH relay <- CH <- sensor member
                               |
@@ -91,7 +92,8 @@ src/
 └── algorithms/
     ├── base.py            # Interface ClusteringAlgorithm
     ├── clustering.py      # Xây cụm, direct và multi-hop routing
-    ├── aco/               # SimpleACO
+    ├── aco/               # SimpleACO (edge pheromone)
+    ├── node_aco/          # NodeACO (node pheromone)
     ├── pso/               # PSO
     ├── ac_aco.py          # Orchestrator AC-ACO và route multi-hop
     └── clustering/ac_aco/ # Tham số, ant walk, pheromone và chaos của AC-ACO
