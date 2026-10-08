@@ -17,11 +17,13 @@ from simulate import Simulator
 
 from algorithms.aco import SimpleACO
 from algorithms.ac_aco import ACACO
+from algorithms.d_aco import DACO
 from algorithms.pso import PSO
 
 SEED = random.randint(0,100)
 
 ALGORITHMS = [
+    DACO,
     ACACO,
     SimpleACO,
     PSO,
