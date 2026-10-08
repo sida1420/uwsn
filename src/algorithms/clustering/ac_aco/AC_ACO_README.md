@@ -10,7 +10,8 @@ are scored by this repository's `Evaluator`.
 
 | File | Contents |
 |---|---|
-| `algorithms/clustering/ac_aco.py` | `ACACOParameters`, the schedules (Eq. 13-15), logistic chaos, and `ACACOClustering` (pheromone, chaos state, ant walk) |
+| `algorithms/clustering/ac_aco/ac_aco.py` | Schedules (Eq. 13-15), logistic chaos, and `ACACOClustering` (pheromone, chaos state, ant walk) |
+| `algorithms/clustering/ac_aco/parameters.py` | Validated `ACACOParameters` |
 | `algorithms/ac_aco.py` | `ACACO(Algorithm)`: per-round ant loop, routing, best-tree selection, failure counters |
 
 ## Round lifecycle
@@ -71,6 +72,19 @@ then receive the chaotic disturbance `p_j + strength * chaos[i]` and are
 renormalized, which mixes the distribution towards uniform:
 `(p_j + c) / (1 + n*c)` for `n` candidates.
 
+## Performance-critical data
+
+`ACACOClustering.__init__` converts the immutable network distance matrix to
+NumPy arrays and computes `E_m(distance)` plus its logarithm once for every
+edge. During each ant walk, `_transition_probabilities` indexes those cached
+arrays for the currently available targets and evaluates the log weights in a
+vectorized NumPy operation. This preserves the selection formula while
+removing repeated scalar `E_m` calculations from the hot path.
+
+The optimization requires `numpy` (declared in the repository-root
+`requirements.txt`). It does not vectorize clustering or multi-hop routing;
+their work still scales with the number of ants and routing attempts.
+
 ## Schedules
 
 - `rho(t) = rho_max - min(t / T_max, 1) * (rho_max - rho_min)` (Eq. 13)
@@ -96,16 +110,18 @@ tau(i, j) <- clamp( (1 - rho) * tau(i, j)
                     tau_min, tau_max )
 ```
 
-`cost` is the total energy of the winning routing tree. Then `chaos[i]`
-advances by one logistic step for each live `i`. If every ant failed, there is
-no deposit, but evaporation and chaos still apply. Relay and outlier edges are
-never reinforced, because ants only choose the CH path.
+`cost` is the total energy of the winning routing tree. Each successful ant
+also deposits `Q / (cost * num_ants)` immediately after its route is scored.
+Then `chaos[i]` advances by one logistic step for each live `i`. If every ant
+failed, there is no per-ant deposit, but evaporation and chaos still apply.
+Relay and outlier edges are never reinforced, because ants only choose the CH
+path.
 
 ## Usage
 
 ```python
 from algorithms.ac_aco import ACACO
-from algorithms.clustering.ac_aco import ACACOParameters
+from algorithms.clustering.ac_aco.parameters import ACACOParameters
 
 algorithm = ACACO(network, hparameters, ACACOParameters(), seed=42)
 root, consumption = algorithm.plan_round(live_sensors, residual_e)

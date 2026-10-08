@@ -75,6 +75,7 @@ class ACACO(Algorithm):
                     self.failed_routing_attempts += 1
                     continue
 
+                self.clustering.deposit(CHs, cost)
                 candidates.append((cost, CHs, root, consumption))
                 break
 

@@ -8,8 +8,10 @@ clustering part (pheromone, chaos, schedules). The per-round orchestration
 """
 
 from dataclasses import dataclass
-from math import exp, isfinite, log
+from math import exp
 import random
+
+import numpy as np
 
 from algorithms.base.base import ClusteringAlgorithm
 from algorithms.clustering import build_clusters
@@ -95,6 +97,14 @@ class ACACOClustering(ClusteringAlgorithm):
         self.rng = random.Random(seed)
 
         self.pheromone = [[self.params.tau0] * network.N for _ in range(network.N)]
+        self._distances = np.maximum(np.asarray(network.dist_matrix, dtype=float), 1e-12)
+        edge_costs = np.asarray(
+            [[self.evaluator.E_m(distance) for distance in row] for row in self._distances],
+            dtype=float,
+        )
+        self._log_edge_costs = np.full(edge_costs.shape, -np.inf)
+        valid_costs = (edge_costs > 0) & np.isfinite(edge_costs)
+        np.log(edge_costs, out=self._log_edge_costs, where=valid_costs)
 
         self.chaos = []
         value = self.params.chaos_seed
@@ -116,6 +126,9 @@ class ACACOClustering(ClusteringAlgorithm):
         live = tuple(i for i in live_sensors if residual_e[i] > 0)
         if not live:
             return None
+        # Reuse these round snapshots for every ant's probability calculation.
+        self._residual_array = np.asarray(residual_e, dtype=float)
+        self._pheromone_array = np.asarray(self.pheromone, dtype=float)
 
         p = self.params
         target = min(len(live), max(1, round(p.ch_proportion * len(live))))
@@ -138,7 +151,7 @@ class ACACOClustering(ClusteringAlgorithm):
         of the returned CH_nodes. Never returns None (kept for the base
         contract).
         """
-        CHs = self._construct_candidate(state, residual_e)
+        CHs = self._construct_candidate(state, self._residual_array)
         return build_clusters(CHs, state.live, self.network.dist_matrix, self.network.radius)
 
     def post_round(self, live_sensors, residual_e, consumption, state=None,
@@ -158,7 +171,9 @@ class ACACOClustering(ClusteringAlgorithm):
             self.upper_cost = round_high if self.upper_cost is None else max(self.upper_cost, round_high)
         self.previous_cost = best_cost
 
-        self._update_pheromone(state, CH_list, best_cost)
+        self._update_pheromone(state)
+        if CH_list is not None:
+            self.deposit(CH_list, best_cost, per_ant=False)
 
         if self.iteration == 1 or self.iteration % 100 == 0 or best_cost is None:
             live = state.live
@@ -195,52 +210,51 @@ class ACACOClustering(ClusteringAlgorithm):
 
     def _transition_probabilities(self, source, available, residual_e, beta, strength):
         """Eq. (20) probabilities, including explicit chaos normalization."""
-        log_weights = []
+        targets = np.asarray(available, dtype=np.intp)
+        distance = self._distances[source, targets]
+        eta = np.maximum(np.asarray(residual_e, dtype=float)[targets], 0.0) / distance
+        tau = self._pheromone_array[source, targets]
+        log_energy = self._log_edge_costs[source, targets]
+        valid = (tau > 0) & (eta > 0) & np.isfinite(log_energy)
 
-        for target in available:
-            distance = max(self.network.dist_matrix[source][target], 1e-12)
-            eta = max(residual_e[target], 0.0) / distance
-            energy = self.evaluator.E_m(distance)
-            tau = self.pheromone[source][target]
-
-            if tau <= 0 or eta <= 0 or energy <= 0 or not isfinite(energy):
-                log_weights.append(float("-inf"))
-                continue
-
-            log_weights.append(
-                self.params.pheromone_exponent * log(tau)
-                + beta * log(eta)
-                - self.params.energy_cost_exponent * log(energy)
+        log_weights = np.full(len(available), -np.inf)
+        with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+            log_weights[valid] = (
+                self.params.pheromone_exponent * np.log(tau[valid])
+                + beta * np.log(eta[valid])
+                - self.params.energy_cost_exponent * log_energy[valid]
             )
 
-        greatest = max(log_weights)
-        if not isfinite(greatest):
+        greatest = np.max(log_weights)
+        if not np.isfinite(greatest):
             return [1.0 / len(available)] * len(available)
 
-        weights = [exp(w - greatest) if isfinite(w) else 0.0 for w in log_weights]
-        total = sum(weights)
+        weights = np.exp(log_weights - greatest)
+        total = weights.sum()
         if total <= 0:
             return [1.0 / len(available)] * len(available)
 
-        probabilities = [w / total for w in weights]
-
-        # Chaotic disturbance.
-        chaos = strength * self.chaos[source]
-        weights = [p + chaos for p in probabilities]
-        total = sum(weights)
-        return [w / total for w in weights]
+        probabilities = weights / total
+        disturbed = probabilities + strength * self.chaos[source]
+        return (disturbed / disturbed.sum()).tolist()
 
     # ---- pheromone -------------------------------------------------------
 
-    def _update_pheromone(self, state, CH_list, cost):
-        """Bounded Eq. (12): evaporation + Q/cost on the best CH path + chaos."""
+    def deposit(self, CH_list, cost, per_ant=True):
+        """Deposit pheromone for a successful route."""
+        if not CH_list or cost is None or cost <= 0:
+            return
+
+        amount = self.params.Q / cost
+        if per_ant:
+            amount /= self.params.num_ants
+
+        for source, target in zip(CH_list, CH_list[1:]):
+            self.pheromone[source][target] += amount
+
+    def _update_pheromone(self, state):
+        """Apply evaporation and chaos without adding any pheromone deposit."""
         p = self.params
-        if CH_list is None or cost is None or cost <= 0:
-            deposit = 0.0
-            reinforced = set()
-        else:
-            deposit = p.Q / max(cost, 1e-12)
-            reinforced = set(zip(CH_list, CH_list[1:]))
 
         for source in state.live:
             disturbance = state.strength * self.chaos[source]
@@ -249,7 +263,6 @@ class ACACOClustering(ClusteringAlgorithm):
                     continue
                 value = (
                     (1.0 - state.rho) * self.pheromone[source][target]
-                    + (deposit if (source, target) in reinforced else 0.0)
                     + disturbance
                 )
                 self.pheromone[source][target] = min(max(value, p.tau_min), p.tau_max)

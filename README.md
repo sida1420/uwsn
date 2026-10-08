@@ -7,17 +7,18 @@ Prototype Python mô phỏng mạng cảm biến không dây dưới nước (Un
 | Thành phần | Trạng thái | Ghi chú |
 | --- | --- | --- |
 | `SimpleACO` | Được benchmark mặc định | Ant Colony Optimization; chọn CH và duy trì pheromone qua các round. |
+| `NodeACO` | Được benchmark mặc định | ACO tương tự SimpleACO nhưng pheromone gắn với từng node CH thay vì từng cạnh. |
 | `PSO` | Được benchmark mặc định | Particle Swarm Optimization; chọn CH bằng quần thể particle. |
-| AC-ACO | Thử nghiệm Phase 1 | Chọn CH/gán cụm có seed mặc định `42`; chưa có adapter multi-hop nên không thuộc benchmark chính. Xem [tài liệu riêng](src/algorithms/ac_aco/README.md). |
+| `AC-ACO` | Được benchmark mặc định | Adaptive Chaotic ACO; chọn CH bằng pheromone, chaos và chi phí năng lượng. Xem [tài liệu riêng](src/algorithms/clustering/ac_aco/AC_ACO_README.md). |
 
-Hai thuật toán mặc định đều dùng route đa chặng: sensor thành viên nối tới CH gần nhất trong bán kính, sau đó CH nối thẳng sink hoặc relay qua một CH gần sink hơn. Mọi hop phải không vượt quá bán kính liên lạc.
+Các thuật toán benchmark dùng route đa chặng: sensor thành viên nối tới CH gần nhất trong bán kính, sau đó CH nối thẳng sink hoặc relay qua một CH gần sink hơn. Mọi hop phải không vượt quá bán kính liên lạc.
 
 ## Kiến trúc và luồng chạy
 
 ```text
 map.pkl -> NetworkInstance -> Simulator
                               |
-                 ACOClustering / PSOClustering
+        ACACO / SimpleACO / NodeACO / PSO
                               |
            sink (-1) <- CH relay <- CH <- sensor member
                               |
@@ -29,20 +30,20 @@ map.pkl -> NetworkInstance -> Simulator
 ## Yêu cầu và cài đặt
 
 - Python 3
-- `pandas` và `matplotlib`
+- các gói trong `requirements.txt` (`numpy`, `pandas`, `matplotlib`)
 
-Repository hiện chưa có dependency manifest. Từ PowerShell tại thư mục gốc, cài dependencies (có thể làm trong môi trường Python riêng nếu cần):
+Từ PowerShell tại thư mục gốc, cài dependencies vào môi trường Python đang dùng:
 
 ```powershell
-python -m pip install pandas matplotlib
+python -m pip install -r requirements.txt
 python src/run.py
 ```
 
-Lệnh trên chạy `SimpleACO` và `PSO`, luôn tạo `results_SimpleACO.csv` và `results_PSO.csv`, rồi in tổng kết. Nếu không có round hợp lệ, file CSV tương ứng không có header hoặc dòng dữ liệu.
+Lệnh trên chạy `AC-ACO`, `SimpleACO` và `PSO`, rồi ghi mỗi lịch sử vào `runs/<timestamp>_<seed>_<algorithm>.csv`. `run.py` tạo một seed ngẫu nhiên cho mỗi lần chạy và dùng lại seed đó trong cùng benchmark; để tái lập giữa các lần chạy, truyền seed cố định khi khởi tạo thuật toán.
 
 ## Map mặc định và tạo map mới
 
-`map.pkl` mặc định gồm 100 sensor trong khối `500 × 500 × 500 m`; sink ở `(250, 250, 0)`, năng lượng đầu là `0.6`, bán kính liên lạc `100 m`. Quy ước `z = 0` là mặt nước.
+`map.pkl` mặc định gồm 100 sensor trong khối `500 × 500 × 500 m`; sink ở `(250, 250, 0)`, năng lượng đầu là `0.6`, bán kính liên lạc `200 m`. Quy ước `z = 0` là mặt nước.
 
 Để sinh deployment ngẫu nhiên mới và ảnh minh họa:
 
@@ -52,7 +53,7 @@ python src/map_gen.py
 
 > Cảnh báo: lệnh này ghi đè `map.pkl` và `map_3d.svg`. `map.pkl` là pickle, chỉ nạp file từ nguồn tin cậy.
 
-Map hiện thưa: chỉ một node nằm trong phạm vi 100 m của sink. Với khoảng 5 CH, cả hai thuật toán có thể không dựng được chuỗi relay hợp lệ và dừng ở round 0. Đây là kết quả topology/ràng buộc range, không phải bảo đảm simulator luôn có output.
+Khả năng dựng route và số round sống phụ thuộc thuật toán, tập CH và seed. Trên map hiện tại, AC-ACO với seed `39` đã hoàn tất 2.182 round trong phép đo lịch sử; con số này không đại diện cho SimpleACO, PSO hoặc seed khác.
 
 ## Kết quả
 
@@ -75,7 +76,7 @@ $env:PYTHONPATH='src'
 python -B -m unittest discover -s tests -v
 ```
 
-Bộ kiểm thử hiện có 16 test và đã chạy thành công. Các test kiểm tra clustering, PSO và AC-ACO nhưng chưa bao phủ lần chạy end-to-end của `src/run.py`; cần cài dependencies trước khi chạy simulator.
+Hiện chỉ có regression test cho AC-ACO: kiểm tra kết quả seeded trong 10 round, xác nhận `E_m` không bị tính lại trong một round và kiểm tra hai node trùng vị trí. Chưa có test cho clustering, PSO hoặc lần chạy end-to-end của `src/run.py`; cần cài dependencies trước khi chạy simulator.
 
 ## Cấu trúc dự án
 
@@ -91,10 +92,12 @@ src/
 └── algorithms/
     ├── base.py            # Interface ClusteringAlgorithm
     ├── clustering.py      # Xây cụm, direct và multi-hop routing
-    ├── aco/               # SimpleACO
+    ├── aco/               # SimpleACO (edge pheromone)
+    ├── node_aco/          # NodeACO (node pheromone)
     ├── pso/               # PSO
-    └── ac_aco/            # AC-ACO Phase 1 thử nghiệm
-tests/                     # unittest cho clustering, PSO, AC-ACO
+    ├── ac_aco.py          # Orchestrator AC-ACO và route multi-hop
+    └── clustering/ac_aco/ # Tham số, ant walk, pheromone và chaos của AC-ACO
+tests/                     # regression test hiện có cho AC-ACO
 ```
 
 ## Cấu hình và mở rộng
@@ -118,8 +121,8 @@ Khoảng cách trong map dùng mét, nhưng attenuation đổi sang kilomet: `d_
 
 ## Giới hạn đã biết
 
-- SimpleACO và PSO chưa đặt seed, nên benchmark không tái lập hoàn toàn.
-- Map mặc định có thể dừng ngay round 0 do không tìm được route multi-hop hợp lệ.
-- Chưa có dependency manifest, CLI hay file cấu hình ngoài mã nguồn.
+- `run.py` sinh seed ngẫu nhiên cho mỗi benchmark; cần cố định seed khi so sánh các lần chạy khác nhau.
+- Route hợp lệ và số round sống thay đổi theo thuật toán, tập CH và seed; cần đo với seed cố định khi so sánh.
+- Chưa có CLI hay file cấu hình ngoài mã nguồn.
 - Ở round cuối, `round_energy` có thể lớn hơn năng lượng còn lại trước round vì chi phí được tính toàn bộ rồi năng lượng được chặn về 0.
 - `rounds_survived = len(history)` không cho biết lý do dừng (hết node, hết route hay đạt `T_max`).
