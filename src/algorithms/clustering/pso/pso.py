@@ -2,6 +2,7 @@ import random
 from math import ceil
 
 from algorithms.base.base import ClusteringAlgorithm
+from algorithms.clustering.clustering import build_clusters
 from algorithms.clustering.pso.parameters import PSOParameters
 from node import Node
 
@@ -79,51 +80,8 @@ class PSOClustering(ClusteringAlgorithm):
 
     def create_clusters(self, live_sensors, residual_e, CHs):
         """Assign members using distance, CH load and residual energy."""
-        CH_set = set(CHs)
-        CH_nodes = {ch: Node(ch, isCH=True) for ch in CHs}
-        nodes = dict(CH_nodes)
-        outliers = []
-        member_ids = [node_id for node_id in live_sensors if node_id not in CH_set]
-        target_load = max(1, ceil(len(member_ids) / max(len(CHs), 1)))
-        max_energy = max((residual_e[node_id] for node_id in live_sensors), default=1.0)
 
-        # Place difficult, far-away members first so easy assignments do not
-        # consume all capacity on the only CHs that can cover them.
-        member_ids.sort(
-            key=lambda node_id: min(
-                self.network.dist_matrix[node_id][ch] for ch in CHs
-            ),
-            reverse=True,
-        )
-
-        for node_id in member_ids:
-            reachable = [
-                ch
-                for ch in CHs
-                if self.network.dist_matrix[node_id][ch] <= self.network.radius
-            ]
-            if not reachable:
-                outliers.append(node_id)
-                continue
-
-            def assignment_score(ch):
-                distance = self.network.dist_matrix[node_id][ch] / max(
-                    self.network.radius, 1e-12
-                )
-                load = len(CH_nodes[ch].nxts) / target_load
-                energy_risk = 1.0 - residual_e[ch] / max(max_energy, 1e-12)
-                return (
-                    self.params.assignment_distance_weight * distance
-                    + self.params.assignment_load_weight * load
-                    + self.params.assignment_energy_weight * energy_risk
-                )
-
-            parent = CH_nodes[min(reachable, key=assignment_score)]
-            member = Node(node_id, prev=parent)
-            parent.add_next(member)
-            nodes[node_id] = member
-
-        return CH_nodes, nodes, outliers
+        return build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
 
     def post_round(self, live_sensors, residual_e, consumption, particles):
         self._retain_particles_for_next_round(particles, list(live_sensors))

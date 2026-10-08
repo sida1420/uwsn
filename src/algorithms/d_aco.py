@@ -25,7 +25,8 @@ class DACO(Algorithm):
         )
 
     def plan_round(self, live_sensors, residual_e):
-        candidates = []
+        best_root, best_chs = None, None
+        best_fitness, best_consumption = float("inf"), {}
 
         starts = self.clustering.pre_round(live_sensors, residual_e)
 
@@ -77,42 +78,30 @@ class DACO(Algorithm):
             )
             loads = numpy.asarray(list(consumption.values()), dtype=float)
             mean_load = loads.mean() if loads.size else 0.0
-            load_cv = (
-                float(loads.std() / mean_load)
-                if mean_load > 0
-                else 0.0
-            )
-            candidates.append((root, chs, cost, consumption, load_cv))
+            load_cv = float(loads.std() / mean_load) if mean_load > 0 else 0.0
 
-        if not candidates:
+            # Absolute fitness, no normalization (lower = better).
+            fitness = (
+                self.params.energy_weight * cost
+                + self.params.load_weight * load_cv
+            )
+
+            # Per-ant deposit, immediately after the ant finishes (like NodeACO).
+            self.clustering.deposit(chs, fitness)
+
+            if fitness < best_fitness:
+                best_root, best_chs, best_fitness, best_consumption = (
+                    root, chs, fitness, consumption
+                )
+
+        if best_root is None:
             return None, {}
 
-        mean_energy = sum(candidate[2] for candidate in candidates) / len(candidates)
-        mean_cv = sum(candidate[4] for candidate in candidates) / len(candidates)
-        energy_weight = self.params.energy_weight
-        load_weight = self.params.load_weight
-
-        scored = [
-            (
-                energy_weight * candidate[2] / max(mean_energy, 1e-12)
-                + load_weight * candidate[4] / max(mean_cv, 1e-12)
-                if mean_cv > 0
-                else energy_weight * candidate[2] / max(mean_energy, 1e-12)
-                + load_weight,
-                candidate,
-            )
-            for candidate in candidates
-        ]
-        best_fitness, (best_root, best_chs, best_cost, best_consumption, _) = min(
-            scored,
-            key=lambda item: item[0],
-        )
         self.clustering.post_round(
             live_sensors,
             residual_e,
             best_consumption,
             best_chs,
             best_fitness,
-            scored,
         )
         return best_root, best_consumption

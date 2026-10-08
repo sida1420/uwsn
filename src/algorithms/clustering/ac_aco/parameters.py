@@ -30,6 +30,11 @@ class ACACOParameters:
     tau_max: float = 10.0
     hopping_factor: float = 0.40
 
+    
+    assignment_distance_weight=0.6
+    assignment_load_weight=0.25
+    assignment_energy_weight=0.15
+
     def __post_init__(self):
         self._positive_integer("num_ants", self.num_ants)
         self._positive_integer("max_clustering_attempts", self.max_clustering_attempts)

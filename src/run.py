@@ -25,10 +25,10 @@ SEED = random.randint(0,100)
 
 ALGORITHMS = [
     DACO,
-    ACACO,
-    SimpleACO,
-    NodeACO,
     PSO,
+    SimpleACO,
+
+    NodeACO,
 ]
 
 

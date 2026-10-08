@@ -6,13 +6,13 @@ class ACOParameters:
     """
 
     def __init__(self):
-        self.num_ants = 40  # ants per round
+        self.num_ants = 160  # ants per round
         self.CH_proportion = 0.2  # target fraction of live nodes made CH
         self.alpha = 1.0  # pheromone importance
-        self.beta = 0.5  # residual energy / distance importance
-        self.gamma = 1.0  # transmission-energy heuristic importance
+        self.beta = 0.0  # residual energy / distance importance
+        self.gamma = 0.0  # transmission-energy heuristic importance
         self.rho = 0.1  # pheromone evaporation rate
-        self.Q = 0.07  # pheromone deposit strength
+        self.Q = 0.03  # pheromone deposit strength
         self.tau0 = 1.0  # initial pheromone level
         self.tau_min = 0.1
         self.tau_max = 10.0

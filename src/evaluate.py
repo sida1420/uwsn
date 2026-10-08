@@ -37,7 +37,7 @@ class Evaluator:
     def E_m(self, dist, num_packets=1):
         return self.E_tx(dist, num_packets) + self.E_rx(num_packets) + self.E_da(num_packets)
 
-    def energy_consumption(self, root, dist_matrix, base_dists):
+    def energy_consumption(self, root, dist_matrix, base_dists, live_count=100):
         """
         Walk the routing tree and compute each node's energy cost for
         this round.
@@ -47,12 +47,18 @@ class Evaluator:
                 clustering algorithm for this round
             dist_matrix: NxN sensor-to-sensor distances
             base_dists: sensor-to-base-station distances, indexed by id
+            live_count: (optional) number of live sensors this round.
+                If given, the number of nodes actually visited in the
+                tree is compared against it and recorded in
+                self.visit_stats (see visit_summary). Does not change
+                the returned values.
 
         Returns:
             (consumption, total) where consumption is {node_id: energy}
             for every non-root node, and total is the sum of all of it.
         """
         consumption = {}
+        visits = 0  # number of non-root nodes visited in the tree
 
         def dist_to_parent(node):
             parent = node.prev
@@ -62,12 +68,14 @@ class Evaluator:
 
 
         def visit(node):
+            nonlocal visits
             num_packets = 1
             received_packets = 0
             for nxt in node.nxts:
                 received_packets += visit(nxt)
 
             if node.id != -1:  # the base station itself doesn't "spend" energy
+                visits += 1
                 dist = dist_to_parent(node)
                 energy = 0
 
@@ -87,4 +95,27 @@ class Evaluator:
             return num_packets
 
         visit(root)
+
+        if live_count is not None:
+            s = self.__dict__.setdefault(
+                "visit_stats",
+                {"calls": 0, "short": 0, "missing": 0, "dup": 0},
+            )
+            s["calls"] += 1
+            s["short"] += visits < live_count           # tree has fewer nodes than live sensors
+            s["missing"] += max(live_count - visits, 0)  # live sensors never charged
+            s["dup"] += visits != len(consumption)       # a node visited twice overwrites its entry
+
         return consumption, sum(consumption.values())
+
+    def visit_summary(self, name=""):
+        s = getattr(self, "visit_stats", None)
+        if not s:
+            print(f"[VISITED {name}] no data")
+            return
+        print(
+            f"[VISITED {name}] calls={s['calls']} "
+            f"trees_missing_nodes={s['short']} "
+            f"avg_missing={s['missing'] / s['calls']:.3f} "
+            f"dup_visits={s['dup']}"
+        )

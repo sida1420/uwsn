@@ -18,6 +18,7 @@ feasible routing tree was found, as Simulator.run expects.
 from algorithms.base.base import Algorithm
 from algorithms.clustering.pso.pso import PSOClustering, PSOParameters
 from algorithms.routing import dropping_member_multi_hop_routing
+from algorithms.clustering import build_clusters
 from evaluate import Evaluator
 
 
@@ -121,6 +122,7 @@ class PSO(Algorithm):
             live_sensors, residual_e, best_consumption, particles
         )
 
+        # self.evaluator.visit_summary()
         if best_root is None:
             return None, {}
         return best_root, best_consumption
@@ -163,6 +165,7 @@ class PSO(Algorithm):
             root,
             self.network.dist_matrix,
             self.network.base_dists,
+            len(live_sensors)
         )
         return root, consumption, self._lifetime_score(cost, consumption, residual_e)
 

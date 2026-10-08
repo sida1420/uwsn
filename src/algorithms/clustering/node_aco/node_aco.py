@@ -4,7 +4,7 @@ from math import log
 import numpy as np
 
 from algorithms.base.base import ClusteringAlgorithm
-from algorithms.clustering import build_clusters
+from algorithms.clustering import  build_clusters
 from algorithms.clustering.node_aco.parameters import NodeACOParameters
 from evaluate import Evaluator
 
@@ -43,12 +43,11 @@ class NodeACOClustering(ClusteringAlgorithm):
             return None
         return build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
 
-    def post_round(self, live_sensors, residual_e, consumption, CH_list):
+    def post_round(self, live_sensors, residual_e, consumption, CH_list, fitness=None):
+        self.deposit(CH_list, fitness, per_ant=False)  # best-config bonus
         self._update_pheromone()
-        self.deposit(CH_list, sum(consumption.values()), per_ant=False)
-        self.round_number += 1
-        # if self.round_number == 1 or self.round_number % 100 == 0:
-            # self._log_heuristic_dominance(live_sensors, residual_e)
+        if self.iteration == 1 or self.iteration % 100 == 0:
+            self._log_heuristic_dominance(sum(consumption.values()), fitness)
 
     def _log_heuristic_dominance(self, live_nodes, residual_e):
         """Log average per-source spreads of the weighted path contributions."""

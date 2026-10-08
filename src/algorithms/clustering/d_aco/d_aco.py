@@ -93,6 +93,7 @@ class Grid:
     def add_loss(self, sensor_id):
         self.loss += self.F[sensor_id].reshape(self.loss.shape)
 
+
 class DACOClustering(ClusteringAlgorithm):
 
     name = "DACOClustering"
@@ -112,8 +113,6 @@ class DACOClustering(ClusteringAlgorithm):
             "density": [],
         }
         self.last_deposit = 0.0
-
-    
 
     def pre_round(self, live_sensors, residual_e):
         self.iteration += 1
@@ -142,12 +141,12 @@ class DACOClustering(ClusteringAlgorithm):
 
         return build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
 
-    def post_round(self, live_sensors, residual_e, consumption, CH_list,
-                   fitness=None, ant_candidates=()):
+    def post_round(self, live_sensors, residual_e, consumption, CH_list, fitness=None):
+        """Evaporate, then add the best-configuration bonus.
+
+        Per-ant deposits already happened in DACO.plan_round.
+        """
         self._update_pheromone()
-        self.last_deposit = 0.0
-        for ant_fitness, (_, ant_chs, _, _, _) in ant_candidates:
-            self.deposit(ant_chs, ant_fitness, per_ant=True)
         self.deposit(CH_list, fitness, per_ant=False)
         if self.iteration == 1 or self.iteration % 100 == 0:
             self._log_heuristic_dominance(sum(consumption.values()), fitness)

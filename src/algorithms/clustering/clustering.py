@@ -1,5 +1,6 @@
 """Shared cluster construction"""
 from node import Node
+import math
 
 
 def build_clusters(CHs, live_sensors, dist_matrix, radius):

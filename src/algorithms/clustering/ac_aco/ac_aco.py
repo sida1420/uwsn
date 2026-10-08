@@ -153,6 +153,8 @@ class ACACOClustering(ClusteringAlgorithm):
         """
         CHs = self._construct_candidate(state, self._residual_array)
         return build_clusters(CHs, state.live, self.network.dist_matrix, self.network.radius)
+        
+        # return build_clusters(CHs, live_sensors, self.network.dist)
 
     def post_round(self, live_sensors, residual_e, consumption, state=None,
                    candidate_costs=(), CH_list=None):
@@ -171,9 +173,9 @@ class ACACOClustering(ClusteringAlgorithm):
             self.upper_cost = round_high if self.upper_cost is None else max(self.upper_cost, round_high)
         self.previous_cost = best_cost
 
-        self._update_pheromone(state)
         if CH_list is not None:
             self.deposit(CH_list, best_cost, per_ant=False)
+        self._update_pheromone(state)
 
         if self.iteration == 1 or self.iteration % 100 == 0 or best_cost is None:
             live = state.live
