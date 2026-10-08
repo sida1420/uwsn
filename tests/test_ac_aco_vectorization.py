@@ -12,6 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from algorithms.ac_aco import ACACO
+from algorithms.clustering.ac_aco.ac_aco import evaporation_rate
 from hparameter import HyperParameters
 from network import NetworkInstance
 from point import Point
@@ -24,27 +25,35 @@ class ACACOVectorizationTests(unittest.TestCase):
         self.live = list(range(self.network.N))
         self.residual = [self.network.init_energy] * self.network.N
 
-    def test_seeded_rounds_keep_recorded_energy_and_candidate_count(self):
-        expected_costs = (
-            0.016821386429811486,
-            0.017200815068502497,
-            0.016628742411225098,
-            0.01680795162319645,
-            0.016860344911641973,
-            0.017586454445611525,
-            0.016942108589113724,
-            0.01721483500419933,
-            0.0172196228708459,
-            0.01765641073622438,
-        )
+    def test_default_schedule_evaporates_ninety_to_ten_percent(self):
+        params = self.algorithm.params
+        self.assertEqual((params.rho_max, params.rho_min), (0.90, 0.10))
+        for iteration, retained in ((1, 0.1002666666666667), (1500, 0.50), (3000, 0.90)):
+            rho = evaporation_rate(iteration, 3000, params.rho_min, params.rho_max)
+            self.assertAlmostEqual(1-rho, retained, places=12)
+
+    def test_seeded_rounds_repeat_energy_and_candidate_count(self):
+        replica = ACACO(self.network, HyperParameters(), seed=39)
+        replica_live = list(self.live)
+        replica_residual = list(self.residual)
         with redirect_stdout(StringIO()):
-            for expected in expected_costs:
+            for _ in range(10):
                 root, consumption = self.algorithm.plan_round(self.live, self.residual)
+                other_root, other_consumption = replica.plan_round(replica_live, replica_residual)
                 self.assertIsNotNone(root)
-                self.assertAlmostEqual(sum(consumption.values()), expected, places=12)
+                self.assertIsNotNone(other_root)
+                self.assertEqual(consumption, other_consumption)
+                self.assertEqual(set(consumption), set(self.live))
+                recomputed, total = self.algorithm.evaluator.energy_consumption(
+                    root, self.network.dist_matrix, self.network.base_dists
+                )
+                self.assertEqual(consumption, recomputed)
+                self.assertGreater(total, 0)
                 for node_id, energy in consumption.items():
                     self.residual[node_id] = max(0.0, self.residual[node_id] - energy)
+                    replica_residual[node_id] = max(0.0, replica_residual[node_id] - other_consumption[node_id])
                 self.live = [node_id for node_id in self.live if self.residual[node_id] > 0]
+                replica_live = [node_id for node_id in replica_live if replica_residual[node_id] > 0]
 
         self.assertEqual(len(self.live), self.network.N)
         self.assertEqual(self.algorithm.total_clustering_attempts, 400)

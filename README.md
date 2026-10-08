@@ -10,6 +10,7 @@ Prototype Python mô phỏng mạng cảm biến không dây dưới nước (Un
 | `NodeACO` | Được benchmark mặc định | ACO tương tự SimpleACO nhưng pheromone gắn với từng node CH thay vì từng cạnh. |
 | `PSO` | Được benchmark mặc định | Particle Swarm Optimization; chọn CH bằng quần thể particle. |
 | `AC-ACO` | Được benchmark mặc định | Adaptive Chaotic ACO; chọn CH bằng pheromone, chaos và chi phí năng lượng. Xem [tài liệu riêng](src/algorithms/clustering/ac_aco/AC_ACO_README.md). |
+| `NodeACACO` | Được benchmark mặc định | NodeACO kết hợp lịch thích nghi và chaos của ACACO. Xem [ánh xạ và kiểm chứng](docs/node-acaco.md). |
 
 Các thuật toán benchmark dùng route đa chặng: sensor thành viên nối tới CH gần nhất trong bán kính, sau đó CH nối thẳng sink hoặc relay qua một CH gần sink hơn. Mọi hop phải không vượt quá bán kính liên lạc.
 
@@ -18,7 +19,7 @@ Các thuật toán benchmark dùng route đa chặng: sensor thành viên nối 
 ```text
 map.pkl -> NetworkInstance -> Simulator
                               |
-        ACACO / SimpleACO / NodeACO / PSO
+        ACACO / NodeACACO / NodeACO / PSO
                               |
            sink (-1) <- CH relay <- CH <- sensor member
                               |
@@ -39,7 +40,7 @@ python -m pip install -r requirements.txt
 python src/run.py
 ```
 
-Lệnh trên chạy `AC-ACO`, `SimpleACO` và `PSO`, rồi ghi mỗi lịch sử vào `runs/<timestamp>_<seed>_<algorithm>.csv`. `run.py` tạo một seed ngẫu nhiên cho mỗi lần chạy và dùng lại seed đó trong cùng benchmark; để tái lập giữa các lần chạy, truyền seed cố định khi khởi tạo thuật toán.
+Lệnh trên chạy `NodeACO`, `PSO`, `AC-ACO` và `NodeACACO`, rồi ghi mỗi lịch sử vào `runs/<timestamp>_<seed>_<algorithm>.csv`. `run.py` tạo một seed ngẫu nhiên cho mỗi lần chạy và dùng lại seed đó trong cùng benchmark; để tái lập giữa các lần chạy, truyền seed cố định khi khởi tạo thuật toán.
 
 ## Map mặc định và tạo map mới
 
@@ -76,7 +77,7 @@ $env:PYTHONPATH='src'
 python -B -m unittest discover -s tests -v
 ```
 
-Hiện chỉ có regression test cho AC-ACO: kiểm tra kết quả seeded trong 10 round, xác nhận `E_m` không bị tính lại trong một round và kiểm tra hai node trùng vị trí. Chưa có test cho clustering, PSO hoặc lần chạy end-to-end của `src/run.py`; cần cài dependencies trước khi chạy simulator.
+Regression tests kiểm tra AC-ACO, PSO và NodeACACO: kết quả seeded, cache chi phí static, node trùng vị trí, fitness/CH count của PSO, node pheromone, adaptive/chaos và các invariant của route. Cần cài dependencies trước khi chạy simulator.
 
 ## Cấu trúc dự án
 

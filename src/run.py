@@ -7,6 +7,7 @@ To try a new algorithm in the future: subclass Algorithm
 nothing else in this file needs to change (unless it needs extra
 constructor arguments, see create_algorithm).
 """
+
 from datetime import datetime
 import random
 import os
@@ -18,25 +19,22 @@ from simulate import Simulator
 from algorithms.aco import SimpleACO
 from algorithms.ac_aco import ACACO
 from algorithms.node_aco import NodeACO
+from algorithms.node_ac_aco import NodeACACO
 from algorithms.pso import PSO
 
-SEED = random.randint(0,100)
+SEED = random.randint(0, 100)
 
-ALGORITHMS = [
-    NodeACO,
-    PSO,
-]
+ALGORITHMS = [NodeACO, PSO, ACACO, NodeACACO]
 
 
 def create_algorithm(algo_cls, network, hparameters):
-    if algo_cls is ACACO:
-        return ACACO(network, hparameters, seed=SEED)
+    if algo_cls in (ACACO, NodeACACO):
+        return algo_cls(network, hparameters, seed=SEED)
 
     return algo_cls(network, hparameters)
 
 
 def main(map_path="map.pkl"):
-
 
     network = NetworkInstance.from_pickle(map_path)
     hparameters = HyperParameters()
@@ -62,8 +60,6 @@ def main(map_path="map.pkl"):
 
         now = datetime.now()
         datetime_string = now.strftime("%Y%m%d%H")
-
-        
 
         history.to_csv(
             f"runs/{datetime_string}_{SEED}_{algorithm.name}.csv",

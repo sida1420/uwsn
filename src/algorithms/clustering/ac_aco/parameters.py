@@ -19,7 +19,7 @@ class ACACOParameters:
     beta_max: float = 5.0
     beta_slope: float = 5.0
     rho_min: float = 0.10
-    rho_max: float = 0.90
+    rho_max: float = 0.90  # baseline evaporation decreases from ~90% to 10%
     chaos_min: float = 0.05
     chaos_max: float = 0.30
     chaos_r: float = 3.61
