@@ -47,7 +47,7 @@ The counters `total_/failed_clustering_attempts` and
 | `pheromone_exponent` | 1.0 | Exponent on tau (labelled `alpha` in the debug line) |
 | `energy_cost_exponent` | 1.0 | Exponent on the inverse hop cost (`gamma` in the debug line) |
 | `beta_min`, `beta_max`, `beta_slope` | 1, 5, 5 | Eq. (14) heuristic-weight schedule |
-| `rho_min`, `rho_max` | 0.10, 0.90 | Eq. (13) evaporation schedule |
+| `rho_min`, `rho_max` | 0.10, 0.90 | Baseline evaporation decreases from approximately 90% to 10% |
 | `chaos_min`, `chaos_max` | 0.05, 0.30 | Range of the chaos strength (Eq. 15) |
 | `chaos_r`, `chaos_seed` | 3.61, 0.37 | Logistic map parameter and seed |
 | `Q`, `tau0` | 100, 1 | Deposit constant and initial pheromone |
@@ -97,21 +97,28 @@ their work still scales with the number of ants and routing attempts.
 
 `T_max` comes from `HyperParameters`, so the schedule horizon matches the
 simulator's round limit.
+The default uses `rho(t) = .90 - .80*t/T_max`.
+With `T_max=3000`, the first round evaporates 89.9733% and the last 10%.
+Pass `ACACOParameters(rho_min=r, rho_max=r)` for a fixed evaporation rate.
+The [five-seed sweep report](../../../../plans/reports/validation-261007-1010-ac-aco-rho-sweep.md)
+compares initial rho .40 through .90. The .50 experiment consumed .301% more
+energy over matched 1000-round runs than .90; the default has been restored to .90.
 
 ## Pheromone update (once per round)
 
 For every ordered pair `(i, j)` of live nodes:
 
 ```text
-tau(i, j) <- clamp( (1 - rho) * tau(i, j)
-                    + [Q / cost  if (i, j) is a consecutive pair in the
-                       winning CH path, else 0]
-                    + strength * chaos[i],
-                    tau_min, tau_max )
+tau(i, j) <- clamp((1 - rho) * tau(i, j) + strength * chaos[i],
+                   tau_min, tau_max)
+tau(i, j) <- tau(i, j) + [Q / cost if (i, j) belongs to the winning CH path]
 ```
 
 `cost` is the total energy of the winning routing tree. Each successful ant
 also deposits `Q / (cost * num_ants)` immediately after its route is scored.
+The winner deposit follows the clamp and can exceed `tau_max`. Probability
+calculations use the snapshot taken in `pre_round`, so per-ant deposits affect
+later rounds rather than later ants of the same round.
 Then `chaos[i]` advances by one logistic step for each live `i`. If every ant
 failed, there is no per-ant deposit, but evaporation and chaos still apply.
 Relay and outlier edges are never reinforced, because ants only choose the CH
