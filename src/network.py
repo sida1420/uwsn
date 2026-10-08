@@ -12,7 +12,18 @@ import pickle
 
 
 class NetworkInstance:
-    def __init__(self, sensors, base_pos, init_energy, width, height, depth, radius):
+    def __init__(
+        self,
+        sensors,
+        base_pos,
+        init_energy,
+        width,
+        height,
+        depth,
+        radius,
+        distribution="normal",
+        num_cluster_points=0,
+    ):
         self.sensors = sensors
         self.base_pos = base_pos
         self.init_energy = init_energy
@@ -20,6 +31,8 @@ class NetworkInstance:
         self.height = height
         self.depth = depth
         self.radius = radius
+        self.distribution = distribution
+        self.num_cluster_points = num_cluster_points
         self.N = len(sensors)
 
         self.dist_matrix = self._build_dist_matrix()
@@ -46,4 +59,6 @@ class NetworkInstance:
             height=raw["height"],
             depth=raw["depth"],
             radius=raw["radius"],
+            distribution=raw.get("distribution", "normal"),
+            num_cluster_points=raw.get("num_cluster_points", 0),
         )

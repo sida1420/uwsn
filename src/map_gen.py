@@ -27,8 +27,14 @@ def gen(
     energy,
     radius,
     base_pos=None,
-    num_cluster_points=0,
+    distribution="normal",
+    num_cluster_points=5,
 ):
+    distribution = distribution.lower()
+    if distribution not in {"normal", "clustered"}:
+        raise ValueError("distribution must be 'normal' or 'clustered'")
+    if distribution == "clustered" and num_cluster_points < 1:
+        raise ValueError("clustered distribution requires num_cluster_points >= 1")
     # Quy ước z là độ sâu:
     # z = 0 là mặt nước, z = depth là đáy.
     if base_pos is None:
@@ -44,7 +50,11 @@ def gen(
     sensors = [random_point() for _ in range(num_sensors)]
 
     # Tâm cụm cũng phải có đủ 3 tọa độ.
-    cluster_points = [random_point() for _ in range(num_cluster_points)]
+    cluster_points = (
+        [random_point() for _ in range(num_cluster_points)]
+        if distribution == "clustered"
+        else []
+    )
 
     if cluster_points:
         for i, sensor in enumerate(sensors):
@@ -64,10 +74,12 @@ def gen(
         "sensors": sensors,
         "init_energy": energy,
         "radius": radius,
+        "distribution": distribution,
+        "num_cluster_points": len(cluster_points),
     }
 
 
-def new_map():
+def new_map(distribution="normal", num_cluster_points=5):
     map_ = gen(
         width=500,
         height=500,
@@ -75,7 +87,8 @@ def new_map():
         num_sensors=100,
         energy=0.6,
         radius=200,
-        num_cluster_points=0,
+        distribution=distribution,
+        num_cluster_points=num_cluster_points,
     )
 
     with open("map.pkl", "wb") as file:
@@ -87,4 +100,15 @@ def new_map():
 
 
 if __name__ == "__main__":
-    new_map()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate a 3D UWSN map")
+    parser.add_argument(
+        "distribution",
+        nargs="?",
+        choices=("normal", "clustered"),
+        default="normal",
+    )
+    parser.add_argument("--clusters", type=int, default=5)
+    args = parser.parse_args()
+    new_map(args.distribution, args.clusters)
