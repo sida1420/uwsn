@@ -44,12 +44,12 @@ class NodeACACOClustering(ACACOClustering):
         disturbed = probabilities + strength * self.chaos[source]
         return (disturbed / disturbed.sum()).tolist()
 
-    def deposit(self, CH_list, cost, per_ant=True):
-        """Reinforce every chosen CH, including a singleton, with hard bounds."""
-        if not CH_list or cost is None or not isfinite(cost) or cost <= 0:
+    def deposit(self, CH_list, fitness, per_ant=True):
+        """Reinforce every CH by the same dimensionless fitness used to rank."""
+        if not CH_list or fitness is None or not isfinite(fitness) or fitness < 0:
             return
         p = self.params
-        amount = p.Q / cost
+        amount = p.Q / max(fitness, p.fitness_eps)
         amount = amount / p.num_ants if per_ant else amount * p.theta
         for node in CH_list:
             self.pheromone[node] = min(max(self.pheromone[node] + amount, p.tau_min), p.tau_max)
@@ -63,8 +63,8 @@ class NodeACACOClustering(ACACOClustering):
             self.chaos[node] = logistic_step(self.chaos[node], p.chaos_r)
 
     def post_round(self, live_sensors, residual_e, consumption, state=None,
-                   candidate_costs=(), CH_list=None):
-        """Preserve ACACO's cost window and update order using node deposits."""
+                   candidate_costs=(), CH_list=None, best_fitness=None):
+        """Keep chaos's joule window; winner reinforcement uses fitness."""
         best_cost = sum(consumption.values()) if CH_list is not None else None
         if candidate_costs:
             round_low, round_high = min(candidate_costs), max(candidate_costs)
@@ -73,13 +73,13 @@ class NodeACACOClustering(ACACOClustering):
         self.previous_cost = best_cost
         self._update_pheromone(state)
         if CH_list is not None:
-            self.deposit(CH_list, best_cost, per_ant=False)
+            self.deposit(CH_list, best_fitness, per_ant=False)
         if self.iteration == 1 or self.iteration % 100 == 0 or best_cost is None:
             values = [self.pheromone[node] for node in state.live]
             print(
                 f"[NodeACACO DEBUG] iter={self.iteration} beta={state.beta:.6g} "
                 f"rho={state.rho:.6g} chaos={state.strength:.6g} "
-                f"feasible={len(candidate_costs)} best_energy={best_cost} "
+                f"feasible={len(candidate_costs)} best_energy={best_cost} fitness={best_fitness} "
                 f"tau_min={min(values):.6g} tau_max={max(values):.6g} "
                 f"tau_mean={sum(values) / len(values):.6g}"
             )

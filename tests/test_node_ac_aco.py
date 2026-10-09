@@ -55,9 +55,11 @@ class NodeACACOTests(unittest.TestCase):
         self.assertEqual(clustering.pheromone[2], self.algorithm.params.tau_max)
         self.assertEqual(clustering.pheromone[1], 1)
         before = list(clustering.pheromone)
-        for cost in (None, 0, -1, float("inf"), float("nan")):
+        for cost in (None, -1, float("inf"), float("nan")):
             clustering.deposit([1], cost)
         self.assertEqual(clustering.pheromone, before)
+        clustering.deposit([1], 0)
+        self.assertEqual(clustering.pheromone[1], self.algorithm.params.tau_max)
 
     def test_heuristic_has_no_extra_distance_factor(self):
         p = replace(NodeACACOParameters(), energy_cost_exponent=0)
