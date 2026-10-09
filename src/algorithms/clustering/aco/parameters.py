@@ -6,7 +6,7 @@ class ACOParameters:
     """
 
     def __init__(self):
-        self.num_ants = 160  # ants per round
+        self.num_ants = 40  # ants per round
         self.CH_proportion = 0.2  # target fraction of live nodes made CH
         self.alpha = 1.0  # pheromone importance
         self.beta = 0.0  # residual energy / distance importance

@@ -66,6 +66,7 @@ class Grid:
         fraction = (
             min(1.0, self.sphere_vol / self.cube_vol)
             * numpy.maximum(1.0 - distance / reach, 0.0) ** 3
+            * self.params.coverage_strength
         )
         fraction = numpy.minimum(fraction, 1.0)
         fraction[distance + self._cell_radius <= self.network.radius] = 1.0
@@ -105,7 +106,8 @@ class DACOClustering(ClusteringAlgorithm):
 
         # Pheromone is associated with candidate CH nodes, not transitions.
         self.pheromone = [self.params.tau0] * network.N
-        self.iteration = 0
+        self.round = -1       # 0-based round number, matches the simulator's round
+        self.iteration = 0    # counts iterations (iterations_per_round per round)
         self.rho = self.params.rho_max
         self._score_components = {
             "pheromone": [],
@@ -114,20 +116,52 @@ class DACOClustering(ClusteringAlgorithm):
         }
         self.last_deposit = 0.0
 
+    # ------------------------------------------------------------------
+    # Round level hooks
+    # ------------------------------------------------------------------
     def pre_round(self, live_sensors, residual_e):
-        self.iteration += 1
-        progress = min(
-            self.iteration / max(getattr(self.hparameters, "T_max", 1), 1),
-            1.0,
-        )
-        self.rho = self.params.rho_max - progress * (
-            self.params.rho_max - self.params.rho_min
-        )
+        """Once per round: density and residual energy do not change inside a round."""
+        self.round += 1
         for values in self._score_components.values():
             values.clear()
         self.grid.compute_density(live_sensors, residual_e)
+
+    def post_round(self, live_sensors, residual_e, consumption, CH_list, fitness=None):
+        """Once per round: debug log of the round's best configuration (throttled)."""
+        every = getattr(self.params, "debug_every", 100)
+        if self.round == 0 or (self.round + 1) % every == 0:
+            self._log_heuristic_dominance(sum(consumption.values()), fitness)
+
+    # ------------------------------------------------------------------
+    # Iteration level hooks
+    # ------------------------------------------------------------------
+    def pre_iteration(self, live_sensors):
+        """Start of one iteration: update rho and pick the ants' start nodes."""
+        self.iteration += 1
+
+        iterations_per_round = getattr(self.params, "iterations_per_round", 1)
+        total_iterations = max(
+            getattr(self.hparameters, "T_max", 1) * iterations_per_round, 1
+        )
+        progress = min(self.iteration / total_iterations, 1.0)
+        self.rho = self.params.rho_max - progress * (
+            self.params.rho_max - self.params.rho_min
+        )
+
         return random.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
 
+    def post_iteration(self, CH_list, fitness):
+        """End of one iteration: evaporate, then add the iteration-best bonus.
+
+        Per-ant deposits already happened in DACO.plan_round.
+        CH_list / fitness may be None if no ant succeeded; then only evaporation runs.
+        """
+        self.deposit(CH_list, fitness, per_ant=False)
+        self._update_pheromone()
+
+    # ------------------------------------------------------------------
+    # Ant construction
+    # ------------------------------------------------------------------
     def create_clusters(self, live_sensors, residual_e, start):
         """
         One clustering attempt for one ant.
@@ -140,16 +174,6 @@ class DACOClustering(ClusteringAlgorithm):
             return None
 
         return build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
-
-    def post_round(self, live_sensors, residual_e, consumption, CH_list, fitness=None):
-        """Evaporate, then add the best-configuration bonus.
-
-        Per-ant deposits already happened in DACO.plan_round.
-        """
-        self._update_pheromone()
-        self.deposit(CH_list, fitness, per_ant=False)
-        if self.iteration == 1 or self.iteration % 100 == 0:
-            self._log_heuristic_dominance(sum(consumption.values()), fitness)
 
     def _make_path(self, live_nodes, residual_e, start_node):
 
@@ -204,15 +228,19 @@ class DACOClustering(ClusteringAlgorithm):
 
         return CH_list
 
+    # ------------------------------------------------------------------
+    # Pheromone
+    # ------------------------------------------------------------------
     def deposit(self, CH_list, cost, per_ant=True):
         """Deposit pheromone on the nodes in a successful CH path."""
         if not CH_list or cost is None or cost <= 0:
             return
 
-        amount = self.params.Q / cost
-        if per_ant:
-            amount /= self.params.num_ants
-        else:
+        # Normalise by ants per ROUND (not per iteration) so the total deposit
+        # per round is the same no matter how the round is split into iterations.
+        ants_per_round = self.params.num_ants * self.params.iterations_per_round
+        amount = self.params.Q / cost / ants_per_round
+        if not per_ant:
             amount *= self.params.theta
         self.last_deposit = amount
 
@@ -235,6 +263,9 @@ class DACOClustering(ClusteringAlgorithm):
             for pheromone in self.pheromone
         ]
 
+    # ------------------------------------------------------------------
+    # Debug
+    # ------------------------------------------------------------------
     def _log_heuristic_dominance(self, cost, fitness):
         spreads = {
             name: (
@@ -246,7 +277,7 @@ class DACOClustering(ClusteringAlgorithm):
         }
         dominant = max(spreads, key=spreads.get)
         print(
-            f"[D-ACO DEBUG] iter={self.iteration} "
+            f"[D-ACO DEBUG] round={self.round} iter={self.iteration} "
             f"alpha={self.params.alpha:.6g} beta={self.params.beta:.6g} "
             f"gamma={self.params.gamma:.6g} rho={self.rho:.6g} "
             f"dominant={dominant} "

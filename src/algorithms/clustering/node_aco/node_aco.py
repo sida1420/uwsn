@@ -46,8 +46,8 @@ class NodeACOClustering(ClusteringAlgorithm):
     def post_round(self, live_sensors, residual_e, consumption, CH_list, fitness=None):
         self.deposit(CH_list, fitness, per_ant=False)  # best-config bonus
         self._update_pheromone()
-        if self.iteration == 1 or self.iteration % 100 == 0:
-            self._log_heuristic_dominance(sum(consumption.values()), fitness)
+        # if self.iteration == 1 or self.iteration % 100 == 0:
+        #     self._log_heuristic_dominance(sum(consumption.values()), fitness)
 
     def _log_heuristic_dominance(self, live_nodes, residual_e):
         """Log average per-source spreads of the weighted path contributions."""
