@@ -15,9 +15,11 @@ class ACACOParameters:
     ch_proportion: float = 0.20
     pheromone_exponent: float = 1.0  # "alpha" on tau
     energy_cost_exponent: float = 1.0  # "gamma" on 1 / E_m
+    distance_weight: float = 1.0  # explicit d^(-beta * weight); E_m is unchanged
     beta_min: float = 1.0
     beta_max: float = 5.0
     beta_slope: float = 5.0
+    beta_schedule: str = "raw"  # normalized uses t/T_max; no endpoint rescaling
     rho_min: float = 0.10
     rho_max: float = 0.90
     chaos_min: float = 0.05
@@ -37,6 +39,8 @@ class ACACOParameters:
             raise ValueError("ch_proportion must be in (0, 1]")
         self._bounds("rho", self.rho_min, self.rho_max, strict_low=True, upper=1)
         self._bounds("beta", self.beta_min, self.beta_max)
+        if self.beta_schedule not in ("raw", "normalized"):
+            raise ValueError("beta_schedule must be raw or normalized")
         self._bounds("chaos", self.chaos_min, self.chaos_max)
         self._bounds("tau", self.tau_min, self.tau_max, strict_low=True)
         if not 3.57 < self.chaos_r < 4:
@@ -45,6 +49,8 @@ class ACACOParameters:
             raise ValueError("chaos_seed must be in (0, 1)")
         if not 0 <= self.hopping_factor <= 1:
             raise ValueError("hopping_factor must be in [0, 1]")
+        if not isfinite(self.distance_weight) or not 0 <= self.distance_weight <= 1:
+            raise ValueError("distance_weight must be finite and in [0, 1]")
         for name in ("pheromone_exponent", "energy_cost_exponent", "beta_slope"):
             value = getattr(self, name)
             if not isfinite(value) or value < 0:

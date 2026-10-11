@@ -35,9 +35,17 @@ def evaporation_rate(iteration, total_iterations, rho_min, rho_max):
     return rho_max - progress * (rho_max - rho_min)
 
 
-def heuristic_weight(iteration, total_iterations, beta_min, beta_max, slope):
-    """Equation (14), evaluated safely for large sigmoid exponents."""
-    exponent = slope * (iteration - total_iterations / 2.0)
+def heuristic_weight(iteration, total_iterations, beta_min, beta_max, slope,
+                     schedule="raw"):
+    """Stable sigmoid; normalized endpoints deliberately do not reach bounds."""
+    if schedule == "raw":
+        exponent = slope * (iteration - total_iterations / 2.0)
+    elif schedule == "normalized":
+        if total_iterations <= 0:
+            raise ValueError("normalized beta requires total_iterations > 0")
+        exponent = slope * (iteration / total_iterations - 0.5)
+    else:
+        raise ValueError("beta schedule must be raw or normalized")
     if exponent >= 0:
         sigmoid = 1.0 / (1.0 + exp(-exponent))
     else:
@@ -137,7 +145,8 @@ class ACACOClustering(ClusteringAlgorithm):
             target=target,
             rho=evaporation_rate(self.iteration, self.total_iterations, p.rho_min, p.rho_max),
             beta=heuristic_weight(
-                self.iteration, self.total_iterations, p.beta_min, p.beta_max, p.beta_slope
+                self.iteration, self.total_iterations, p.beta_min, p.beta_max,
+                p.beta_slope, p.beta_schedule
             ),
             strength=chaos_strength(
                 self.previous_cost, self.lower_cost, self.upper_cost, p.chaos_min, p.chaos_max
@@ -212,16 +221,25 @@ class ACACOClustering(ClusteringAlgorithm):
         """Eq. (20) probabilities, including explicit chaos normalization."""
         targets = np.asarray(available, dtype=np.intp)
         distance = self._distances[source, targets]
-        eta = np.maximum(np.asarray(residual_e, dtype=float)[targets], 0.0) / distance
+        energy = np.maximum(np.asarray(residual_e, dtype=float)[targets], 0.0)
         tau = self._pheromone_array[source, targets]
         log_energy = self._log_edge_costs[source, targets]
-        valid = (tau > 0) & (eta > 0) & np.isfinite(log_energy)
+        valid = (tau > 0) & (energy > 0) & np.isfinite(log_energy)
 
         log_weights = np.full(len(available), -np.inf)
         with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+            # Keep the baseline arithmetic exactly, including seeded trajectories.
+            # Other weights remove only explicit distance bias, never E_m's cost.
+            if self.params.distance_weight == 1.0:
+                log_heuristic = np.log(energy[valid] / distance[valid])
+            else:
+                log_heuristic = (
+                    np.log(energy[valid])
+                    - self.params.distance_weight * np.log(distance[valid])
+                )
             log_weights[valid] = (
                 self.params.pheromone_exponent * np.log(tau[valid])
-                + beta * np.log(eta[valid])
+                + beta * log_heuristic
                 - self.params.energy_cost_exponent * log_energy[valid]
             )
 
@@ -251,6 +269,12 @@ class ACACOClustering(ClusteringAlgorithm):
 
         for source, target in zip(CH_list, CH_list[1:]):
             self.pheromone[source][target] += amount
+            # Ant deposits are accumulated before evaporation's clamp.
+            # Only the elite deposit runs afterward and needs its own clamp.
+            if not per_ant:
+                self.pheromone[source][target] = min(
+                    self.pheromone[source][target], self.params.tau_max
+                )
 
     def _update_pheromone(self, state):
         """Apply evaporation and chaos without adding any pheromone deposit."""
