@@ -22,6 +22,7 @@ while ($true) {
         }
         Clear-Host
         Write-Host ("Optimizer: {0:F1}/{1:F1} active minutes | {2}" -f ($state.spent_wall/60),($cfg.budget_seconds/60),$state.stop_reason)
+        Write-Host 'Time budget is a cutoff for new starts; active trials finish all remaining seeds.'
         $referencePath = Join-Path $Study 'reference.json'
         if (Test-Path -LiteralPath $referencePath) {
             $reference = Get-Content -LiteralPath $referencePath -Raw | ConvertFrom-Json
@@ -37,6 +38,7 @@ while ($true) {
             $job = $property.Value
             $displayStatus = if ($job.status -eq 'running' -and -not $controllerRunning) { 'stopped (stale running status)' } else { $job.status }
             Write-Host "Trial $($property.Name): $displayStatus"
+            if ($job.parameter_origin) { Write-Host "  parameters: $($job.parameter_origin)" }
             if ($job.status -eq 'running' -and $controllerRunning) {
                 $trialPath = Join-Path $Study "trials/$($property.Name)"
                 $seed = Get-Content -LiteralPath (Join-Path $trialPath 'current_seed.json') -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json

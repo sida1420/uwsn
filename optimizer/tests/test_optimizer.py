@@ -24,6 +24,25 @@ class OptimizerTests(unittest.TestCase):
                   'training_seeds':[24], 'map':str(ROOT/'map.pkl'),'adaptive_total_rounds':3000}
     def tearDown(self): self.tmp.cleanup()
 
+    def test_report_exports_complete_winner_without_status_collision(self):
+        import yaml
+        from optimizer.reporting import report
+        params=get('daco').baseline_config()
+        atomic(self.root/'config.json',{**self.cfg,'mode':'scientific'})
+        atomic(self.root/'state.json',dict(stop_reason='deadline_reserve',jobs={
+            '0':dict(status='complete',parameters=params),
+            '1':dict(status='paused',parameters=params)}))
+        atomic(self.root/'reference.json',dict(energy_window=2,cap=1.02))
+        for trial,service in ((0,3000),(1,3500)):
+            atomic(self.root/f'trials/{trial}/aggregate.json',dict(
+                feasible=True,mean_service_capped=service,energy_K_mean=1.,energy_comparable=True))
+        report(self.root)
+        winner=yaml.safe_load((self.root/'best-feasible-config.yaml').read_text())
+        self.assertEqual(winner['trial'],'0');self.assertEqual(winner['status'],'complete')
+        self.assertEqual(winner['validation_status'],'training only; validation pending')
+        self.assertEqual(len(read(self.root/'top-five-trials.json')),1)
+        self.assertTrue((self.root/'final-report.md').exists())
+
     def test_adapter_smokes_and_physical_accounting(self):
         for name in ('daco','pso','acaco'):
             cfg=self.cfg;params=get(name).baseline_config()
@@ -69,6 +88,60 @@ class OptimizerTests(unittest.TestCase):
         atomic(self.root/'config.json',dict(budget_seconds=1))
         atomic(self.root/'state.json',dict(spent_wall=1.))
         self.assertEqual(launch(self.root)['stop_reason'],'deadline_exhausted')
+
+    def test_supervisor_does_not_kill_at_admission_cutoff(self):
+        from optimizer.deadline import launch
+        from unittest.mock import patch,MagicMock
+        atomic(self.root/'config.json',dict(budget_seconds=1))
+        atomic(self.root/'state.json',dict(spent_wall=0.,jobs={}))
+        process=MagicMock();process.pid=123;process.poll.side_effect=[None,0]
+        with patch('optimizer.deadline.subprocess.Popen',return_value=process), \
+             patch('optimizer.deadline.time.monotonic',side_effect=[0.,2.,3.]), \
+             patch('optimizer.deadline.time.sleep'):
+            result=launch(self.root)
+        process.kill.assert_not_called()
+        self.assertFalse((self.root/'STOP').exists())
+        self.assertEqual(result['spent_seconds'],3.)
+
+    def test_cutoff_finishes_active_cohort_without_starting_queued_trial(self):
+        import yaml
+        from unittest.mock import patch
+        from optimizer.engine import open_study
+        cfg=dict(mode='smoke',horizon=2,energy_window=1,training_seeds=[24],
+                 budget_seconds=5,max_trials=3,max_workers=1)
+        config=self.root/'draining.yaml';config.write_text(yaml.safe_dump(cfg));folder=self.root/'draining'
+        initialize(config,folder,PACKAGE/'runs/ready-expanded');cfg=read(folder/'config.json')
+        params=get('daco').baseline_config()
+        result=run_seed(cfg,params,24,self.root/'drain-physical',epoch(cfg))
+        energy=result['energy_K']
+        atomic(folder/'reference.json',dict(energy_window=1,mean=energy,cap=energy*1.02,per_seed={'24':energy}))
+        study,storage=open_study(folder,cfg)
+        jobs={}
+        for _ in range(2):
+            study.enqueue_trial({k:params[k] for k in get('daco').space})
+            trial=study.ask();get('daco').suggest(trial)
+            jobs[str(trial.number)]=dict(number=trial.number,kind='daco',parameters=params,status='paused')
+        storage.remove_session();storage.engine.dispose()
+        atomic(folder/'state.json',dict(spent_wall=0.,jobs=jobs,stop_reason='not_started'))
+        started=[]
+        class Process:
+            pid=os.getpid()
+            def __init__(self,target,args): self.job=args[1];self.checked=False
+            def start(self):
+                started.append(self.job['number'])
+                atomic(folder/'trials'/str(self.job['number'])/'outcome.json',dict(status='complete',runs=[result]))
+            def is_alive(self):
+                if not self.checked: self.checked=True;time.sleep(5.1);return True
+                return False
+            def join(self,timeout=None): pass
+            def terminate(self): raise AssertionError('Budget must not kill the active trial')
+        class Context: pass
+        context=Context();context.Process=Process
+        with patch('optimizer.engine.mp.get_context',return_value=context): final=run(folder)
+        self.assertEqual(started,[0])
+        self.assertEqual(final['jobs']['0']['status'],'complete')
+        self.assertEqual(final['jobs']['1']['status'],'paused')
+        self.assertEqual(final['stop_reason'],'budget_closed_active_finished')
 
     def test_epoch_guard_avoids_repeated_hashing(self):
         from unittest.mock import patch

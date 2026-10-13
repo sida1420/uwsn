@@ -15,7 +15,7 @@ DEFAULT=dict(algorithm='daco',mode='scientific',study_role='training',horizon=35
              energy_window=2611,energy_window_policy='reference',reference_window_fraction=.9,
              energy_allowance=.02,training_seeds=[24,25,26],budget_seconds=5400,
              max_trials=32,max_workers=2,checkpoint_every=25,max_disk_mb=4096,worker_memory_mb=1024,
-             startup_trials=6,sampler_seed=20261013,shutdown_reserve_seconds=300,max_retries=1)
+             startup_trials=6,sampler_seed=20261013,max_retries=1)
 
 def same_process(pid,created):
     try: return psutil.Process(pid).create_time()==created
@@ -24,13 +24,14 @@ def same_process(pid,created):
 def initialize(config,folder,legacy):
     import yaml
     from optimizer import ROOT
-    cfg={**DEFAULT,**(yaml.safe_load(Path(config).read_text()) or {})}
+    raw=yaml.safe_load(Path(config).read_text()) or {}
+    raw.pop('shutdown_reserve_seconds',None)  # legacy hard-deadline field
+    cfg={**DEFAULT,**raw}
     if set(cfg)-set(DEFAULT)-{'map'}: raise ValueError('Unknown config fields')
     if cfg['algorithm']!='daco': raise ValueError('Only D-ACO tuning is authorized; other adapters are smoke-only')
     for name in ('horizon','adaptive_total_rounds','energy_window','budget_seconds','max_trials','max_workers','checkpoint_every','max_disk_mb','worker_memory_mb','startup_trials'):
         if type(cfg[name]) is not int or cfg[name]<1: raise ValueError(f'Invalid {name}')
     if cfg['mode'] not in ('smoke','scientific') or cfg['study_role']!='training': raise ValueError('Invalid study mode/role')
-    if not 0<cfg['shutdown_reserve_seconds']<cfg['budget_seconds']: raise ValueError('Invalid reserve')
     if cfg['max_retries'] not in (0,1): raise ValueError('At most one retry')
     if cfg['energy_window']>cfg['horizon']: raise ValueError('Energy window exceeds horizon')
     if cfg['energy_window_policy'] not in ('reference','fixed'): raise ValueError('Invalid energy window policy')
@@ -94,13 +95,15 @@ def run(folder,workers=None):
             state['spent_wall']=spent+time.monotonic()-start;atomic(folder/'state.json',state)
             if sampler: atomic(folder/'sampler.pkl',study.sampler,binary=True)
         context=mp.get_context('spawn');last_save=0.;reason=None
+        draining=bool(state.get('drain_trials'))
         try:
             while True:
                 elapsed=spent+time.monotonic()-start
-                reserve=min(cfg['shutdown_reserve_seconds'],cfg['budget_seconds']*.1)
                 remaining=cfg['budget_seconds']-elapsed
                 if (folder/'STOP').exists(): reason=reason or 'operator_stop'
-                if remaining<=reserve: reason=reason or 'deadline_reserve'
+                if remaining<=0 and not draining:
+                    draining=True;state['drain_trials']=list(active)
+                if draining: state['stop_reason']='finishing_active_trials'
                 if disk_mb(folder)>=cfg['max_disk_mb']*.9: reason=reason or 'disk_budget'
                 for key,process in list(active.items()):
                     if process.is_alive():
@@ -142,28 +145,20 @@ def run(folder,workers=None):
                 if not (folder/'reference.json').exists() and 'reference' not in state['jobs']:
                     state['jobs']['reference']=dict(number='reference',kind='simple',parameters={},status='paused')
                 reference_ready=(folder/'reference.json').exists()
-                pending=[(k,j) for k,j in state['jobs'].items() if j['status']=='paused' and k not in active]
-                if not pending and reference_ready and len(study.trials)<cfg['max_trials'] and len(active)<worker_limit:
-                    completed=[j for j in state['jobs'].values() if j['status']=='complete' and j['number']!='reference']
-                    durations=[]
-                    for j in completed:
-                        out=read(folder/'trials'/str(j['number'])/'outcome.json');durations.append(sum(r['wall'] for r in out['runs']))
-                    # Conservative scheduling estimate; partial cohorts are never objective observations.
-                    estimate=max(durations[-5:])*1.25 if durations else 0.
-                    # A different algorithm's reference timing cannot establish
-                    # D-ACO cost. Admit the first cohort, then use measured D-ACO
-                    # durations; the outer deadline protects the total budget.
-                    if estimate and remaining-reserve<estimate:
-                        if not active: reason='insufficient_cohort_time';continue
-                    else:
-                        priorities=read(folder/'anchors.json');number=len(study.trials)
-                        waiting=any(t.state==optuna.trial.TrialState.WAITING for t in study.get_trials(deepcopy=False))
-                        if number<len(priorities) and not waiting: study.enqueue_trial({k:priorities[number][k] for k in get(cfg['algorithm']).space},skip_if_exists=True)
-                        trial=study.ask()
-                        try: parameters=get(cfg['algorithm']).suggest(trial)
-                        except ValueError: study.tell(trial.number,state=optuna.trial.TrialState.FAIL);persist(sampler=True);continue
-                        state['jobs'][str(trial.number)]=dict(number=trial.number,kind=cfg['algorithm'],parameters=parameters,status='paused')
-                        persist(sampler=True);continue
+                pending=[(k,j) for k,j in state['jobs'].items() if j['status']=='paused' and k not in active
+                         and (not draining or k in state['drain_trials'])]
+                if draining and not active and not pending:
+                    reason='budget_closed_active_finished';break
+                if not draining and not pending and reference_ready and len(study.trials)<cfg['max_trials'] and len(active)<worker_limit:
+                    priorities=read(folder/'anchors.json');number=len(study.trials)
+                    waiting=any(t.state==optuna.trial.TrialState.WAITING for t in study.get_trials(deepcopy=False))
+                    if number<len(priorities) and not waiting: study.enqueue_trial({k:priorities[number][k] for k in get(cfg['algorithm']).space},skip_if_exists=True)
+                    trial=study.ask()
+                    try: parameters=get(cfg['algorithm']).suggest(trial)
+                    except ValueError: study.tell(trial.number,state=optuna.trial.TrialState.FAIL);persist(sampler=True);continue
+                    origin='reused_anchor' if trial.system_attrs.get('fixed_params') else 'sampler_proposal'
+                    state['jobs'][str(trial.number)]=dict(number=trial.number,kind=cfg['algorithm'],parameters=parameters,status='paused',parameter_origin=origin)
+                    persist(sampler=True);continue
                 for key,job in pending:
                     if len(active)>=worker_limit: break
                     if key!='reference' and not reference_ready: continue

@@ -1,13 +1,16 @@
 {
-  "prepared_study": "optimizer/runs/service3500-adaptive",
-  "provenance_sha256": "ED5E9AC0397381C69A47FE532B98468A012E1E8201649452166457563FC315C6",
-  "window": 2073,
-  "policy": "90 percent of shortest fully alive reference prefix, capped at configured limit",
-  "tests": "16 optimizer tests passed; focused final small-map and cache mismatch checks passed; 2 map seed tests passed",
-  "windows_syntax": "Both scripts passed",
-  "full_campaign_restarted": false,
-  "reference_measurements_reused": true,
-  "checkpoints_imported": false,
-  "time_budget_carried": true,
-  "current_map_unchanged": true
+  "campaign": "optimizer/runs/service3500-adaptive",
+  "budget_policy": "close new admissions, finish active cohorts",
+  "finish_only_trials": [
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "trial5_parameter_origin": "user_rounded_previous_parameters",
+  "tests": "20 optimizer tests passed; both Windows scripts passed syntax checks",
+  "native_science_unchanged": true,
+  "checkpoint_progress_preserved": true,
+  "spent_time_preserved": true,
+  "full_campaign_restarted": false
 }

@@ -147,7 +147,8 @@ not tuned, in the previous expanded study.
 
 Performance changes: hash sources at entry/completion and on file-stat changes between
 checkpoints; persist state on transitions or every2s; pickle sampler on ask/tell only;
-prioritize old feasible settings, deduplicate exact configs, and admit new trials based
-on a conservative observed full-cohort duration. No proxy scores enter final ranking.
+prioritize old feasible settings and deduplicate exact configs. New starts stop at
+the cumulative budget cutoff; active cohorts finish every seed without a timer kill.
+No proxy scores enter final ranking; reused parameter sets are labeled explicitly.
 Concurrent suggestion order can differ; native RNG/physical state checkpoints remain exact.
 ''',encoding='utf-8')

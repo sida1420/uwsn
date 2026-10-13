@@ -14,7 +14,8 @@ the same cumulative 90-minute ledger. There is no separate two-hour session limi
 For either an increase or decrease in workers, press **S**, wait until the controller
 has stopped, then resume with the new count. Extra unfinished trials stay paused
 with their checkpoints and resume when worker slots are free, provided campaign
-time remains. They are not deleted. A running controller keeps its existing count.
+time remains. After the admission cutoff, only trials already selected for
+completion resume; other queued trials remain paused. A running controller keeps its existing count.
 
 Choose **6** to prepare another campaign for the current map, then **1** to run it.
 Each new map gets a separate study; old results remain intact. A disconnected
@@ -22,11 +23,14 @@ deployment is rejected during preparation because full-network service is
 physically impossible from the start.
 
 This is a new campaign budget, not an extension/reset of the previous study.
-The outer supervisor includes startup, references, trajectories, flush, reporting
-and shutdown. It reserves the last five minutes for stopping/reporting and kills
-unfinished child processes at the deadline. Process termination and final atomic
-bookkeeping have unavoidable OS scheduling latency; this is not a hard realtime system.
-Interrupted trajectories remain incomplete and never enter the final ranking.
+The cumulative 90-minute budget is an admission cutoff. At that point no new
+trials start; active trials finish every remaining seed and enter the final
+ranking normally. Actual elapsed time can exceed 90 minutes and remains recorded
+in the ledger. There is no five-minute reserve or timer-triggered termination.
+Press S to checkpoint and stop immediately, including during this finishing phase.
+Partial cohorts remain excluded. Reports distinguish reused anchors, sampler
+proposals, and user-supplied rounded parameter sets; rerunning a known set is
+validation on this map, not evidence that the optimizer discovered it.
 
 The objective is completed service lifetime capped at **3500**, with
 **T_max=3500** explicitly applied to algorithm instances. The +2% cohort mean
@@ -61,7 +65,7 @@ carries over the spent-time ledger; it imports no trial scores or algorithm stat
 
 Efficiency changes: stat-based epoch guards between full hashes at boundaries;
 state writes on transitions/every2s; sampler writes on ask/tell; old feasible
-settings first; exact-anchor deduplication; conservative measured cohort-time
+settings first; exact-anchor deduplication; budget-based trial
 admission. They reduce bookkeeping, not physical evaluation effort. No speedup
 percentage is claimed. High-dimensional TPE with few trials is not an optimality proof.
 

@@ -14,7 +14,8 @@ def launch(folder,workers=None):
         state=read(folder/'state.json')
         ledger=read(ledger_path) if ledger_path.exists() else dict(spent_seconds=state['spent_wall'])
         spent=max(ledger['spent_seconds'],state['spent_wall']);remaining=cfg['budget_seconds']-spent
-        if remaining<=0: return dict(stop_reason='deadline_exhausted',spent_seconds=spent)
+        unfinished=[k for k in state.get('drain_trials',[]) if state['jobs'].get(k,{}).get('status')=='paused']
+        if remaining<=0 and not unfinished: return dict(stop_reason='deadline_exhausted',spent_seconds=spent)
         command=[sys.executable,'-B','-m','optimizer','_run','--study',str(folder)]
         if workers is not None: command+=['--workers',str(workers)]
         begin=time.monotonic();process=subprocess.Popen(command)
@@ -23,19 +24,13 @@ def launch(folder,workers=None):
             while process.poll() is None:
                 elapsed=time.monotonic()-begin
                 atomic(ledger_path,dict(spent_seconds=spent+elapsed,pid=process.pid))
-                if elapsed>=remaining-min(cfg['shutdown_reserve_seconds'],remaining*.1): (folder/'STOP').touch()
-                if elapsed>=remaining:
-                    hard_stop=True
-                    try:
-                        children=psutil.Process(process.pid).children(recursive=True)
-                        for child in children: child.kill()
-                    except psutil.Error: pass
-                    process.kill();break
-                time.sleep(min(.5,max(.01,remaining-elapsed)))
+                # The budget closes admission in the controller. It does not
+                # interrupt active cohorts, including their remaining seeds.
+                time.sleep(.5)
             process.wait(timeout=2)
         except KeyboardInterrupt:
             (folder/'STOP').touch()
-            try: process.wait(timeout=min(15,max(0,remaining-(time.monotonic()-begin))))
+            try: process.wait(timeout=15)
             except subprocess.TimeoutExpired:
                 try:
                     for child in psutil.Process(process.pid).children(recursive=True): child.kill()
