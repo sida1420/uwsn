@@ -115,4 +115,124 @@ class OptimizerTests(unittest.TestCase):
         self.assertEqual(again['jobs']['0']['status'],'complete')
         self.assertNotIn('pid',again['jobs']['0'])
 
+    def test_noncomparable_reference_stops_without_proposing_trials(self):
+        import yaml
+        from unittest.mock import patch
+        from optimizer.reference import ReferenceUnavailable
+        cfg=dict(mode='smoke',horizon=2,adaptive_total_rounds=3500,energy_window=1,
+                 training_seeds=[24],max_trials=1,budget_seconds=120,max_workers=1,shutdown_reserve_seconds=10)
+        config=self.root/'ineligible.yaml';config.write_text(yaml.safe_dump(cfg));folder=self.root/'ineligible'
+        initialize(config,folder,PACKAGE/'runs/ready-expanded')
+        with patch('optimizer.engine.from_runs',side_effect=ReferenceUnavailable('Reference dies before K')):
+            result=run(folder)
+        self.assertEqual(result['stop_reason'],'reference_not_comparable')
+        self.assertEqual(result['jobs']['reference']['status'],'not_comparable')
+        self.assertEqual(list(result['jobs']),['reference'])
+        self.assertFalse((folder/'reference.json').exists())
+        self.assertEqual(read(folder/'reference-error.json')['message'],'Reference dies before K')
+        self.assertTrue((folder/'final-report.md').exists())
+
+    def test_reference_window_depends_only_on_baseline(self):
+        from optimizer.reference import from_runs,ReferenceUnavailable
+        runs=[dict(seed=24,all_alive_energy_prefix=[1.,2.,3.,4.,5.]),
+              dict(seed=25,all_alive_energy_prefix=[2.,4.,6.])]
+        cfg={**self.cfg,'energy_window':5}
+        result=from_runs(runs,cfg)
+        self.assertEqual(result['energy_window'],2)
+        self.assertEqual(result['mean'],3.)
+        self.assertAlmostEqual(result['cap'],3.06)
+        self.assertEqual(result['available_prefix_per_seed'],{'24':5,'25':3})
+        with self.assertRaises(ReferenceUnavailable): from_runs(runs,{**cfg,'energy_window_policy':'fixed'})
+
+    def test_prefix_excludes_death_round_and_supports_any_node_count(self):
+        from optimizer.reference import energy_prefix
+        rows=[dict(round=1,alive_before=12,alive_after=12,served=12,selected_tree_physical_energy=.5),
+              dict(round=2,alive_before=12,alive_after=11,served=12,selected_tree_physical_energy=.4)]
+        self.assertEqual(energy_prefix(rows,12),[.5])
+
+    def test_observer_preserves_empty_deposit_and_route_failure(self):
+        from optimizer.trajectory import observe
+        from unittest.mock import patch
+        import pickle,random
+        n=NetworkInstance.from_pickle(self.cfg['map']);h=HyperParameters()
+        a=get('daco').make_algorithm(n,h,{},24)
+        a.references=__import__('algorithms.clustering.d_aco.fitness',fromlist=['FitnessReferences']).FitnessReferences(1.,1.)
+        before=a.clustering.pheromone.copy();rng=a.random_source.getstate()
+        with observe(a) as counts:
+            a.clustering.deposit(None,None,1.,False)
+            a.clustering.deposit([],None,1.,False)
+        self.assertEqual(before,a.clustering.pheromone)
+        self.assertEqual(rng,a.random_source.getstate())
+        self.assertEqual(counts['n_rewarded_items'],0)
+        pickle.dumps(a)
+        with patch.object(a,'_run_ant',return_value=None):
+            with redirect_stdout(StringIO()),observe(a): root,costs=a.plan_round(list(range(n.N)),[n.init_energy]*n.N)
+        self.assertIsNone(root);self.assertEqual(costs,{})
+
+    def test_map_snapshot_survives_source_regeneration(self):
+        import yaml
+        from optimizer.storage import digest
+        source=self.root/'input-map.pkl';source.write_bytes((ROOT/'map.pkl').read_bytes())
+        cfg=dict(mode='smoke',horizon=2,energy_window=1,max_trials=1,map=str(source))
+        config=self.root/'snapshot.yaml';config.write_text(yaml.safe_dump(cfg));folder=self.root/'snapshot'
+        initialize(config,folder,PACKAGE/'runs/ready-expanded')
+        expected=read(folder/'provenance.json');source.write_bytes(b'regenerated source map')
+        from optimizer.provenance import assert_campaign
+        frozen=assert_campaign(folder)
+        self.assertEqual(digest(frozen['map']),expected['map_sha'])
+
+    def test_candidate_window_cannot_change_on_resume(self):
+        params=get('daco').baseline_config();expected=epoch(self.cfg);folder=self.root/'window'
+        run_seed(self.cfg,params,24,folder,expected,energy_window=1)
+        with self.assertRaisesRegex(ValueError,'identity mismatch'):
+            run_seed(self.cfg,params,24,folder,expected,energy_window=2)
+
+    def test_completed_reference_import_keeps_time_and_skips_replay(self):
+        import yaml
+        from optimizer.reference_cache import import_reference
+        cfg=dict(mode='smoke',horizon=3,energy_window=3,max_trials=1,training_seeds=[24],
+                 budget_seconds=120,shutdown_reserve_seconds=10)
+        config=self.root/'cached.yaml';config.write_text(yaml.safe_dump(cfg))
+        source=self.root/'cached-source';target=self.root/'cached-target'
+        initialize(config,source,PACKAGE/'runs/ready-expanded');initialize(config,target,PACKAGE/'runs/ready-expanded')
+        saved=read(source/'config.json')
+        baseline=run_seed(saved,{},24,source/'trials/reference/24',read(source/'provenance.json'),kind='simple')
+        atomic(source/'trials/reference/outcome.json',dict(status='complete',runs=[baseline]))
+        state=read(source/'state.json');state.update(spent_wall=17.,jobs={'reference':dict(status='complete')})
+        atomic(source/'state.json',state);atomic(source/'deadline-ledger.json',dict(spent_seconds=19.))
+        reference=import_reference(source,target)
+        self.assertEqual(reference['energy_window'],2)
+        self.assertGreaterEqual(read(target/'state.json')['spent_wall'],19.)
+        self.assertFalse((target/'trials/reference/24/checkpoint.pkl').exists())
+        self.assertEqual(read(target/'reference-import.json')['carried_spent_seconds'],19.)
+        result=run(target)
+        self.assertEqual(result['stop_reason'],'trial_budget')
+        self.assertEqual(read(target/'trials/0/aggregate.json')['energy_window'],2)
+        rejected=self.root/'wrong-map-import';initialize(config,rejected,PACKAGE/'runs/ready-expanded')
+        corrupted=read(source/'provenance.json');corrupted['map_sha']='different map'
+        atomic(source/'provenance.json',corrupted)
+        with self.assertRaisesRegex(ValueError,'Reference map differs'): import_reference(source,rejected)
+        self.assertFalse((rejected/'reference.json').exists())
+        self.assertEqual(read(rejected/'state.json')['spent_wall'],0.)
+
+    def test_small_maps_and_disconnection_preflight(self):
+        import yaml,pickle
+        from point import Point
+        for count,radius in ((10,40),(25,100)):
+            network=NetworkInstance([Point(i,0,0) for i in range(count)],Point(0,0,0),.6,100,100,100,radius)
+            source=self.root/f'map-{count}.pkl';source.write_bytes(pickle.dumps(vars(network)))
+            config=self.root/f'map-{count}.yaml';config.write_text(yaml.safe_dump(dict(
+                mode='smoke',horizon=2,energy_window=1,max_trials=1,training_seeds=[24],map=str(source))))
+            study=self.root/f'study-{count}';initialize(config,study,PACKAGE/'runs/ready-expanded')
+            cfg=read(study/'config.json')
+            for kind in ('simple','daco'):
+                result=run_seed(cfg,{},24,self.root/f'{kind}-{count}',epoch(cfg),kind=kind)
+                self.assertEqual(result['initial_nodes'],count)
+                self.assertEqual(len(result['all_alive_energy_prefix']),2)
+        network=NetworkInstance([Point(200,0,0)],Point(0,0,0),.6,300,100,100,10)
+        source=self.root/'disconnected.pkl';source.write_bytes(pickle.dumps(vars(network)))
+        config=self.root/'disconnected.yaml';config.write_text(yaml.safe_dump(dict(map=str(source))))
+        with self.assertRaisesRegex(ValueError,'disconnected nodes'):
+            initialize(config,self.root/'disconnected',PACKAGE/'runs/ready-expanded')
+
 if __name__=='__main__': unittest.main()

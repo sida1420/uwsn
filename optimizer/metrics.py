@@ -4,6 +4,8 @@ from statistics import mean, stdev
 
 def aggregate(runs,reference,cfg):
     if [r['seed'] for r in runs]!=cfg['training_seeds']: raise ValueError('Incomplete or wrong seed cohort')
+    window=reference['energy_window']
+    if any(r['energy_window']!=window for r in runs): raise ValueError('Candidates must use the frozen reference energy window')
     comparable=all(r['energy_status']=='comparable' for r in runs)
     energy=mean(r['energy_K'] for r in runs) if comparable else None
     cap=reference['cap']
@@ -15,7 +17,7 @@ def aggregate(runs,reference,cfg):
         service_standard_error=stdev(service)/math.sqrt(len(service)) if len(service)>1 else None,
         mean_fnd_observed_only=mean(observed) if observed else None,
         fnd_observed_count=len(observed),service_terminations=[r['termination_reason'] for r in runs],
-        energy_K_mean=energy,energy_K_reference_mean=reference['mean'],
+        energy_K_mean=energy,energy_K_reference_mean=reference['mean'],energy_window=window,
         energy_constraint_delta_j=delta,energy_ratio=energy/reference['mean'] if comparable else None,
         energy_comparable=comparable,energy_status='comparable' if comparable else 'not_comparable',
         energy_ratios_per_seed=ratios,

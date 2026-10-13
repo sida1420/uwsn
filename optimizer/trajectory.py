@@ -8,6 +8,7 @@ from optimizer.storage import atomic,read,lock,unpickle
 from optimizer.diagnostics import observe as native_observe,tree_metrics,reachable,owner_alive
 from optimizer.adapters import get
 from optimizer.provenance import EpochGuard
+from optimizer.reference import energy_prefix
 from network import NetworkInstance
 from hparameter import HyperParameters
 
@@ -32,6 +33,8 @@ def observe(a):
         if hasattr(a,'references'):
             original=a.clustering.deposit
             def deposit(chs,fitness,reference,per_ant=True):
+                if not chs or fitness is None or fitness<=0:
+                    return original(chs,fitness,reference,per_ant)
                 amount=a.params.Q*reference/fitness if fitness and fitness>0 else 0.
                 amount=amount/a.params.num_ants if per_ant else amount*a.params.theta
                 before=sum(a.clustering.pheromone[node] for node in chs)
@@ -50,10 +53,12 @@ def observe(a):
             if original is not None: a.clustering.deposit=original
             if local_choices is not None: del source.choices
 
-def run_seed(cfg,requested,seed,folder,epoch,kind='daco',owner=None,pause_after=None):
+def run_seed(cfg,requested,seed,folder,epoch,kind='daco',owner=None,pause_after=None,energy_window=None):
     folder=Path(folder);folder.mkdir(parents=True,exist_ok=True)
     adapter=get(kind);effective=adapter.effective_config(requested)
-    identity=dict(epoch=epoch,config=cfg,requested=requested,effective=effective,seed=seed,kind=kind,
+    window=cfg['energy_window'] if energy_window is None else energy_window
+    if type(window) is not int or not 1<=window<=cfg['horizon']: raise ValueError('Invalid resolved energy window')
+    identity=dict(epoch=epoch,config=cfg,requested=requested,effective=effective,seed=seed,kind=kind,energy_window=window,
                   adapter_version=adapter.adapter_version,native_fitness_id=adapter.native_fitness_id)
     guard=EpochGuard(cfg,epoch)
     with lock(folder/'seed.lock'):
@@ -113,11 +118,13 @@ def run_seed(cfg,requested,seed,folder,epoch,kind='daco',owner=None,pause_after=
             state['records'].append(row)
             if t%cfg['checkpoint_every']==0: save()
             if not state['live']: break
-        save();guard.check(force=True);records=state['records'];K=cfg['energy_window']
+        save();guard.check(force=True);records=state['records'];K=window
+        curve=energy_prefix(records,network.N)
         comparable=len(records)>=K and all(r['alive_before']==r['alive_after']==r['served']==network.N for r in records[:K])
         seen,disconnected=reachable(network,state['live'])
         result=dict(identity=identity,seed=seed,completed_rounds=len(records),FND=state['FND'],HND=state['HND'],LND=state['LND'],
-                    energy_status='comparable' if comparable else 'not_comparable',
+                    energy_status='comparable' if comparable else 'not_comparable',energy_window=K,
+                    initial_nodes=network.N,all_alive_energy_prefix=curve,
                     energy_K=sum(r['selected_tree_physical_energy'] for r in records[:K]) if comparable else None,
                     termination_reason=reason,horizon_censored=reason=='horizon',residual=state['residual'],alive=state['live'],
                     cpu=state['cpu'],wall=state['wall'],calibration_cpu=state['calibration_cpu'],
@@ -134,9 +141,10 @@ def worker(study,job,token):
     study=Path(study);folder=study/'trials'/str(job['number'])
     try:
         cfg=read(study/'config.json');epoch=read(study/'provenance.json');runs=[]
+        window=cfg['energy_window'] if job['kind']=='simple' else read(study/'reference.json')['energy_window']
         for seed in cfg['training_seeds']:
             atomic(folder/'current_seed.json',dict(seed=seed,started=time.time()))
-            result=run_seed(cfg,job['parameters'],seed,folder/str(seed),epoch,kind=job['kind'],owner=token)
+            result=run_seed(cfg,job['parameters'],seed,folder/str(seed),epoch,kind=job['kind'],owner=token,energy_window=window)
             if result.get('paused'): atomic(folder/'outcome.json',dict(status='paused'));return
             runs.append(result)
         atomic(folder/'outcome.json',dict(status='complete',runs=runs))

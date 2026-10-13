@@ -1,0 +1,8 @@
+test_seed_range_and_pickle_metadata (test_map_seeding.MapSeedingTests.test_seed_range_and_pickle_metadata) ... ok
+test_seed_reproduces_points_and_preserves_global_rng (test_map_seeding.MapSeedingTests.test_seed_reproduces_points_and_preserves_global_rng) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.031s
+
+OK
+Map seed: 09; saved to C:\Users\hgtfh\AppData\Local\Temp\tmp63md1b5m\map.pkl

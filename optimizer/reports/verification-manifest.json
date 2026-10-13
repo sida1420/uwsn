@@ -1,11 +1,13 @@
 {
-  "prepared_study": "optimizer/runs/service3500",
-  "provenance": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\optimizer\\runs\\service3500\\provenance.json",
-  "provenance_sha256": "EC624F82601FEB5ADD6A083F93C058E39C6C058DC96AA7921086D6C2D5483EF3",
-  "tests": "9 optimizer tests passed, including native D-ACO equivalence, private RNG checkpoints, killed-worker recovery, stale PID restart, controller and supervisor resume",
-  "test_log": "optimizer/reports/verification/cleanup-tests.log",
-  "powershell_syntax": "Both Windows launcher scripts passed",
-  "tuning_launched": false,
-  "old_studies_preserved": true,
-  "nested_optimizer_removed": true
+  "prepared_study": "optimizer/runs/service3500-adaptive",
+  "provenance_sha256": "ED5E9AC0397381C69A47FE532B98468A012E1E8201649452166457563FC315C6",
+  "window": 2073,
+  "policy": "90 percent of shortest fully alive reference prefix, capped at configured limit",
+  "tests": "16 optimizer tests passed; focused final small-map and cache mismatch checks passed; 2 map seed tests passed",
+  "windows_syntax": "Both scripts passed",
+  "full_campaign_restarted": false,
+  "reference_measurements_reused": true,
+  "checkpoints_imported": false,
+  "time_budget_carried": true,
+  "current_map_unchanged": true
 }

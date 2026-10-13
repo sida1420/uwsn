@@ -3,7 +3,8 @@
 One optimizer implementation lives directly in `optimizer/`. Historical studies
 and checkpoints remain under `runs/`; the old implementation is available in Git.
 All five production algorithms support isolated per-instance random seeds.
-The current `service3500` campaign is prepared and has not been launched.
+The selected campaign is recorded in `active-study.json`; each campaign stores
+its own frozen `map.pkl` so regenerating the source map cannot change it.
 
 After approving a new campaign, double-click **Run-Optimizer-Windows.bat**, choose **1**,
 then choose parallel runs (1–4, initially two). Q closes the display; S stops and
@@ -15,6 +16,11 @@ has stopped, then resume with the new count. Extra unfinished trials stay paused
 with their checkpoints and resume when worker slots are free, provided campaign
 time remains. They are not deleted. A running controller keeps its existing count.
 
+Choose **6** to prepare another campaign for the current map, then **1** to run it.
+Each new map gets a separate study; old results remain intact. A disconnected
+deployment is rejected during preparation because full-network service is
+physically impossible from the start.
+
 This is a new campaign budget, not an extension/reset of the previous study.
 The outer supervisor includes startup, references, trajectories, flush, reporting
 and shutdown. It reserves the last five minutes for stopping/reporting and kills
@@ -22,9 +28,16 @@ unfinished child processes at the deadline. Process termination and final atomic
 bookkeeping have unavoidable OS scheduling latency; this is not a hard realtime system.
 Interrupted trajectories remain incomplete and never enter the final ranking.
 
-The new objective is completed full-service lifetime capped at **3500**, with
-**T_max=3500** explicitly applied to algorithm instances. K=2611 fully alive/served
-rounds and the +2% cohort mean energy rule remain. Ant count stays40; one D-ACO
+The objective is completed service lifetime capped at **3500**, with
+**T_max=3500** explicitly applied to algorithm instances. The +2% cohort mean
+energy rule remains. The reference chooses K once, before any D-ACO proposal:
+`min(energy_window, floor(reference_window_fraction * shortest all-alive reference prefix))`,
+with a one-round minimum if a usable prefix exists. Defaults are a 2611-round
+limit and a 0.9 fraction. Every seed and candidate uses the same frozen K; an
+early-dying candidate is infeasible. No candidate changes its own denominator.
+Use `energy_window_policy: fixed` to require an exact K instead. If SimpleACO
+has no fully alive/served round, the campaign stops with a clear explanation.
+Ant count stays40; one D-ACO
 batch per network round. Production defaults and physics are not modified.
 
 Previous trials25,30,15,1,2 seed the search, followed by deduplicated baseline and
@@ -39,8 +52,12 @@ Adapter versions, native fitness identity and requested/effective parameters are
 recorded per trajectory. Native fitness, search effort and equations remain intact.
 Adapters pass the cohort seed explicitly. Private RNG state is included in
 checkpoints; entropy observation uses that same stream without extra draws.
-The prepared flat-layout epoch supersedes earlier unstarted preparations, whose
-source fingerprints are now stale. Old checkpoints are never migrated.
+Source changes require a new epoch. Algorithm checkpoints are never migrated.
+Completed SimpleACO measurements can be imported with `init --reference-from`
+only after exact map, simulation sources, runtime, native parameters and cohort
+checks. Map-generator-only source changes are allowed because the exact map
+bytes still match. Import reconstructs energy from saved round records and
+carries over the spent-time ledger; it imports no trial scores or algorithm states.
 
 Efficiency changes: stat-based epoch guards between full hashes at boundaries;
 state writes on transitions/every2s; sampler writes on ask/tell; old feasible
@@ -55,10 +72,10 @@ $py = 'C:/Users/hgtfh/.cache/codex-runtimes/codex-primary-runtime/dependencies/p
 # Initialization is already prepared; these show how to create another unique campaign.
 & $py -B -m optimizer init --config optimizer/config.example.yaml --study optimizer/runs/new-id --legacy optimizer/runs/ready-expanded
 # Launch only after approval. The prepared campaign uses this path:
-& $py -B -m optimizer run --study optimizer/runs/service3500 --workers 2
-& $py -B -m optimizer status --study optimizer/runs/service3500
-& $py -B -m optimizer stop --study optimizer/runs/service3500
-& $py -B -m optimizer report --study optimizer/runs/service3500
+& $py -B -m optimizer run --study optimizer/runs/service3500-adaptive --workers 2
+& $py -B -m optimizer status --study optimizer/runs/service3500-adaptive
+& $py -B -m optimizer stop --study optimizer/runs/service3500-adaptive
+& $py -B -m optimizer report --study optimizer/runs/service3500-adaptive
 ```
 
 Only public `run` uses the outer deadline supervisor; `_run` is an internal child
@@ -88,6 +105,6 @@ Queued parameters are reevaluated; `add_trial` is deliberately not used for old 
 
 One implementation lives directly in `optimizer/`. `tests/` holds the short checks;
 `reports/` holds audits and verification logs; `runs/` preserves all old results
-and holds the current `service3500` campaign. Historical run files retain their
+and holds the current campaign. Historical run files retain their
 original provenance and are read-only inputs for parameter reuse. Old optimizer
 code is available in Git history. There is no nested optimizer implementation.

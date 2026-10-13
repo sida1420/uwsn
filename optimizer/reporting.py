@@ -24,7 +24,9 @@ def report(folder):
     if feasible and cfg['mode']=='scientific':
         import yaml
         (folder/'best-feasible-config.yaml').write_text(yaml.safe_dump(dict(status='training only; validation pending',**feasible[0])),encoding='utf-8')
-    lines=['# Optimizer campaign results','',f"Stop: {state['stop_reason']}. H={cfg['horizon']}, T_max={cfg['adaptive_total_rounds']}, K={cfg['energy_window']}.",'',
+    reference_path=folder/'reference.json'
+    window=read(reference_path)['energy_window'] if reference_path.exists() else 'pending reference'
+    lines=['# Optimizer campaign results','',f"Stop: {state['stop_reason']}. H={cfg['horizon']}, T_max={cfg['adaptive_total_rounds']}, K={window} (configured limit {cfg['energy_window']}).",'',
            '|Trial|Status|Service|Energy K|Feasible|','|---|---|---:|---:|---|']
     for r in rows: lines.append(f"|{r['trial']}|{r['status']}|{r.get('mean_service_capped','incomplete')}|{r.get('energy_K_mean','')}|{r.get('feasible',False)}|")
     lines+=['','## Five best feasible configurations','']

@@ -20,7 +20,11 @@ provenance and are not executed or rewritten for this campaign.
 
 Old 3000 trials are tier C parameter-only. Prefix identity fails at round1 when rho changes.
 No old objective observations or checkpoint state enter the new surrogate/ranking.
-SimpleACO is freshly rerun with matched hparameters; K2611 and the exact mean*1.02 cap remain.
+SimpleACO uses matched hparameters. K is frozen before tuning from 90% of the
+shortest all-alive reference prefix, capped at the configured limit (default2611).
+All candidates share this K and the exact cohort mean*1.02 cap. Completed reference
+measurements may be reprojected only after exact map/native-source/runtime checks.
+Each campaign snapshots its map; regenerating the input map does not affect it.
 The earlier plan's rounded absolute cap is metadata only. Density decay was fixed parabolic,
 not tuned, in the previous expanded study.
 

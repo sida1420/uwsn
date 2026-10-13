@@ -6,13 +6,14 @@ import optuna,psutil
 from optimizer import PACKAGE
 from optimizer.storage import atomic,read,lock,unpickle,disk_mb
 from optimizer.metrics import aggregate,constraints
-from optimizer.reference import from_runs
+from optimizer.reference import from_runs,ReferenceUnavailable
 from optimizer.provenance import epoch,assert_campaign,EpochGuard
 from optimizer.adapters import get
 from optimizer.trajectory import worker
 
 DEFAULT=dict(algorithm='daco',mode='scientific',study_role='training',horizon=3500,adaptive_total_rounds=3500,
-             energy_window=2611,energy_allowance=.02,training_seeds=[24,25,26],budget_seconds=5400,
+             energy_window=2611,energy_window_policy='reference',reference_window_fraction=.9,
+             energy_allowance=.02,training_seeds=[24,25,26],budget_seconds=5400,
              max_trials=32,max_workers=2,checkpoint_every=25,max_disk_mb=4096,worker_memory_mb=1024,
              startup_trials=6,sampler_seed=20261013,shutdown_reserve_seconds=300,max_retries=1)
 
@@ -32,17 +33,29 @@ def initialize(config,folder,legacy):
     if not 0<cfg['shutdown_reserve_seconds']<cfg['budget_seconds']: raise ValueError('Invalid reserve')
     if cfg['max_retries'] not in (0,1): raise ValueError('At most one retry')
     if cfg['energy_window']>cfg['horizon']: raise ValueError('Energy window exceeds horizon')
+    if cfg['energy_window_policy'] not in ('reference','fixed'): raise ValueError('Invalid energy window policy')
+    if type(cfg['reference_window_fraction']) not in (int,float) or not 0<cfg['reference_window_fraction']<=1: raise ValueError('Invalid reference window fraction')
     if not cfg['training_seeds'] or any(type(s) is not int or s<0 for s in cfg['training_seeds']): raise ValueError('Invalid seeds')
     if not 0<cfg['budget_seconds']<=5400 or not 1<=cfg['max_workers']<=4: raise ValueError('Invalid campaign budget/concurrency')
-    if cfg['mode']=='scientific' and (cfg['horizon'],cfg['adaptive_total_rounds'],cfg['energy_window'])!=(3500,3500,2611):
-        raise ValueError('Scientific tuning requires H=T_max=3500, K=2611')
+    if cfg['mode']=='scientific' and (cfg['horizon'],cfg['adaptive_total_rounds'])!=(3500,3500):
+        raise ValueError('Scientific tuning requires H=T_max=3500')
     if cfg['mode']=='smoke' and (cfg['horizon']>10 or cfg['max_trials']>3): raise ValueError('Smoke bounds exceeded')
     if cfg['energy_allowance']!=.02: raise ValueError('Energy policy is fixed')
     if len(set(cfg['training_seeds']))!=len(cfg['training_seeds']): raise ValueError('Duplicate seeds')
     cfg['map']=str((ROOT/cfg.get('map','map.pkl')).resolve())
+    from network import NetworkInstance
+    from optimizer.diagnostics import reachable
+    network=NetworkInstance.from_pickle(cfg['map'])
+    if network.N<1: raise ValueError('Map has no sensors')
+    _,disconnected=reachable(network,list(range(network.N)))
+    if disconnected: raise ValueError(f'Map cannot initially serve all sensors; disconnected nodes: {disconnected}')
     folder=Path(folder).resolve()
     if not folder.is_relative_to(PACKAGE) or folder.exists(): raise ValueError('Choose a new directory under optimizer/')
-    folder.mkdir(parents=True);atomic(folder/'config.json',cfg);atomic(folder/'provenance.json',epoch(cfg))
+    folder.mkdir(parents=True)
+    # Freeze the exact bytes used for preflight; rerandomizing the source map is safe.
+    import shutil
+    shutil.copyfile(cfg['map'],folder/'map.pkl');cfg['map']=str(folder/'map.pkl')
+    atomic(folder/'config.json',cfg);atomic(folder/'provenance.json',epoch(cfg))
     atomic(folder/'state.json',dict(spent_wall=0.,jobs={},stop_reason='not_started',next_number=0))
     from optimizer.audit import compatibility
     priorities=compatibility(legacy,folder,cfg)
@@ -75,6 +88,8 @@ def run(folder,workers=None):
                 study.tell(trial.number,state=optuna.trial.TrialState.FAIL)
             if trial.state==optuna.trial.TrialState.COMPLETE and str(trial.number) in state['jobs']:
                 state['jobs'][str(trial.number)]['status']='complete'
+        state['stop_reason']='running'
+        state.pop('error',None)
         def persist(sampler=False):
             state['spent_wall']=spent+time.monotonic()-start;atomic(folder/'state.json',state)
             if sampler: atomic(folder/'sampler.pkl',study.sampler,binary=True)
@@ -97,7 +112,15 @@ def run(folder,workers=None):
                     out=folder/'trials'/key/'outcome.json'
                     result=read(out) if out.exists() else dict(status='failed',error='worker exited without outcome')
                     if result['status']=='complete':
-                        if key=='reference': atomic(folder/'reference.json',from_runs(result['runs']))
+                        if key=='reference':
+                            try: reference=from_runs(result['runs'],cfg)
+                            except ReferenceUnavailable as exc:
+                                job.update(status='not_comparable',error=str(exc))
+                                state['error']=str(exc);reason='reference_not_comparable'
+                                atomic(folder/'reference-error.json',dict(reason=reason,message=str(exc),energy_window=cfg['energy_window'],
+                                    seeds=[{k:r.get(k) for k in ('seed','FND','completed_rounds','energy_status','termination_reason')} for r in result['runs']]))
+                                persist();continue
+                            atomic(folder/'reference.json',reference)
                         else:
                             metrics=aggregate(result['runs'],read(folder/'reference.json'),cfg)
                             atomic(folder/'trials'/key/'aggregate.json',metrics)
@@ -127,12 +150,9 @@ def run(folder,workers=None):
                         out=read(folder/'trials'/str(j['number'])/'outcome.json');durations.append(sum(r['wall'] for r in out['runs']))
                     # Conservative scheduling estimate; partial cohorts are never objective observations.
                     estimate=max(durations[-5:])*1.25 if durations else 0.
-                    if not durations:
-                        reference_out=folder/'trials/reference/outcome.json'
-                        if reference_out.exists():
-                            reference_runs=read(reference_out)['runs']
-                            per_round=sum(r['wall'] for r in reference_runs)/max(1,sum(r['completed_rounds'] for r in reference_runs))
-                            estimate=per_round*cfg['horizon']*len(cfg['training_seeds'])*1.5
+                    # A different algorithm's reference timing cannot establish
+                    # D-ACO cost. Admit the first cohort, then use measured D-ACO
+                    # durations; the outer deadline protects the total budget.
                     if estimate and remaining-reserve<estimate:
                         if not active: reason='insufficient_cohort_time';continue
                     else:
@@ -155,6 +175,12 @@ def run(folder,workers=None):
                 if time.monotonic()-last_save>=2: guard.check();persist();last_save=time.monotonic()
                 time.sleep(.5)
         except KeyboardInterrupt: reason='operator_stop'
+        except Exception as exc:
+            reason='controller_error';state['error']=f'{type(exc).__name__}: {exc}'
+            for key,job in state['jobs'].items():
+                if job['status']=='running' and key not in active:
+                    job.update(status='failed',error=state['error']);job.pop('pid',None)
+            raise
         finally:
             (folder/'STOP').touch();deadline=time.monotonic()+min(15,max(0,cfg['budget_seconds']-(spent+time.monotonic()-start)))
             for key,p in active.items():

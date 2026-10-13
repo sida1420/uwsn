@@ -59,9 +59,15 @@ The benchmark and v2 optimizer always pass explicit seeds.
 
 ```powershell
 python src/map_gen.py
+python src/map_gen.py --seed 07
 ```
 
 > Cảnh báo: lệnh này ghi đè `map.pkl` và `map_3d.svg`. `map.pkl` là pickle, chỉ nạp file từ nguồn tin cậy.
+
+Map seeds range from `01` to `99`. Omitting `--seed` chooses one randomly and
+prints it; the integer is stored as `seed` inside `map.pkl`. The same seed and
+generation settings reproduce the sensors, including clustering. Algorithm
+seeds are separate. Use `--no-plot` to save the map without generating its SVG.
 
 Khả năng dựng route và số round sống phụ thuộc thuật toán, tập CH và seed. Trên map hiện tại, AC-ACO với seed `39` đã hoàn tất 2.182 round trong phép đo lịch sử; con số này không đại diện cho SimpleACO, PSO hoặc seed khác.
 
