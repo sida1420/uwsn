@@ -59,3 +59,12 @@ class GridDecayTests(unittest.TestCase):
     def test_invalid_decay_is_rejected(self):
         with self.assertRaises(ValueError):
             self.grid('unknown')
+
+    def test_parabolic_weights_preserve_support_and_density(self):
+        original=self.grid('none');g=self.grid('parabolic')
+        points=np.array([[p.x,p.y,p.z] for p in self.network.sensors])
+        distance=np.linalg.norm(points[:,None,:]-g._center[None,:,:],axis=2)
+        expected=original.F*np.maximum(1.-(distance/(self.network.radius+g._cell_radius))**2,0.)
+        np.testing.assert_allclose(g.F,expected)
+        np.testing.assert_allclose(g.density.ravel(),expected.sum(axis=0))
+        np.testing.assert_array_equal(g.F==0.,original.F==0.)

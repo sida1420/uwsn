@@ -37,10 +37,9 @@ Từ PowerShell tại thư mục gốc, cài dependencies vào môi trường Py
 ```powershell
 python -m pip install -r requirements.txt
 python src/run.py
-python src/run.py --seed 24
 ```
 
-Lệnh trên chạy `PSO`, `D-ACO`, `SimpleACO` và `AC-ACO`, rồi ghi mỗi lịch sử vào `runs/<timestamp>_<seed>_<algorithm>.csv`. Dùng `--seed 24` để tái lập benchmark; nếu bỏ qua, chương trình tạo và in seed của lần chạy.
+Lệnh trên chạy `PSO`, `D-ACO`, `SimpleACO` và `AC-ACO`, rồi ghi mỗi lịch sử vào `runs/<width>_<height>_<depth>_<sensor-count>_<distribution>_<YYYYMMDD_HHMMSS>_<seed>_<algorithm>.csv`. Đặt `SEED = 24` trong `src/run.py` để tái lập benchmark; nếu để `None`, chương trình tạo và in seed của lần chạy. Các thuật toán trong cùng một lần chạy dùng chung timestamp.
 
 All five algorithms, including `NodeACO`, accept `seed=24` when constructed.
 An explicit seed gives each instance its own random stream, including D-ACO's
@@ -59,15 +58,26 @@ The benchmark and v2 optimizer always pass explicit seeds.
 
 ```powershell
 python src/map_gen.py
-python src/map_gen.py --seed 07
 ```
 
 > Cảnh báo: lệnh này ghi đè `map.pkl` và `map_3d.svg`. `map.pkl` là pickle, chỉ nạp file từ nguồn tin cậy.
 
-Map seeds range from `01` to `99`. Omitting `--seed` chooses one randomly and
-prints it; the integer is stored as `seed` inside `map.pkl`. The same seed and
-generation settings reproduce the sensors, including clustering. Algorithm
-seeds are separate. Use `--no-plot` to save the map without generating its SVG.
+Configure `new_map(...)` at the bottom of `src/map_gen.py` directly; there are
+no CLI parameters. Choose `distribution="normal"`, `"clustered"`, or `"uniform"`.
+Normal placement uses a Gaussian around the sink, truncated to the map bounds
+with every sensor underwater (`z > 0`). Horizontal standard deviations are
+`width / 6` and `height / 6`; depth uses `1.5 * depth / 6`. For the default
+surface sink, this produces a concentration below the sink, extending deeper.
+Clustered placement pulls uniform samples toward the nearest of
+`num_cluster_points` random centers (default 5). Uniform placement samples the
+whole water volume equally.
+
+Map seeds range from `01` to `99`. Set `seed=7` in `new_map(...)` to reproduce
+the map, or omit it to choose and print a random seed. The seed, distribution,
+and cluster count are stored inside `map.pkl`. Algorithm seeds are separate.
+Set `plot=False` to skip the SVG or `save_path=...` to change the pickle path.
+Older maps without distribution metadata are recognized as clustered when
+their saved cluster count is positive, otherwise uniform.
 
 Khả năng dựng route và số round sống phụ thuộc thuật toán, tập CH và seed. Trên map hiện tại, AC-ACO với seed `39` đã hoàn tất 2.182 round trong phép đo lịch sử; con số này không đại diện cho SimpleACO, PSO hoặc seed khác.
 
@@ -92,7 +102,7 @@ $env:PYTHONPATH='src'
 python -B -m unittest discover -s tests -v
 ```
 
-Hiện chỉ có regression test cho AC-ACO: kiểm tra kết quả seeded trong 10 round, xác nhận `E_m` không bị tính lại trong một round và kiểm tra hai node trùng vị trí. Chưa có test cho clustering, PSO hoặc lần chạy end-to-end của `src/run.py`; cần cài dependencies trước khi chạy simulator.
+Maintained production checks cover AC-ACO, D-ACO, PSO, algorithm/map seeds, checkpoints and run naming. See [tests/README.md](tests/README.md); optimizer tests live in optimizer/tests/.
 
 ## Cấu trúc dự án
 
@@ -113,7 +123,7 @@ src/
     ├── pso/               # PSO
     ├── ac_aco.py          # Orchestrator AC-ACO và route multi-hop
     └── clustering/ac_aco/ # Tham số, ant walk, pheromone và chaos của AC-ACO
-tests/                     # regression test hiện có cho AC-ACO
+tests/                     # production algorithm and seeding regressions
 ```
 
 ## Cấu hình và mở rộng
@@ -139,6 +149,11 @@ Khoảng cách trong map dùng mét, nhưng attenuation đổi sang kilomet: `d_
 
 - `run.py` sinh seed ngẫu nhiên cho mỗi benchmark; cần cố định seed khi so sánh các lần chạy khác nhau.
 - Route hợp lệ và số round sống thay đổi theo thuật toán, tập CH và seed; cần đo với seed cố định khi so sánh.
-- Chưa có CLI hay file cấu hình ngoài mã nguồn.
+- Benchmark and map generation accept seed/CLI options; the optimizer uses its YAML configuration.
 - Ở round cuối, `round_energy` có thể lớn hơn năng lượng còn lại trước round vì chi phí được tính toàn bộ rồi năng lượng được chặn về 0.
 - `rounds_survived = len(history)` không cho biết lý do dừng (hết node, hết route hay đạt `T_max`).
+
+## Performance evidence
+
+See [plans/analysis](plans/analysis/README.md) for the consolidated measurements,
+parameter sets and interpretation across historical experiments and both optimizer maps.

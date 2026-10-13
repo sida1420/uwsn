@@ -62,10 +62,10 @@ Parameters are validated in `__post_init__` (bounds, `chaos_r` in (3.57, 4), etc
 The deposit constant, pheromone floor/ceiling and evaporation maximum were
 calibrated together on the existing map. The old values (`Q=100`, floor `.1`,
 ceiling `10`, maximum evaporation `.9`) remain an explicit historical control
-in `plans/phase5-acaco-tuning/calibrate.py`. The new ceiling accounts for both
+in the maintained historical calibration analysis. The new ceiling accounts for both
 ant and elite deposits plus additive chaos at late-round evaporation. These
 are practical defaults for this cost scale, not universally optimal values.
-See [calibration derivation and results](../../../../plans/phase5-acaco-tuning/README.md).
+See [calibration derivation and results](../../../../plans/analysis/acaco-performance.md).
 Valid bounds require `0 < tau_min < tau_max` and `tau_min <= tau0 <= tau_max`.
 
 ## Ant walk
@@ -139,7 +139,7 @@ are zero, the normalized CV contribution is constant. Deposits still use
 physical energy, preserving the calibrated pheromone scale. Absolute load CV
 does not account for uneven residual energy; it is not a lifetime guarantee.
 The balance and inner-iteration study is in
-`plans/phase5-acaco-balance/README.md`.
+`plans/analysis/acaco-performance.md`.
 The default elite weight is 0.1 to reduce best-set dominance. Load fitness
 remains opt-in with `ACACOParameters(load_weight=0.1)`; the study found a
 small energy cost for lower load variation, without establishing a lifetime gain.

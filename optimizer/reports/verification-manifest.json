@@ -1,16 +1,15 @@
 {
-  "campaign": "optimizer/runs/service3500-adaptive",
-  "budget_policy": "close new admissions, finish active cohorts",
-  "finish_only_trials": [
-    "6",
-    "7",
-    "8",
-    "9"
+  "cleanup_completed": true,
+  "analysis_folder": "plans/analysis",
+  "production_tests_passed": 46,
+  "optimizer_tests_passed": 21,
+  "focused_adapter_check_passed": true,
+  "retained_studies": [
+    "ready-expanded",
+    "service3500",
+    "service3500-adaptive"
   ],
-  "trial5_parameter_origin": "user_rounded_previous_parameters",
-  "tests": "20 optimizer tests passed; both Windows scripts passed syntax checks",
-  "native_science_unchanged": true,
-  "checkpoint_progress_preserved": true,
-  "spent_time_preserved": true,
-  "full_campaign_restarted": false
+  "full_optimization_started": false,
+  "obsolete_experiment_tests_removed": true,
+  "plan_imports_remaining": 0
 }

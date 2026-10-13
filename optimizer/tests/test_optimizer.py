@@ -19,6 +19,7 @@ def killed_seed(cfg,params,folder,expected):
 
 class OptimizerTests(unittest.TestCase):
     def setUp(self):
+        (PACKAGE/'.test-output').mkdir(exist_ok=True)
         self.tmp=tempfile.TemporaryDirectory(dir=PACKAGE/'.test-output');self.root=Path(self.tmp.name)
         self.cfg={**DEFAULT, 'mode':'smoke','horizon':5,'energy_window':2,'max_trials':3,
                   'training_seeds':[24], 'map':str(ROOT/'map.pkl'),'adaptive_total_rounds':3000}
@@ -49,7 +50,8 @@ class OptimizerTests(unittest.TestCase):
             result=run_seed(cfg,params,24,self.root/name,epoch(cfg),kind=name)
             self.assertEqual(result['completed_rounds'],5)
             self.assertTrue(result['horizon_censored'])
-            self.assertAlmostEqual(sum(result['residual']),60.-sum(
+            network=NetworkInstance.from_pickle(cfg['map'])
+            self.assertAlmostEqual(sum(result['residual']),network.N*network.init_energy-sum(
                 r['selected_tree_physical_energy'] for r in __import__('optimizer.storage',fromlist=['unpickle']).unpickle(self.root/name/'checkpoint.pkl')['records']))
 
     def test_daco_native_equivalence_and_resume(self):
@@ -172,6 +174,22 @@ class OptimizerTests(unittest.TestCase):
         import csv
         with (self.root/'legacy-trials-compatibility.csv').open() as f: rows=list(csv.DictReader(f))
         self.assertEqual(len(rows),32);self.assertTrue(all(r['tier']=='C' for r in rows))
+
+    def test_only_first_trial_is_reused_then_sampler_generates_new_vectors(self):
+        import optuna
+        from optimizer.engine import ask_parameters
+        sampler=optuna.samplers.TPESampler(seed=123,n_startup_trials=2)
+        study=optuna.create_study(sampler=sampler,direction='maximize')
+        baseline=get('daco').baseline_config();vectors=[]
+        for index in range(8):
+            trial,parameters,origin=ask_parameters(study,self.cfg,baseline)
+            self.assertEqual(origin,'reused_baseline' if index==0 else 'sampler_proposal')
+            if index==0: self.assertEqual(parameters,baseline)
+            else:
+                self.assertNotEqual(parameters,baseline)
+                self.assertNotIn(parameters,vectors)
+            vectors.append(parameters);study.tell(trial,index)
+        self.assertEqual(len(vectors),8)
 
     def test_engine_smoke_resume(self):
         import yaml

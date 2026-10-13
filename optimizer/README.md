@@ -44,9 +44,12 @@ has no fully alive/served round, the campaign stops with a clear explanation.
 Ant count stays40; one D-ACO
 batch per network round. Production defaults and physics are not modified.
 
-Previous trials25,30,15,1,2 seed the search, followed by deduplicated baseline and
-diversity anchors. Their old scores and checkpoints are NOT imported: changing
-T_max changes evaporation from round1. All32 old trials are parameter-only tierC.
+Exactly one strong previous configuration seeds a new study. Every subsequent
+trial gets a new vector from the sampler: random startup draws followed by
+adaptive TPE proposals once enough trials complete. The remaining historical
+parameter pool is archived as metadata and is not queued. Old scores and
+checkpoints are not imported: changing T_max changes evaporation from round1.
+All32 old trials are parameter-only tierC.
 The old database is opened read-only and copied to a separate SQLite snapshot.
 SimpleACO reference runs are fresh under the new epoch. No held-out seeds are used.
 
@@ -93,8 +96,10 @@ The result at3500 is right-censored; failure to find a route is separate from gr
 
 ## Audits and limitations
 
-See reports/architecture-and-provenance.md, adaptive-horizon-inventory.csv,
-schedule-boundaries.csv and theta-scaling-audit.md. Theta is already ant-count
+See [the maintained performance analysis](../plans/analysis/README.md) and
+[theta scaling](../plans/analysis/theta-scaling-audit.md). Regenerate a current
+source audit with `python -B -m optimizer audit --output optimizer/reports`.
+Theta is already ant-count
 normalized on the ordinary deposits. Its effectiveness still depends on feasible
 ants, scores, CH overlap and clipping. The27-case scaling table is controlled
 algebra, not physical lifetime evidence across new maps. No normalization policy
@@ -108,7 +113,10 @@ Queued parameters are reevaluated; `add_trial` is deliberately not used for old 
 ## Folder layout
 
 One implementation lives directly in `optimizer/`. `tests/` holds the short checks;
-`reports/` holds audits and verification logs; `runs/` preserves all old results
-and holds the current campaign. Historical run files retain their
+`reports/` holds generated audits and the latest verification logs. `runs/` keeps
+the prior completed study needed for baseline selection (`ready-expanded`), the
+completed reference measurements (`service3500`), and the current campaign
+(`service3500-adaptive`). Unstarted preparations and stale studies were removed.
+Historical run files retain their
 original provenance and are read-only inputs for parameter reuse. Old optimizer
 code is available in Git history. There is no nested optimizer implementation.

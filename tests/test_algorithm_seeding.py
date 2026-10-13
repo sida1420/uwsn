@@ -31,7 +31,7 @@ class SeedingTests(unittest.TestCase):
                 py_before=random.getstate();np_before=np.random.get_state()
                 a=cls(self.network(),HyperParameters(),seed=24)
                 b=cls(self.network(),HyperParameters(),seed=24)
-                ar=[.6]*100;br=[.6]*100
+                ar=[a.network.init_energy]*a.network.N;br=[b.network.init_energy]*b.network.N
                 for _ in range(3):
                     self.assertEqual(step(a,ar),step(b,br))
                 self.assertEqual(ar,br);self.assertEqual(random.getstate(),py_before)
@@ -40,7 +40,7 @@ class SeedingTests(unittest.TestCase):
     def test_checkpoint_preserves_local_stream(self):
         for cls in CLASSES:
             with self.subTest(algorithm=cls.name):
-                a=cls(self.network(),HyperParameters(),seed=24);residual=[.6]*100
+                a=cls(self.network(),HyperParameters(),seed=24);residual=[a.network.init_energy]*a.network.N
                 step(a,residual);b=pickle.loads(pickle.dumps(a));other=residual.copy()
                 self.assertEqual(step(a,residual),step(b,other));self.assertEqual(residual,other)
 
@@ -48,9 +48,9 @@ class SeedingTests(unittest.TestCase):
         for cls in (SimpleACO,DACO,PSO,NodeACO):
             with self.subTest(algorithm=cls.name):
                 random.seed(24)
-                legacy=cls(self.network(),HyperParameters());old=[.6]*100
+                legacy=cls(self.network(),HyperParameters());old=[legacy.network.init_energy]*legacy.network.N
                 expected=[step(legacy,old) for _ in range(2)]
-                seeded=cls(self.network(),HyperParameters(),seed=24);new=[.6]*100
+                seeded=cls(self.network(),HyperParameters(),seed=24);new=[seeded.network.init_energy]*seeded.network.N
                 self.assertEqual([step(seeded,new) for _ in range(2)],expected)
                 self.assertEqual(new,old)
 

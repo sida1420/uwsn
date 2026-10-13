@@ -10,8 +10,9 @@ $python = Join-Path $env:USERPROFILE '.cache/codex-runtimes/codex-primary-runtim
 if (-not (Test-Path -LiteralPath $python)) { throw 'Bundled Python is missing; use the manual README commands.' }
 while ($true) {
     Clear-Host
-    Write-Host 'D-ACO optimizer: 3500 rounds; 90-minute admission cutoff'
-    Write-Host 'At cutoff, active trials finish all seeds. Total time may exceed 90 minutes.'
+    $admissionMinutes = (Get-Content -LiteralPath (Join-Path $studyPath 'config.json') -Raw | ConvertFrom-Json).budget_seconds / 60
+    Write-Host "D-ACO optimizer: 3500 rounds; $admissionMinutes-minute admission cutoff"
+    Write-Host 'At cutoff, active trials finish all seeds. Total time may exceed the cutoff.'
     Write-Host "Study: $(Split-Path -Leaf $studyPath)"
     Write-Host '1. Start/resume (launches the campaign)'
     Write-Host '2. Live progress'

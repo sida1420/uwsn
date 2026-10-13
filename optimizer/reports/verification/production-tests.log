@@ -1,0 +1,55 @@
+test_coupled_scales_keep_finite_probabilities_and_full_service (test_ac_aco_calibration.CalibrationTests.test_coupled_scales_keep_finite_probabilities_and_full_service) ... ok
+test_late_worst_case_reinforcement_has_ceiling_headroom (test_ac_aco_calibration.CalibrationTests.test_late_worst_case_reinforcement_has_ceiling_headroom) ... ok
+test_scaled_deposits_keep_inverse_cost_information (test_ac_aco_calibration.CalibrationTests.test_scaled_deposits_keep_inverse_cost_information) ... ok
+test_zero_width_pheromone_interval_is_rejected (test_ac_aco_calibration.CalibrationTests.test_zero_width_pheromone_interval_is_rejected) ... ok
+test_chaos_window (test_ac_aco_equations.EquationTests.test_chaos_window) ... ok
+test_default_weakens_hop_cost_preference (test_ac_aco_equations.EquationTests.test_default_weakens_hop_cost_preference) ... ok
+test_logistic_and_schedules (test_ac_aco_equations.EquationTests.test_logistic_and_schedules) ... ok
+test_transition_equation_and_uniform_mix (test_ac_aco_equations.EquationTests.test_transition_equation_and_uniform_mix) ... ok
+test_ant_deposits_accumulate_before_evaporation (test_ac_aco_pheromone.PheromoneBoundTests.test_ant_deposits_accumulate_before_evaporation) ... ok
+test_complete_round_preserves_bound_and_service (test_ac_aco_pheromone.PheromoneBoundTests.test_complete_round_preserves_bound_and_service) ... ok
+test_elite_deposit_remains_bounded (test_ac_aco_pheromone.PheromoneBoundTests.test_elite_deposit_remains_bounded) ... ok
+test_invalid_cost_does_not_deposit (test_ac_aco_pheromone.PheromoneBoundTests.test_invalid_cost_does_not_deposit) ... ok
+test_sub_saturation_deposit_retains_inverse_cost_scaling (test_ac_aco_pheromone.PheromoneBoundTests.test_sub_saturation_deposit_retains_inverse_cost_scaling) ... ok
+test_edge_cost_is_not_recomputed_during_round (test_ac_aco_vectorization.ACACOVectorizationTests.test_edge_cost_is_not_recomputed_during_round) ... ok
+test_later_transitions_immediately_see_ant_deposits (test_ac_aco_vectorization.ACACOVectorizationTests.test_later_transitions_immediately_see_ant_deposits) ... ok
+test_seeded_rounds_keep_recorded_energy_and_candidate_count (test_ac_aco_vectorization.ACACOVectorizationTests.test_seeded_rounds_keep_recorded_energy_and_candidate_count) ... ok
+test_transition_uses_explicit_residual_energy (test_ac_aco_vectorization.ACACOVectorizationTests.test_transition_uses_explicit_residual_energy) ... ok
+test_zero_distance_candidate_uses_clipped_hop_cost (test_ac_aco_vectorization.ACACOVectorizationTests.test_zero_distance_candidate_uses_clipped_hop_cost) ... ok
+test_checkpoint_preserves_local_stream (test_algorithm_seeding.SeedingTests.test_checkpoint_preserves_local_stream) ... ok
+test_different_seeds_and_seed_validation (test_algorithm_seeding.SeedingTests.test_different_seeds_and_seed_validation) ... ok
+test_explicit_seed_preserves_legacy_draw_order (test_algorithm_seeding.SeedingTests.test_explicit_seed_preserves_legacy_draw_order) ... ok
+test_repeatability_interleaving_and_global_isolation (test_algorithm_seeding.SeedingTests.test_repeatability_interleaving_and_global_isolation) ... ok
+test_geometric_smoothing_and_energy_only_units (test_d_aco_fitness.FitnessTests.test_geometric_smoothing_and_energy_only_units) ... ok
+test_low_density_and_residual_increase_power_penalty (test_d_aco_fitness.FitnessTests.test_low_density_and_residual_increase_power_penalty) ... ok
+test_obsolete_parameters_are_rejected (test_d_aco_fitness.FitnessTests.test_obsolete_parameters_are_rejected) ... ok
+test_power_penalty_distinguishes_equal_max_and_total (test_d_aco_fitness.FitnessTests.test_power_penalty_distinguishes_equal_max_and_total) ... ok
+test_same_cached_score_for_live_ants_and_best_with_frozen_references (test_d_aco_fitness.FitnessTests.test_same_cached_score_for_live_ants_and_best_with_frozen_references) ... ok
+test_structural_density_is_independent_of_ch_loss (test_d_aco_fitness.FitnessTests.test_structural_density_is_independent_of_ch_loss) ... ok
+test_throwaway_calibration_does_not_advance_physical_or_pheromone_state (test_d_aco_fitness.FitnessTests.test_throwaway_calibration_does_not_advance_physical_or_pheromone_state) ... ok
+test_decay_removes_fully_covered_cell_plateau (test_d_aco_grid_decay.GridDecayTests.test_decay_removes_fully_covered_cell_plateau) ... ok
+test_invalid_decay_is_rejected (test_d_aco_grid_decay.GridDecayTests.test_invalid_decay_is_rejected) ... ok
+test_live_density_and_loss_use_same_weighted_grid (test_d_aco_grid_decay.GridDecayTests.test_live_density_and_loss_use_same_weighted_grid) ... ok
+test_original_grid_retains_overlap_formula (test_d_aco_grid_decay.GridDecayTests.test_original_grid_retains_overlap_formula) ... ok
+test_parabolic_weights_preserve_support_and_density (test_d_aco_grid_decay.GridDecayTests.test_parabolic_weights_preserve_support_and_density) ... ok
+test_one_batch_and_one_pheromone_update (test_d_aco_round.DACORoundTests.test_one_batch_and_one_pheromone_update) ... ok
+test_distribution_validation_and_metadata_loading (test_map_seeding.MapSeedingTests.test_distribution_validation_and_metadata_loading) ... ok
+test_normal_follows_sink_and_stretches_depth (test_map_seeding.MapSeedingTests.test_normal_follows_sink_and_stretches_depth) ... ok
+test_seed_range_and_pickle_metadata (test_map_seeding.MapSeedingTests.test_seed_range_and_pickle_metadata) ... ok
+test_seed_reproduces_points_and_preserves_global_rng (test_map_seeding.MapSeedingTests.test_seed_reproduces_points_and_preserves_global_rng) ... ok
+test_surface_normal_is_underwater_and_shallower_than_uniform (test_map_seeding.MapSeedingTests.test_surface_normal_is_underwater_and_shallower_than_uniform) ... ok
+test_ch_count_adapts_as_nodes_die (test_pso.PSOImprovementTests.test_ch_count_adapts_as_nodes_die) ... ok
+test_fitness_prefers_balanced_load (test_pso.PSOImprovementTests.test_fitness_prefers_balanced_load) ... ok
+test_lifetime_oriented_defaults (test_pso.PSOImprovementTests.test_lifetime_oriented_defaults) ... ok
+test_plan_round_returns_a_feasible_result (test_pso.PSOImprovementTests.test_plan_round_returns_a_feasible_result) ... ok
+test_positions_remain_bounded_after_move (test_pso.PSOImprovementTests.test_positions_remain_bounded_after_move) ... ok
+test_shared_prefix_and_preserved_algorithm_seed (test_run_naming.RunNamingTests.test_shared_prefix_and_preserved_algorithm_seed) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 14.714s
+
+OK
+[D-ACO DEBUG] iter=1 alpha=1.8 beta=0.04 gamma=0.6 rho=0.519947 dominant=pheromone spread_tau=0 spread_energy=0 spread_density=0 deposit=4.1134 cost=0.011 fitness=0.0194 tau_min=1 tau_max=8.74227 tau_mean=4.87114
+[D-ACO DEBUG] iter=1 alpha=1.8 beta=0.04 gamma=0.6 rho=0.519947 dominant=pheromone spread_tau=2.34326 spread_energy=0 spread_density=0.0407869 deposit=4.88393 cost=9.23065e-05 fitness=0.00015140168422477824 tau_min=1 tau_max=8.55987 tau_mean=3.04146
+Map seed: 09; saved to C:\Users\hgtfh\AppData\Local\Temp\tmp179mi4a0\map.pkl
+Run seed: 42

@@ -9,7 +9,7 @@ constructor arguments, see create_algorithm).
 """
 from datetime import datetime
 import random
-import os
+from pathlib import Path
 
 from hparameter import HyperParameters
 from network import NetworkInstance
@@ -28,8 +28,23 @@ ALGORITHMS = [
     DACO,
     SimpleACO,
     ACACO,
-    # NodeACO,
+    NodeACO,
 ]
+
+
+def _filename_value(value):
+    number = float(value)
+    return str(int(number)) if number.is_integer() else str(number).replace(".", "p")
+
+
+def environment_prefix(network):
+    return "_".join((
+        _filename_value(network.width),
+        _filename_value(network.height),
+        _filename_value(network.depth),
+        str(network.N),
+        network.distribution,
+    ))
 
 
 def create_algorithm(algo_cls, network, hparameters, seed=None):
@@ -42,13 +57,17 @@ def main(map_path="map.pkl", seed=None):
     network = NetworkInstance.from_pickle(map_path)
     hparameters = HyperParameters()
     run_seed = seed if seed is not None else SEED
-    if run_seed is None: run_seed = random.SystemRandom().randrange(2**32)
-    if type(run_seed) is not int or run_seed < 0: raise ValueError('seed must be a nonnegative integer')
+    if run_seed is None: run_seed = random.SystemRandom().randint(1, 99)
+    if type(run_seed) is not int or not 1 <= run_seed <= 99:
+        raise ValueError('run seed must be an integer from 1 to 99')
     print(f'Run seed: {run_seed}')
 
     results = {}
 
-    os.makedirs("runs", exist_ok=True)
+    run_dir = Path("runs")
+    run_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_prefix = f"{environment_prefix(network)}_{timestamp}_{run_seed}"
 
     for algo_cls in ALGORITHMS:
         simulator = Simulator(network, hparameters)
@@ -62,13 +81,8 @@ def main(map_path="map.pkl", seed=None):
 
         history = simulator.run(algorithm)
 
-        now = datetime.now()
-        datetime_string = now.strftime("%Y%m%d%H")
-
-        
-
         history.to_csv(
-            f"runs/{datetime_string}_{run_seed}_{algorithm.name}.csv",
+            run_dir / f"{run_prefix}_{algorithm.name}.csv",
             index=False,
         )
 
@@ -94,9 +108,4 @@ def summarize(results):
 
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--map', default='map.pkl')
-    parser.add_argument('--seed', type=int, default=None)
-    args = parser.parse_args()
-    main(args.map, seed=args.seed)
+    main()

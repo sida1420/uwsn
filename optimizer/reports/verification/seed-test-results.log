@@ -1,9 +1,0 @@
-test_checkpoint_preserves_local_stream (test_algorithm_seeding.SeedingTests.test_checkpoint_preserves_local_stream) ... ok
-test_different_seeds_and_seed_validation (test_algorithm_seeding.SeedingTests.test_different_seeds_and_seed_validation) ... ok
-test_explicit_seed_preserves_legacy_draw_order (test_algorithm_seeding.SeedingTests.test_explicit_seed_preserves_legacy_draw_order) ... ok
-test_repeatability_interleaving_and_global_isolation (test_algorithm_seeding.SeedingTests.test_repeatability_interleaving_and_global_isolation) ... ok
-
-----------------------------------------------------------------------
-Ran 4 tests in 10.661s
-
-OK

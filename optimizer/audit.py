@@ -39,8 +39,7 @@ def compatibility(legacy,output,cfg):
         if tier=='C' and values.get('feasible'): legal.append((values['mean_service_capped'],-values['energy_K_mean'],job['parameters']))
     with (output/'legacy-trials-compatibility.csv').open('w',newline='',encoding='utf-8') as f:
         writer=csv.DictWriter(f,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
-    from optimizer.search_space import anchors
-    configs=[r[2] for r in sorted(legal,key=lambda r:(r[0],r[1]),reverse=True)]+anchors()
+    configs=[r[2] for r in sorted(legal,key=lambda r:(r[0],r[1]),reverse=True)] or [get('daco').baseline_config()]
     seen=set();unique=[]
     for config in configs:
         key=json.dumps(config,sort_keys=True)

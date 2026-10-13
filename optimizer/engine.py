@@ -37,7 +37,7 @@ def initialize(config,folder,legacy):
     if cfg['energy_window_policy'] not in ('reference','fixed'): raise ValueError('Invalid energy window policy')
     if type(cfg['reference_window_fraction']) not in (int,float) or not 0<cfg['reference_window_fraction']<=1: raise ValueError('Invalid reference window fraction')
     if not cfg['training_seeds'] or any(type(s) is not int or s<0 for s in cfg['training_seeds']): raise ValueError('Invalid seeds')
-    if not 0<cfg['budget_seconds']<=5400 or not 1<=cfg['max_workers']<=4: raise ValueError('Invalid campaign budget/concurrency')
+    if not 0<cfg['budget_seconds']<=28800 or not 1<=cfg['max_workers']<=4: raise ValueError('Invalid campaign budget/concurrency')
     if cfg['mode']=='scientific' and (cfg['horizon'],cfg['adaptive_total_rounds'])!=(3500,3500):
         raise ValueError('Scientific tuning requires H=T_max=3500')
     if cfg['mode']=='smoke' and (cfg['horizon']>10 or cfg['max_trials']>3): raise ValueError('Smoke bounds exceeded')
@@ -60,7 +60,8 @@ def initialize(config,folder,legacy):
     atomic(folder/'state.json',dict(spent_wall=0.,jobs={},stop_reason='not_started',next_number=0))
     from optimizer.audit import compatibility
     priorities=compatibility(legacy,folder,cfg)
-    atomic(folder/'anchors.json',priorities)
+    atomic(folder/'prior-parameters.json',priorities)
+    atomic(folder/'anchors.json',priorities[:1])
     return str(folder)
 
 def open_study(folder,cfg):
@@ -69,6 +70,16 @@ def open_study(folder,cfg):
     storage=optuna.storages.RDBStorage('sqlite:///'+(folder/'study.db').as_posix(),engine_kwargs={'connect_args':{'timeout':30}})
     study=optuna.create_study(study_name='service3500',storage=storage,sampler=sampler,direction='maximize',load_if_exists=True)
     return study,storage
+
+def ask_parameters(study,cfg,baseline):
+    """Exactly one known baseline; all later vectors come from the sampler."""
+    if not study.trials:
+        study.enqueue_trial({k:baseline[k] for k in get(cfg['algorithm']).space})
+    trial=study.ask()
+    parameters=get(cfg['algorithm']).suggest(trial)
+    fixed=study._storage.get_trial_system_attrs(trial._trial_id).get('fixed_params')
+    origin='reused_baseline' if fixed else 'sampler_proposal'
+    return trial,parameters,origin
 
 def run(folder,workers=None):
     folder=Path(folder).resolve();cfg=assert_campaign(folder)
@@ -150,13 +161,8 @@ def run(folder,workers=None):
                 if draining and not active and not pending:
                     reason='budget_closed_active_finished';break
                 if not draining and not pending and reference_ready and len(study.trials)<cfg['max_trials'] and len(active)<worker_limit:
-                    priorities=read(folder/'anchors.json');number=len(study.trials)
-                    waiting=any(t.state==optuna.trial.TrialState.WAITING for t in study.get_trials(deepcopy=False))
-                    if number<len(priorities) and not waiting: study.enqueue_trial({k:priorities[number][k] for k in get(cfg['algorithm']).space},skip_if_exists=True)
-                    trial=study.ask()
-                    try: parameters=get(cfg['algorithm']).suggest(trial)
-                    except ValueError: study.tell(trial.number,state=optuna.trial.TrialState.FAIL);persist(sampler=True);continue
-                    origin='reused_anchor' if trial.system_attrs.get('fixed_params') else 'sampler_proposal'
+                    priorities=read(folder/'anchors.json')
+                    trial,parameters,origin=ask_parameters(study,cfg,priorities[0])
                     state['jobs'][str(trial.number)]=dict(number=trial.number,kind=cfg['algorithm'],parameters=parameters,status='paused',parameter_origin=origin)
                     persist(sampler=True);continue
                 for key,job in pending:

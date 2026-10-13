@@ -27,7 +27,7 @@ class ACACOParameters:
     chaos_r: float = 3.61
     chaos_seed: float = 0.37
     # Coupled acoustic-cost calibration; derivation and seeded measurements:
-    # plans/phase5-acaco-tuning/README.md. Bounds are not universal optima.
+    # plans/analysis/acaco-performance.md. Bounds are not universal optima.
     Q: float = 0.01
     elite_weight: float = 0.1  # balanced best-set contribution; D-ACO's theta
     load_weight: float = 0.0  # normalized absolute load-CV share in selection
