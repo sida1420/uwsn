@@ -1,0 +1,23 @@
+{
+  "num_ants": 40,
+  "max_clustering_attempts": 10,
+  "ch_proportion": 0.2,
+  "pheromone_exponent": 1.0,
+  "energy_cost_exponent": 1.0,
+  "distance_weight": 1.0,
+  "beta_min": 1.0,
+  "beta_max": 5.0,
+  "beta_slope": 5.0,
+  "beta_schedule": "raw",
+  "rho_min": 0.1,
+  "rho_max": 0.6,
+  "chaos_min": 0.1,
+  "chaos_max": 0.6,
+  "chaos_r": 3.61,
+  "chaos_seed": 0.37,
+  "Q": 0.01,
+  "tau0": 1.0,
+  "tau_min": 0.01,
+  "tau_max": 20.0,
+  "hopping_factor": 0.4
+}

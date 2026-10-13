@@ -1,0 +1,30 @@
+test_checkpoint_resume_exact_and_no_double_energy (test_optimizer.OptimizerTests.test_checkpoint_resume_exact_and_no_double_energy) ... ok
+test_config_epoch_cannot_silently_change (test_optimizer.OptimizerTests.test_config_epoch_cannot_silently_change) ... ok
+test_crash_after_durable_checkpoint (test_optimizer.OptimizerTests.test_crash_after_durable_checkpoint) ... ok
+test_domains_and_rejection (test_optimizer.OptimizerTests.test_domains_and_rejection) ... ok
+test_energy_ineligibility_and_mean_rule (test_optimizer.OptimizerTests.test_energy_ineligibility_and_mean_rule) ... ok
+test_full_precision_reference_and_short_historical_replay (test_optimizer.OptimizerTests.test_full_precision_reference_and_short_historical_replay) ... ok
+test_session_and_total_time_limits (test_optimizer.OptimizerTests.test_session_and_total_time_limits) ... ok
+test_stop_and_kernel_lock (test_optimizer.OptimizerTests.test_stop_and_kernel_lock) ... ok
+test_synthetic_adaptive_tpe_and_failed_constraints (test_optimizer.OptimizerTests.test_synthetic_adaptive_tpe_and_failed_constraints) ... C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+[I 2026-10-12 20:53:48,851] A new study created in memory with name: no-name-62e8e3a7-c4ed-43fe-a6f7-ac15a16c5a7d
+ok
+test_two_worker_study_constraints_resume_and_reports (test_optimizer.OptimizerTests.test_two_worker_study_constraints_resume_and_reports) ... C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``constant_liar`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+[I 2026-10-12 20:53:51,677] A new study created in RDB with name: daco
+[I 2026-10-12 20:53:53,547] Using an existing study with name 'daco' instead of creating a new one.
+[I 2026-10-12 20:54:04,358] Using an existing study with name 'daco' instead of creating a new one.
+[I 2026-10-12 20:54:04,465] Using an existing study with name 'daco' instead of creating a new one.
+ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 36.712s
+
+OK

@@ -24,11 +24,11 @@ from algorithms.pso import PSO
 SEED = random.randint(0,100)
 
 ALGORITHMS = [
-    DACO,
-    ACACO,
-    SimpleACO,
-    NodeACO,
     PSO,
+    DACO,
+    SimpleACO,
+    ACACO,
+    # NodeACO,
 ]
 
 

@@ -1,0 +1,29 @@
+START deposit_4x_cap32 24
+PROGRESS deposit_4x_cap32 24 100 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 200 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 300 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 400 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 500 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 600 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 700 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 800 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 900 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1000 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1100 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1200 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1300 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1400 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1500 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1600 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1700 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 1800 alive 100 FND None cap 0.02
+PROGRESS deposit_4x_cap32 24 1900 alive 100 FND None cap 0.0
+PROGRESS deposit_4x_cap32 24 2000 alive 100 FND None cap 0.04
+PROGRESS deposit_4x_cap32 24 2100 alive 100 FND None cap 0.06
+PROGRESS deposit_4x_cap32 24 2200 alive 100 FND None cap 0.06
+PROGRESS deposit_4x_cap32 24 2300 alive 100 FND None cap 0.11
+PROGRESS deposit_4x_cap32 24 2400 alive 100 FND None cap 0.07
+PROGRESS deposit_4x_cap32 24 2500 alive 100 FND None cap 0.14
+PROGRESS deposit_4x_cap32 24 2600 alive 100 FND None cap 0.26
+PROGRESS deposit_4x_cap32 24 2700 alive 99 FND 2644 cap 0.152
+END deposit_4x_cap32 24 2707 2644 no_feasible_tree

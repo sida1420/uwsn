@@ -1,118 +1,119 @@
+"""D-ACO with live deposits and one energy + load^p/density fitness."""
+from dataclasses import dataclass
+from math import isfinite
+import random
+import numpy as np
 from algorithms.base.base import Algorithm
 from algorithms.clustering.d_aco.d_aco import DACOClustering
 from algorithms.clustering.d_aco.parameters import DACOParameters
+from algorithms.clustering.d_aco.fitness import FitnessReferences, fitness, power_density_penalty
 from algorithms.routing import dropping_member_multi_hop_routing
 from evaluate import Evaluator
-import numpy
+
+
+@dataclass
+class Candidate:
+    root: object
+    chs: tuple
+    consumption: dict
+    energy: float
+    penalty: float
+    fitness: float = 0.0
 
 
 class DACO(Algorithm):
-    """Density-aware ACO clustering paired with dropping multi-hop routing."""
+    name = 'D-ACO'
 
-    name = "D-ACO"
-
-    def __init__(self, network, hparameters, aco_params: DACOParameters = None):
+    def __init__(self, network, hparameters, aco_params=None):
         self._aco_params = aco_params
-        super().__init__(network, hparameters)
+        super().__init__(network,hparameters)
 
     def init_params(self):
         self.params = self._aco_params or DACOParameters()
+        self.params.validate()
         self.evaluator = Evaluator(self.hparameters)
-        self.clustering = DACOClustering(
-            self.network,
-            self.hparameters,
-            self.params,
-        )
+        self.clustering = DACOClustering(self.network,self.hparameters,self.params)
+        self.references = None
+        self.calibration_attempts = 0
+        self.calibration_routing_attempts = 0
+        self.calibration_feasible = 0
+
+    def _load_context(self, live_sensors, residual_e):
+        return (list(live_sensors),np.asarray([residual_e[i] for i in live_sensors]),
+                self.clustering.grid.get_base_density(live_sensors))
+
+    def _run_ant(self, start, live_sensors, residual_e, context, calibration=False):
+        for _ in range(self.params.max_clustering_attempts):
+            clusters = self.clustering.create_clusters(live_sensors,residual_e,start)
+            if calibration:
+                self.calibration_attempts += 1
+            else:
+                self.total_clustering_attempts += 1
+            if clusters is None:
+                if not calibration:
+                    self.failed_clustering_attempts += 1
+                return None
+            ch_nodes,nodes,outliers = clusters
+            if ch_nodes is None:
+                if not calibration:
+                    self.failed_clustering_attempts += 1
+                continue
+            if calibration:
+                self.calibration_routing_attempts += 1
+            else:
+                self.total_routing_attempts += 1
+            root = dropping_member_multi_hop_routing(ch_nodes,nodes,live_sensors,outliers,
+                self.network.dist_matrix,self.network.base_dists,residual_e,
+                self.network.radius,self.params.hopping_factor)
+            if root is None:
+                continue
+            consumption,cost = self.evaluator.energy_consumption(root,self.network.dist_matrix,self.network.base_dists)
+            if not isfinite(cost) or cost<=0 or set(consumption)!=set(live_sensors):
+                continue
+            nodes,residual,density = context
+            penalty = power_density_penalty(consumption,nodes,residual,density,self.params.load_power,self.params.density_epsilon)
+            if not isfinite(penalty):
+                continue
+            return Candidate(root,tuple(ch_nodes),consumption,cost,penalty)
+        if not calibration:
+            self.failed_routing_attempts += 1
+        return None
+
+    def calibrate(self, live_sensors, residual_e):
+        """Throwaway batch: no physical energy, deposits, or schedule advancement."""
+        if self.references is not None:
+            return True
+        if not live_sensors:
+            return False
+        self.clustering.grid.compute_density(live_sensors,residual_e)
+        context = self._load_context(live_sensors,residual_e)
+        starts = random.sample(live_sensors,min(self.params.calibration_ants,len(live_sensors)))
+        candidates = [self._run_ant(start,live_sensors,residual_e,context,True) for start in starts]
+        candidates = [c for c in candidates if c is not None]
+        self.calibration_feasible = len(candidates)
+        if not candidates:
+            return False
+        self.references = FitnessReferences.from_observations([c.energy for c in candidates],[c.penalty for c in candidates])
+        return True
 
     def plan_round(self, live_sensors, residual_e):
+        if not live_sensors or not self.calibrate(live_sensors,residual_e):
+            return None,{}
+        starts = self.clustering.pre_round(live_sensors,residual_e)
+        context = self._load_context(live_sensors,residual_e)
+        references = self.references  # scales fixed for the round; pheromone remains live
         candidates = []
-
-        starts = self.clustering.pre_round(live_sensors, residual_e)
-
         for start in starts:
-            root = None
-            chs = None
-
-            for _ in range(self.params.max_clustering_attempts):
-                clusters = self.clustering.create_clusters(
-                    live_sensors,
-                    residual_e,
-                    start,
-                )
-                self.total_clustering_attempts += 1
-
-                if clusters is None:
-                    self.failed_clustering_attempts += 1
-                    break
-
-                ch_nodes, nodes, outliers = clusters
-                if ch_nodes is None:
-                    self.failed_clustering_attempts += 1
-                    continue
-
-                chs = list(ch_nodes)
-                self.total_routing_attempts += 1
-                root = dropping_member_multi_hop_routing(
-                    ch_nodes,
-                    nodes,
-                    live_sensors,
-                    outliers,
-                    self.network.dist_matrix,
-                    self.network.base_dists,
-                    residual_e,
-                    self.network.radius,
-                    self.params.hopping_factor,
-                )
-                if root is not None:
-                    break
-
-            if root is None:
-                self.failed_routing_attempts += 1
+            candidate = self._run_ant(start,live_sensors,residual_e,context)
+            if candidate is None:
                 continue
-
-            consumption, cost = self.evaluator.energy_consumption(
-                root,
-                self.network.dist_matrix,
-                self.network.base_dists,
-            )
-            loads = numpy.asarray(list(consumption.values()), dtype=float)
-            mean_load = loads.mean() if loads.size else 0.0
-            load_cv = (
-                float(loads.std() / mean_load)
-                if mean_load > 0
-                else 0.0
-            )
-            candidates.append((root, chs, cost, consumption, load_cv))
-
+            candidate.fitness = fitness(candidate.energy,candidate.penalty,references,self.params.load_density_weight)
+            self.clustering.deposit(candidate.chs,candidate.fitness,references.energy)
+            candidates.append(candidate)
         if not candidates:
-            return None, {}
-
-        mean_energy = sum(candidate[2] for candidate in candidates) / len(candidates)
-        mean_cv = sum(candidate[4] for candidate in candidates) / len(candidates)
-        energy_weight = self.params.energy_weight
-        load_weight = self.params.load_weight
-
-        scored = [
-            (
-                energy_weight * candidate[2] / max(mean_energy, 1e-12)
-                + load_weight * candidate[4] / max(mean_cv, 1e-12)
-                if mean_cv > 0
-                else energy_weight * candidate[2] / max(mean_energy, 1e-12)
-                + load_weight,
-                candidate,
-            )
-            for candidate in candidates
-        ]
-        best_fitness, (best_root, best_chs, best_cost, best_consumption, _) = min(
-            scored,
-            key=lambda item: item[0],
-        )
-        self.clustering.post_round(
-            live_sensors,
-            residual_e,
-            best_consumption,
-            best_chs,
-            best_fitness,
-            scored,
-        )
-        return best_root, best_consumption
+            self.clustering.post_round(live_sensors,residual_e,{},None,None,references.energy)
+            return None,{}
+        best = min(candidates,key=lambda c:(c.fitness,c.energy,c.chs))
+        self.clustering.post_round(live_sensors,residual_e,best.consumption,best.chs,best.fitness,references.energy)
+        self.references = references.updated([c.energy for c in candidates],[c.penalty for c in candidates],self.params.reference_memory)
+        return best.root,best.consumption

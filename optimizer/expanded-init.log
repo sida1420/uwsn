@@ -1,0 +1,11 @@
+{
+  "study": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\optimizer\\runs\\ready-expanded",
+  "mode": "scientific",
+  "reference": null,
+  "budget": {
+    "max_trials": 32,
+    "max_wall_hours": 5.57953138888888,
+    "max_session_hours": 2,
+    "max_workers": 2
+  }
+}

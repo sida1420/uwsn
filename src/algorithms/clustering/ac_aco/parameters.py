@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-from math import exp, isfinite, log
+from math import isfinite
 # --------------------------------------------------------------------------
 # Parameters
 # --------------------------------------------------------------------------
@@ -14,22 +14,26 @@ class ACACOParameters:
 
     ch_proportion: float = 0.20
     pheromone_exponent: float = 1.0  # "alpha" on tau
-    energy_cost_exponent: float = 1.0  # "gamma" on 1 / E_m
+    energy_cost_exponent: float = 0.1  # "gamma" on 1 / E_m; weak hop-cost bias
     distance_weight: float = 1.0  # explicit d^(-beta * weight); E_m is unchanged
     beta_min: float = 1.0
     beta_max: float = 5.0
     beta_slope: float = 5.0
     beta_schedule: str = "raw"  # normalized uses t/T_max; no endpoint rescaling
     rho_min: float = 0.10
-    rho_max: float = 0.90
+    rho_max: float = 0.60
     chaos_min: float = 0.05
     chaos_max: float = 0.30
     chaos_r: float = 3.61
     chaos_seed: float = 0.37
-    Q: float = 100.0
+    # Coupled acoustic-cost calibration; derivation and seeded measurements:
+    # plans/phase5-acaco-tuning/README.md. Bounds are not universal optima.
+    Q: float = 0.01
+    elite_weight: float = 0.1  # balanced best-set contribution; D-ACO's theta
+    load_weight: float = 0.0  # normalized absolute load-CV share in selection
     tau0: float = 1.0
-    tau_min: float = 0.10
-    tau_max: float = 10.0
+    tau_min: float = 0.01
+    tau_max: float = 20.0
     hopping_factor: float = 0.40
 
     def __post_init__(self):
@@ -43,6 +47,8 @@ class ACACOParameters:
             raise ValueError("beta_schedule must be raw or normalized")
         self._bounds("chaos", self.chaos_min, self.chaos_max)
         self._bounds("tau", self.tau_min, self.tau_max, strict_low=True)
+        if self.tau_min == self.tau_max:
+            raise ValueError("tau_min must be strictly less than tau_max")
         if not 3.57 < self.chaos_r < 4:
             raise ValueError("chaos_r must be in (3.57, 4)")
         if not 0 < self.chaos_seed < 1:
@@ -57,6 +63,10 @@ class ACACOParameters:
                 raise ValueError(f"{name} must be finite and >= 0")
         if not isfinite(self.Q) or self.Q <= 0:
             raise ValueError("Q must be finite and > 0")
+        for name in ('elite_weight', 'load_weight'):
+            value = getattr(self, name)
+            if not isfinite(value) or not 0 <= value <= 1:
+                raise ValueError(f"{name} must be finite and in [0, 1]")
         if not self.tau_min <= self.tau0 <= self.tau_max:
             raise ValueError("tau0 must be in [tau_min, tau_max]")
 

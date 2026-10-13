@@ -15,6 +15,8 @@ class Grid:
 
         self.network = network
         self.params = params or DACOParameters()
+        if self.params.density_decay not in ("none", "linear", "quadratic", "parabolic"):
+            raise ValueError("density_decay must be none, linear, quadratic, or parabolic")
 
         target_cube_volume = total_volume / self.params.CH_proportion / len(network.sensors)
         self.cube_size = target_cube_volume ** (1 / 3)
@@ -70,6 +72,15 @@ class Grid:
         fraction = numpy.minimum(fraction, 1.0)
         fraction[distance + self._cell_radius <= self.network.radius] = 1.0
         fraction[distance >= reach] = 0.0
+        if self.params.density_decay != "none":
+            # Keep the grid overlap support, but remove its interior plateau.
+            # Reach includes the cell extent so partially reachable cells remain.
+            if self.params.density_decay == "parabolic":
+                fraction *= numpy.maximum(1.0 - (distance / reach) ** 2, 0.0)
+            else:
+                decay = numpy.maximum(1.0 - distance / reach, 0.0)
+                power = 1 if self.params.density_decay == "linear" else 2
+                fraction *= decay ** power
 
         live = numpy.zeros(len(points))
         live[live_sensors] = 1.0
@@ -81,6 +92,10 @@ class Grid:
 
     def reset_loss(self):
         self.loss.fill(0.0)
+
+    def get_base_density(self, sensor_ids):
+        """Structural grid density before any candidate's CH coverage loss."""
+        return (self.F @ self.density.ravel())[sensor_ids]
 
     def get_density(self, sensor_ids):
         """Return remaining cube coverage weighted by each sensor's coverage."""
@@ -124,6 +139,7 @@ class DACOClustering(ClusteringAlgorithm):
         self.rho = self.params.rho_max - progress * (
             self.params.rho_max - self.params.rho_min
         )
+        self._update_pheromone()
         for values in self._score_components.values():
             values.clear()
         self.grid.compute_density(live_sensors, residual_e)
@@ -143,12 +159,8 @@ class DACOClustering(ClusteringAlgorithm):
         return build_clusters(CHs, live_sensors, self.network.dist_matrix, self.network.radius)
 
     def post_round(self, live_sensors, residual_e, consumption, CH_list,
-                   fitness=None, ant_candidates=()):
-        self._update_pheromone()
-        self.last_deposit = 0.0
-        for ant_fitness, (_, ant_chs, _, _, _) in ant_candidates:
-            self.deposit(ant_chs, ant_fitness, per_ant=True)
-        self.deposit(CH_list, fitness, per_ant=False)
+                   fitness, energy_reference):
+        self.deposit(CH_list, fitness, energy_reference, per_ant=False)
         if self.iteration == 1 or self.iteration % 100 == 0:
             self._log_heuristic_dominance(sum(consumption.values()), fitness)
 
@@ -205,12 +217,12 @@ class DACOClustering(ClusteringAlgorithm):
 
         return CH_list
 
-    def deposit(self, CH_list, cost, per_ant=True):
-        """Deposit pheromone on the nodes in a successful CH path."""
-        if not CH_list or cost is None or cost <= 0:
+    def deposit(self, CH_list, fitness, energy_reference, per_ant=True):
+        """Ant and elite use the same cached fitness and normalization."""
+        if not CH_list or fitness is None or fitness <= 0:
             return
 
-        amount = self.params.Q / cost
+        amount = self.params.Q * energy_reference / fitness
         if per_ant:
             amount /= self.params.num_ants
         else:
@@ -256,7 +268,7 @@ class DACOClustering(ClusteringAlgorithm):
             f"spread_density={spreads['density']:.6g} "
             f"deposit={self.last_deposit:.6g} "
             f"cost={cost:.6g} "
-            f"fitness={fitness:.6g} "
+            f"fitness={fitness if fitness is not None else 'None'} "
             f"tau_min={min(self.pheromone):.6g} "
             f"tau_max={max(self.pheromone):.6g} "
             f"tau_mean={sum(self.pheromone) / len(self.pheromone):.6g}"

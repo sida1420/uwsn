@@ -1,0 +1,30 @@
+START baseline 25
+PROGRESS baseline 25 100 alive 100 FND None cap 0.0
+PROGRESS baseline 25 200 alive 100 FND None cap 0.0
+PROGRESS baseline 25 300 alive 100 FND None cap 0.0
+PROGRESS baseline 25 400 alive 100 FND None cap 0.0
+PROGRESS baseline 25 500 alive 100 FND None cap 0.0
+PROGRESS baseline 25 600 alive 100 FND None cap 0.0
+PROGRESS baseline 25 700 alive 100 FND None cap 0.0
+PROGRESS baseline 25 800 alive 100 FND None cap 0.0
+PROGRESS baseline 25 900 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1000 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1100 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1200 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1300 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1400 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1500 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1600 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1700 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1800 alive 100 FND None cap 0.0
+PROGRESS baseline 25 1900 alive 100 FND None cap 0.02
+PROGRESS baseline 25 2000 alive 100 FND None cap 0.06
+PROGRESS baseline 25 2100 alive 100 FND None cap 0.02
+PROGRESS baseline 25 2200 alive 100 FND None cap 0.05
+PROGRESS baseline 25 2300 alive 100 FND None cap 0.07
+PROGRESS baseline 25 2400 alive 100 FND None cap 0.08
+PROGRESS baseline 25 2500 alive 100 FND None cap 0.17
+PROGRESS baseline 25 2600 alive 100 FND None cap 0.17
+PROGRESS baseline 25 2700 alive 99 FND 2675 cap 0.222
+END baseline 25 2750 2675 no_feasible_tree
+PASS full baseline replay 25

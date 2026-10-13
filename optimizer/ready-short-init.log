@@ -1,0 +1,27 @@
+{
+  "study": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\optimizer\\runs\\ready-short",
+  "mode": "scientific",
+  "reference": {
+    "mean": 42.46611648006099,
+    "cap": 43.31543880966221,
+    "declared_rounded_policy_cap": 43.315422,
+    "exact_minus_declared_cap": 1.680966221329072e-05,
+    "per_seed": {
+      "24": 42.47543601232692,
+      "25": 42.50385681880908,
+      "26": 42.41905660904696
+    },
+    "origin": "fingerprint-matched historical trajectories",
+    "paths": {
+      "24": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\plans\\phase10-daco-vs-pheromone\\full\\pheromone_24.json",
+      "25": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\plans\\phase10-daco-vs-pheromone\\full\\pheromone_25.json",
+      "26": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\plans\\phase10-daco-vs-pheromone\\full\\pheromone_26.json"
+    }
+  },
+  "budget": {
+    "max_trials": 32,
+    "max_wall_hours": 6,
+    "max_session_hours": 2,
+    "max_workers": 2
+  }
+}

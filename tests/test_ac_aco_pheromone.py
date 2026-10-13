@@ -7,6 +7,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from algorithms.ac_aco import ACACO
+from algorithms.clustering.ac_aco.parameters import ACACOParameters
 from hparameter import HyperParameters
 from network import NetworkInstance
 from point import Point
@@ -16,7 +17,9 @@ class PheromoneBoundTests(unittest.TestCase):
     def setUp(self):
         self.network = NetworkInstance([Point(i,0,0) for i in range(10)],
                                       Point(0,0,0), 1, 10, 1, 1, 20)
-        self.algorithm = ACACO(self.network, HyperParameters(), seed=0)
+        # Preserve the historical defect fixture independently of calibration.
+        params = ACACOParameters(Q=100, tau_min=.1, tau0=1, tau_max=10)
+        self.algorithm = ACACO(self.network, HyperParameters(), params, seed=0)
         self.clustering = self.algorithm.clustering
 
     def test_elite_deposit_remains_bounded(self):

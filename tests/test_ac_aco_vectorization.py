@@ -25,9 +25,9 @@ class ACACOVectorizationTests(unittest.TestCase):
         self.residual = [self.network.init_energy] * self.network.N
 
     def test_seeded_rounds_keep_recorded_energy_and_candidate_count(self):
-        # The former multi-round fixture already failed on audited main.
-        # Preserve its valid first-round anchor (before any pheromone learning),
-        # then verify paired reproducibility and actual tree energy independently.
+        # Live per-ant deposits intentionally change historical seeded trees,
+        # including the first round. Check paired reproducibility and independently
+        # evaluated tree energy rather than the old frozen-pheromone anchor.
         from evaluate import Evaluator
         paired = ACACO(self.network, HyperParameters(), seed=39)
         paired_residual = self.residual.copy()
@@ -41,8 +41,6 @@ class ACACOVectorizationTests(unittest.TestCase):
                 verified, _ = Evaluator(HyperParameters()).energy_consumption(
                     root, self.network.dist_matrix, self.network.base_dists)
                 self.assertEqual(consumption, verified)
-                if round_id == 0:
-                    self.assertAlmostEqual(sum(consumption.values()), 0.016821386429811486, places=12)
                 for node_id, energy in consumption.items():
                     self.residual[node_id] = max(0.0, self.residual[node_id] - energy)
                     paired_residual[node_id] = max(0.0, paired_residual[node_id] - energy)
@@ -110,6 +108,16 @@ class ACACOVectorizationTests(unittest.TestCase):
 
         self.assertAlmostEqual(equal[0], 0.5)
         self.assertGreater(changed[0], equal[0])
+
+    def test_later_transitions_immediately_see_ant_deposits(self):
+        clustering=self.algorithm.clustering
+        state=clustering.pre_round(self.live,self.residual)
+        before=clustering._transition_probabilities(0,[1,2],self.residual,state.beta,0.)
+        clustering.deposit([0,1],.02,per_ant=True)
+        after=clustering._transition_probabilities(0,[1,2],self.residual,state.beta,0.)
+        self.assertGreater(after[0],before[0])
+        self.assertLess(after[1],before[1])
+        self.assertFalse(hasattr(clustering,'_pheromone_array'))
 
 
 if __name__ == "__main__":

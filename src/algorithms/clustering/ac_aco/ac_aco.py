@@ -134,9 +134,8 @@ class ACACOClustering(ClusteringAlgorithm):
         live = tuple(i for i in live_sensors if residual_e[i] > 0)
         if not live:
             return None
-        # Reuse these round snapshots for every ant's probability calculation.
+        # Physical residual energy stays fixed during optimizer search.
         self._residual_array = np.asarray(residual_e, dtype=float)
-        self._pheromone_array = np.asarray(self.pheromone, dtype=float)
 
         p = self.params
         target = min(len(live), max(1, round(p.ch_proportion * len(live))))
@@ -222,7 +221,9 @@ class ACACOClustering(ClusteringAlgorithm):
         targets = np.asarray(available, dtype=np.intp)
         distance = self._distances[source, targets]
         energy = np.maximum(np.asarray(residual_e, dtype=float)[targets], 0.0)
-        tau = self._pheromone_array[source, targets]
+        # Read the live source row: deposits from earlier feasible ants are
+        # immediately visible, without copying/freezing the whole matrix.
+        tau = np.asarray(self.pheromone[source], dtype=float)[targets]
         log_energy = self._log_edge_costs[source, targets]
         valid = (tau > 0) & (energy > 0) & np.isfinite(log_energy)
 
@@ -266,6 +267,8 @@ class ACACOClustering(ClusteringAlgorithm):
         amount = self.params.Q / cost
         if per_ant:
             amount /= self.params.num_ants
+        else:
+            amount *= self.params.elite_weight
 
         for source, target in zip(CH_list, CH_list[1:]):
             self.pheromone[source][target] += amount

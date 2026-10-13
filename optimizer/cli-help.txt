@@ -1,0 +1,9 @@
+usage: __main__.py [-h] {init,run,status,stop,report,validate} ...
+
+Bounded, resumable D-ACO parameter studies
+
+positional arguments:
+  {init,run,status,stop,report,validate}
+
+options:
+  -h, --help            show this help message and exit

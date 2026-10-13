@@ -1,0 +1,55 @@
+{
+  "study": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\optimizer\\runs\\ready-expanded",
+  "mode": "scientific",
+  "stop_reason": "trial_budget",
+  "spent_wall": 18521.437000000005,
+  "trials_total": 32,
+  "complete": 32,
+  "infeasible": 27,
+  "failed": 0,
+  "running": 0,
+  "best_feasible": {
+    "number": 25,
+    "mean_service_capped": 3000,
+    "service_per_seed": [
+      3000,
+      3000,
+      3000
+    ],
+    "service_standard_error": 0.0,
+    "mean_fnd_observed_only": null,
+    "fnd_observed_count": 0,
+    "service_terminations": [
+      "horizon",
+      "horizon",
+      "horizon"
+    ],
+    "energy_K_mean": 38.290823639540584,
+    "energy_K_reference_mean": 42.46611648006099,
+    "energy_constraint_delta_j": -5.024615170121628,
+    "energy_ratio": 0.901679428527899,
+    "energy_comparable": true,
+    "energy_status": "comparable",
+    "energy_ratios_per_seed": [
+      0.9101183791202127,
+      0.8973635609494025,
+      0.897553757136793
+    ],
+    "ratio_standard_error": 0.004220263859223072,
+    "violating_seed_fraction": 0.0,
+    "feasible": true,
+    "smoke_only": false,
+    "cpu": 2127.453125,
+    "wall": 2137.1089999999967,
+    "attempts": 360000,
+    "routing_attempts": 360000,
+    "feasible_evaluations": 360120,
+    "calibration_attempts": 120
+  },
+  "disk_mb": 1570.5203008651733,
+  "max_trials": 32,
+  "reference_ready": true,
+  "remaining_wall_hours": 0.4346877777777669,
+  "max_session_hours": 2,
+  "ETA_note": "Uncertain; configuration cost and native stopping vary"
+}

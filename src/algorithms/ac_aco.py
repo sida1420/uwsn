@@ -1,4 +1,5 @@
 from math import isfinite
+import numpy as np
 
 from algorithms.base.base import Algorithm
 from algorithms.clustering.ac_aco.ac_aco import ACACOClustering, ACACOParameters
@@ -16,7 +17,8 @@ class ACACO(Algorithm):
       2. `num_ants` ants each build an ordered CH path (up to
          `max_clustering_attempts` tries until routing is feasible).
       3. Every feasible tree is scored by Evaluator.energy_consumption;
-         the cheapest one is returned.
+         normalized energy/load fitness selects the returned tree when
+         load_weight > 0; otherwise the cheapest tree is returned.
       4. post_round updates the cost window and pheromone once, even if
          every ant failed.
     """
@@ -40,7 +42,7 @@ class ACACO(Algorithm):
         if state is None:
             return None, {}
 
-        candidates = []  # (cost, CHs, root, consumption)
+        candidates = []  # (cost, CHs, root, consumption, load_cv)
         for _ in range(self.params.num_ants):
             for _attempt in range(self.params.max_clustering_attempts):
                 self.total_clustering_attempts += 1
@@ -76,10 +78,14 @@ class ACACO(Algorithm):
                     continue
 
                 self.clustering.deposit(CHs, cost)
-                candidates.append((cost, CHs, root, consumption))
+                load_cv = 0.0
+                if self.params.load_weight:
+                    loads = np.asarray(list(consumption.values()), dtype=float)
+                    load_cv = float(loads.std() / loads.mean())
+                candidates.append((cost, CHs, root, consumption, load_cv))
                 break
 
-        best = min(candidates, key=lambda c: (c[0], c[1]), default=None)
+        best = self._best_candidate(candidates)
 
         self.clustering.post_round(
             live_sensors,
@@ -93,3 +99,17 @@ class ACACO(Algorithm):
         if best is None:
             return None, {}
         return best[2], best[3]
+
+    def _best_candidate(self, candidates):
+        if not candidates:
+            return None
+        weight = self.params.load_weight
+        if weight == 0:
+            return min(candidates, key=lambda c: (c[0], c[1]))
+        mean_energy = float(np.mean([c[0] for c in candidates]))
+        mean_cv = float(np.mean([c[4] for c in candidates]))
+        def score(candidate):
+            normalized_cv = candidate[4] / mean_cv if mean_cv > 0 else 1.0
+            fitness = (1 - weight) * candidate[0] / mean_energy + weight * normalized_cv
+            return fitness, candidate[0], candidate[1]
+        return min(candidates, key=score)
