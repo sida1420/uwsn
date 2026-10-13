@@ -164,10 +164,10 @@ class PSOClustering(ClusteringAlgorithm):
         inertia = p.inertia_start + (p.inertia_end - p.inertia_start) * progress
 
         for i in range(len(particle["position"])):
-            cognitive = p.cognitive * random.random() * (
+            cognitive = p.cognitive * self.random_source.random() * (
                 personal_best[i] - particle["position"][i]
             )
-            social = p.social * random.random() * (
+            social = p.social * self.random_source.random() * (
                 global_best_position[i] - particle["position"][i]
             )
             velocity = inertia * particle["velocity"][i] + cognitive + social
@@ -181,8 +181,8 @@ class PSOClustering(ClusteringAlgorithm):
 
         # A rank swap is a natural mutation for top-k decoding and prevents
         # the bounded continuous swarm from freezing on one CH ordering.
-        if len(particle["position"]) >= 2 and random.random() < p.mutation_probability:
-            first, second = random.sample(range(len(particle["position"])), 2)
+        if len(particle["position"]) >= 2 and self.random_source.random() < p.mutation_probability:
+            first, second = self.random_source.sample(range(len(particle["position"])), 2)
             particle["position"][first], particle["position"][second] = (
                 particle["position"][second],
                 particle["position"][first],
@@ -205,14 +205,14 @@ class PSOClustering(ClusteringAlgorithm):
                 velocities.append(previous["velocity"][node_id])
             else:
                 if heuristic_scores is None:
-                    positions.append(random.random())
+                    positions.append(self.random_source.random())
                 else:
                     positions.append(min(1.0, max(
                         0.0,
-                        heuristic_scores[node_id] + random.uniform(-0.05, 0.05),
+                        heuristic_scores[node_id] + self.random_source.uniform(-0.05, 0.05),
                     )))
                 velocities.append(
-                    random.uniform(-self.params.velocity_max, self.params.velocity_max)
+                    self.random_source.uniform(-self.params.velocity_max, self.params.velocity_max)
                 )
 
         return {

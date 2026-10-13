@@ -10,9 +10,9 @@ class NodeACO(Algorithm):
 
     name = "NodeACO"
 
-    def __init__(self, network, hparameters, aco_params: NodeACOParameters = None):
+    def __init__(self, network, hparameters, aco_params: NodeACOParameters = None, seed=None):
         self._aco_params = aco_params
-        super().__init__(network, hparameters)
+        super().__init__(network, hparameters, seed=seed)
 
     def init_params(self):
         self.params = self._aco_params or NodeACOParameters()

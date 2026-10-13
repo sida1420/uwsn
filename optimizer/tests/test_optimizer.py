@@ -1,178 +1,118 @@
-import gzip
-import json
-import multiprocessing as mp
 from pathlib import Path
-import tempfile
-import time
-import unittest
+import tempfile,unittest,os
+import multiprocessing as mp,time
 from optimizer import PACKAGE,ROOT
-import yaml
-import optuna
-from optimizer.config import validate,anchors,suggest
-from optimizer.storage import atomic,read,fingerprint,lock,assert_epoch
-from optimizer.metrics import aggregate,constraints
-from optimizer.reference import historical
-from optimizer.evaluate import run_seed
-from optimizer.controller import initialize,run,open_study,close_study,time_stop
-from optimizer.report import generate
+from optimizer.engine import DEFAULT
+from optimizer.storage import read,atomic
+from optimizer.provenance import epoch
+from optimizer.trajectory import run_seed
+from optimizer.adapters import get
+from optimizer.engine import initialize,run
+from optimizer.audit import compatibility
+from network import NetworkInstance
+from hparameter import HyperParameters
+from contextlib import redirect_stdout
+from io import StringIO
 
-def kill_target(cfg,params,path,epoch):
-    run_seed(cfg,params,24,path,epoch)
+def killed_seed(cfg,params,folder,expected):
+    run_seed(cfg,params,24,folder,expected)
 
 class OptimizerTests(unittest.TestCase):
     def setUp(self):
-        base=PACKAGE/'.test-output';base.mkdir(exist_ok=True)
-        self.tmp=tempfile.TemporaryDirectory(dir=base);self.root=Path(self.tmp.name)
-        self.cfg=validate(dict(mode='smoke',horizon=4,energy_window=2,training_seeds=[24,25],
-            validation_seeds=[40],max_trials=3,max_workers=2,checkpoint_every=1,max_wall_hours=.05,reuse_history=False))
-        self.epoch=fingerprint(self.cfg);self.params=anchors()[0]
+        self.tmp=tempfile.TemporaryDirectory(dir=PACKAGE/'.test-output');self.root=Path(self.tmp.name)
+        self.cfg={**DEFAULT, 'mode':'smoke','horizon':5,'energy_window':2,'max_trials':3,
+                  'training_seeds':[24], 'map':str(ROOT/'map.pkl'),'adaptive_total_rounds':3000}
     def tearDown(self): self.tmp.cleanup()
-    def init(self,name='study'):
-        config=self.root/'config.yaml';config.write_text(yaml.safe_dump(self.cfg))
-        folder=self.root/name;initialize(config,folder);return folder
 
-    def test_domains_and_rejection(self):
-        from optimizer.config import SPACE
-        self.assertEqual(SPACE['theta'],(0.,1.,False))
-        self.assertEqual(SPACE['load_density_weight'],(0.,1.,False))
-        self.assertEqual(SPACE['load_power'],(1.,4.,False))
-        for params in anchors():
-            from algorithms.clustering.d_aco.parameters import DACOParameters
-            DACOParameters(**params)
-            self.assertEqual(params['density_decay'],'parabolic')
-        for change in (dict(energy_allowance=.05),dict(training_seeds=[24,24]),dict(max_workers=5),dict(horizon=3000)):
-            with self.assertRaises(ValueError): validate({**self.cfg,**change})
+    def test_adapter_smokes_and_physical_accounting(self):
+        for name in ('daco','pso','acaco'):
+            cfg=self.cfg;params=get(name).baseline_config()
+            result=run_seed(cfg,params,24,self.root/name,epoch(cfg),kind=name)
+            self.assertEqual(result['completed_rounds'],5)
+            self.assertTrue(result['horizon_censored'])
+            self.assertAlmostEqual(sum(result['residual']),60.-sum(
+                r['selected_tree_physical_energy'] for r in __import__('optimizer.storage',fromlist=['unpickle']).unpickle(self.root/name/'checkpoint.pkl')['records']))
 
-    def test_session_and_total_time_limits(self):
-        cfg=validate({})
-        self.assertEqual(cfg['max_trials'],32)
-        self.assertEqual(time_stop(cfg,0,7200),'session_budget')
-        self.assertIsNone(time_stop(cfg,7000,100))
-        self.assertEqual(time_stop(cfg,21500,100),'wall_budget')
-        # Idle time is absent: only accumulated active sessions consume budget.
-        self.assertEqual(time_stop(cfg,14000,7200),'session_budget')
-        with self.assertRaises(ValueError): validate(dict(max_wall_hours=24))
-        with self.assertRaises(ValueError): validate(dict(study_role='validation',max_wall_hours=3))
+    def test_daco_native_equivalence_and_resume(self):
+        params=get('daco').baseline_config()
+        network=NetworkInstance.from_pickle(self.cfg['map']);h=HyperParameters();h.T_max=self.cfg['adaptive_total_rounds']
+        native=get('daco').make_algorithm(network,h,params,24);residual=[network.init_energy]*network.N;energy_K=0.
+        for round_index in range(self.cfg['horizon']):
+            with redirect_stdout(StringIO()): root,costs=native.plan_round(list(range(network.N)),residual)
+            self.assertIsNotNone(root)
+            for node,cost in costs.items(): residual[node]-=cost
+            if round_index<self.cfg['energy_window']: energy_K+=sum(costs.values())
+        new=run_seed(self.cfg,params,24,self.root/'new',epoch(self.cfg))
+        self.assertEqual(residual,new['residual']);self.assertEqual(energy_K,new['energy_K'])
+        run_seed(self.cfg,params,24,self.root/'resume',epoch(self.cfg),pause_after=2)
+        resumed=run_seed(self.cfg,params,24,self.root/'resume',epoch(self.cfg))
+        self.assertEqual(resumed['residual'],new['residual']);self.assertEqual(resumed['energy_K'],new['energy_K'])
 
-    def test_energy_ineligibility_and_mean_rule(self):
-        cfg={**self.cfg,'mode':'scientific'}
-        def sample(seed,energy,status='comparable'):
-            return dict(seed=seed,energy_status=status,energy_K=energy,completed_rounds=2800,FND=2700,
-                termination_reason='no_feasible_tree_found',cpu=1,wall=2,clustering_attempts=40,routing_attempts=40,calibration_attempts=40)
-        reference=dict(mean=10.,cap=10.2,per_seed={'24':10.,'25':10.})
-        result=aggregate([sample(24,10.3),sample(25,10.1)],reference,cfg)
-        self.assertTrue(result['feasible']);self.assertEqual(result['violating_seed_fraction'],.5)
-        bad=aggregate([sample(24,None,'not_comparable'),sample(25,1)],reference,cfg)
-        self.assertFalse(bad['feasible']);self.assertGreater(bad['energy_constraint_delta_j'],0)
-        with self.assertRaises(ValueError): aggregate([sample(25,10),sample(24,10)],reference,cfg)
+    def test_schedule_prefix_changes(self):
+        from algorithms.clustering.ac_aco.ac_aco import evaporation_rate
+        self.assertNotEqual(evaporation_rate(1,3000,.1,.6),evaporation_rate(1,3500,.1,.6))
+        self.assertAlmostEqual(evaporation_rate(3500,3500,.1,.6),.1)
 
-    def test_checkpoint_resume_exact_and_no_double_energy(self):
-        a=run_seed(self.cfg,self.params,24,self.root/'a',self.epoch)
-        paused=run_seed(self.cfg,self.params,24,self.root/'b',self.epoch,pause_after=2)
-        self.assertTrue(paused['paused'])
-        b=run_seed(self.cfg,self.params,24,self.root/'b',self.epoch)
-        for key in ('residual','completed_rounds','FND','energy_K','clustering_attempts','feasible_evaluations'):
-            self.assertEqual(a[key],b[key])
-        self.assertEqual(b['termination_reason'],'horizon');self.assertTrue(b['horizon_censored'])
-        self.assertEqual(b['energy_status'],'comparable')
-        cached=run_seed(self.cfg,self.params,24,self.root/'b',self.epoch)
-        self.assertEqual(cached,b)
+    def test_killed_checkpoint_recovery(self):
+        cfg={**self.cfg,'horizon':10,'checkpoint_every':1};params=get('daco').baseline_config();expected=epoch(cfg);folder=self.root/'killed'
+        process=mp.get_context('spawn').Process(target=killed_seed,args=(cfg,params,str(folder),expected));process.start()
+        deadline=time.monotonic()+20
+        while not (folder/'progress.json').exists() and time.monotonic()<deadline: time.sleep(.02)
+        self.assertTrue((folder/'progress.json').exists());process.terminate();process.join(timeout=5)
+        resumed=run_seed(cfg,params,24,folder,expected)
+        control=run_seed(cfg,params,24,self.root/'control',expected)
+        self.assertEqual(resumed['residual'],control['residual'])
+        self.assertEqual(resumed['completed_rounds'],10)
 
-    def test_crash_after_durable_checkpoint(self):
-        cfg={**self.cfg,'horizon':20}
-        epoch=fingerprint(cfg)
-        folder=self.root/'killed'
-        p=mp.get_context('spawn').Process(target=kill_target,args=(cfg,self.params,str(folder),epoch));p.start()
-        deadline=time.time()+20
-        while not (folder/'progress.json').exists() and time.time()<deadline: time.sleep(.02)
-        self.assertTrue((folder/'progress.json').exists());p.terminate();p.join(timeout=10)
-        resumed=run_seed(cfg,self.params,24,folder,epoch)
-        control=run_seed(cfg,self.params,24,self.root/'control',epoch)
-        for key in ('residual','energy_K','completed_rounds','clustering_attempts'):
-            self.assertEqual(resumed[key],control[key])
+    def test_outer_deadline_exhausted_never_launches(self):
+        from optimizer.deadline import launch
+        atomic(self.root/'config.json',dict(budget_seconds=1))
+        atomic(self.root/'state.json',dict(spent_wall=1.))
+        self.assertEqual(launch(self.root)['stop_reason'],'deadline_exhausted')
 
-    def test_full_precision_reference_and_short_historical_replay(self):
-        cfg=validate({});epoch=fingerprint(cfg)
-        old_epoch=read(ROOT/'plans/phase10-daco-vs-pheromone/full/pheromone_24.json')['provenance']
-        reference=historical(cfg,old_epoch)
-        self.assertIsNotNone(reference)
-        self.assertIsNone(historical(cfg,epoch))
-        self.assertAlmostEqual(reference['mean'],42.46611648006099,places=12)
-        self.assertEqual(reference['cap'],reference['mean']*1.02)
-        for kind,params,label in (('daco',anchors()[0],'daco'),('daco',anchors()[1],'heuristic_quarter'),('simple',{},'pheromone')):
-            source=ROOT/('plans/phase11-daco-concentration/full/heuristic_quarter_24.json' if label=='heuristic_quarter' else f'plans/phase10-daco-vs-pheromone/full/{label}_24.json')
-            old=read(source)
-            # Reproduce the old explicitly frozen parameters, including none
-            # decay; current defaults now deliberately use parabolic decay.
-            result=run_seed(self.cfg,old['parameters'] if kind=='daco' else {},24,self.root/label,self.epoch,kind=kind)
-            self.assertEqual(result['energy_K'],sum(r['energy'] for r in old['records'][:2]))
-        invalid={**epoch,'map_sha':'changed'};self.assertIsNone(historical(cfg,invalid))
+    def test_epoch_guard_avoids_repeated_hashing(self):
+        from unittest.mock import patch
+        from optimizer.provenance import EpochGuard,epoch as real_epoch
+        expected=real_epoch(self.cfg)
+        with patch('optimizer.provenance.epoch',wraps=real_epoch) as hashed:
+            guard=EpochGuard(self.cfg,expected)
+            for _ in range(100): guard.check()
+            self.assertEqual(hashed.call_count,1)
+            guard.check(force=True);self.assertEqual(hashed.call_count,2)
 
-    def test_two_worker_study_constraints_resume_and_reports(self):
-        folder=self.init()
-        controller=mp.get_context('spawn').Process(target=run,args=(str(folder),));controller.start()
-        deadline=time.time()+20
-        while not read(folder/'state.json')['jobs'] and time.time()<deadline: time.sleep(.05)
-        self.assertTrue(read(folder/'state.json')['jobs'])
-        (folder/'STOP').touch();controller.join(timeout=20)
-        self.assertFalse(controller.is_alive());self.assertEqual(controller.exitcode,0)
-        self.assertEqual(read(folder/'state.json')['stop_reason'],'operator_stop')
-        # Simulate durable RUNNING statuses left by a controller killed before
-        # its finally block. These jobs must resume, rather than be skipped.
-        stale=read(folder/'state.json')
-        for job in stale['jobs'].values():
-            if job['status']=='paused': job['status']='running';job.pop('pid',None)
-        atomic(folder/'state.json',stale)
-        result=run(folder)
-        self.assertEqual(result['complete'],3);self.assertIsNone(result['best_feasible'])
-        self.assertEqual(result['stop_reason'],'trial_budget')
-        study=open_study(folder,self.cfg)
-        trials=study.get_trials();self.assertEqual(len(trials),3)
-        self.assertTrue(all(t.state==optuna.trial.TrialState.COMPLETE for t in trials))
-        self.assertTrue(all(tuple(t.system_attrs['constraints'])==tuple(constraints(t)) for t in trials))
-        close_study(study)
-        again=run(folder);self.assertEqual(again['complete'],3)
-        generate(folder)
-        self.assertTrue((folder/'final-report.md').exists());self.assertTrue((folder/'plots/service-energy.png').exists())
-        self.assertFalse((folder/'best-feasible-config.yaml').exists())
+    def test_supervised_start_and_resume_ledger(self):
+        import yaml
+        from optimizer.deadline import launch
+        cfg=dict(mode='smoke',horizon=2,adaptive_total_rounds=3500,energy_window=1,
+                 training_seeds=[24],max_trials=1,budget_seconds=120,max_workers=1,shutdown_reserve_seconds=10)
+        config=self.root/'supervised.yaml';config.write_text(yaml.safe_dump(cfg));folder=self.root/'supervised'
+        initialize(config,folder,PACKAGE/'runs/ready-expanded')
+        first=launch(folder);self.assertGreater(first['spent_seconds'],0)
+        self.assertEqual(read(folder/'state.json')['stop_reason'],'trial_budget')
+        second=launch(folder);self.assertGreater(second['spent_seconds'],first['spent_seconds'])
+        self.assertTrue((folder/'final-report.md').exists())
+        self.assertEqual(len([j for k,j in read(folder/'state.json')['jobs'].items() if k!='reference']),1)
 
-    def test_synthetic_adaptive_tpe_and_failed_constraints(self):
-        calls=[]
-        def constraint(t): calls.append(t.number);return constraints(t)
-        study=optuna.create_study(direction='maximize',sampler=optuna.samplers.TPESampler(
-            seed=9,multivariate=True,n_startup_trials=2,constraints_func=constraint))
-        for _ in range(10):
-            trial=study.ask();p=suggest(trial)
-            trial.set_user_attr('energy_constraint_delta_j',p['Q']-10)
-            study.tell(trial,3000-100*p['beta']-50*p['gamma'])
-        failed=study.ask();study.tell(failed,state=optuna.trial.TrialState.FAIL)
-        pruned=study.ask();study.tell(pruned,state=optuna.trial.TrialState.PRUNED)
-        self.assertNotIn(failed.number,calls)
-        # Installed Optuna 4.6 also calls constraints for PRUNED trials;
-        # missing workload attributes must therefore remain infeasible.
-        self.assertIn(pruned.number,calls)
-        self.assertTrue(all(tuple(t.system_attrs['constraints'])==tuple(constraints(t)) for t in study.get_trials()[:10]))
-        self.assertGreater(study.get_trials()[-1].system_attrs['constraints'][0],0)
+    def test_compatibility_priorities(self):
+        configs=compatibility(PACKAGE/'runs/ready-expanded',self.root,self.cfg)
+        self.assertEqual(configs[0],read(PACKAGE/'runs/ready-expanded/state.json')['jobs']['25']['parameters'])
+        import csv
+        with (self.root/'legacy-trials-compatibility.csv').open() as f: rows=list(csv.DictReader(f))
+        self.assertEqual(len(rows),32);self.assertTrue(all(r['tier']=='C' for r in rows))
 
-    def test_config_epoch_cannot_silently_change(self):
-        folder=self.init();cfg=read(folder/'config.json');cfg['max_trials']=2;atomic(folder/'config.json',cfg)
-        with self.assertRaises(RuntimeError): assert_epoch(folder)
-
-    def test_disk_scan_tolerates_atomic_file_replacement(self):
-        from unittest.mock import Mock,patch
-        from optimizer.storage import disk_mb
-        vanished=Mock();vanished.is_file.return_value=True
-        vanished.stat.side_effect=FileNotFoundError('atomic temporary file moved')
-        committed=self.root/'committed';committed.write_bytes(b'12345')
-        with patch('optimizer.storage.Path.rglob',return_value=iter([vanished,committed])):
-            self.assertEqual(disk_mb(self.root),5/(1024**2))
-
-    def test_stop_and_kernel_lock(self):
-        folder=self.init()
-        with lock(folder/'controller.lock'):
-            with self.assertRaises(RuntimeError):
-                with lock(folder/'controller.lock'): pass
-        # stop requests cannot change experiment settings or promote a default.
-        (folder/'STOP').touch();self.assertTrue((folder/'STOP').exists())
+    def test_engine_smoke_resume(self):
+        import yaml
+        cfg=dict(mode='smoke',horizon=3,adaptive_total_rounds=3500,energy_window=2,
+                 training_seeds=[24],max_trials=2,budget_seconds=120,max_workers=2,shutdown_reserve_seconds=10)
+        config=self.root/'config.yaml';config.write_text(yaml.safe_dump(cfg));folder=self.root/'study'
+        initialize(config,folder,PACKAGE/'runs/ready-expanded')
+        result=run(folder);self.assertEqual(result['stop_reason'],'trial_budget')
+        self.assertEqual(len([j for k,j in result['jobs'].items() if k!='reference' and j['status']=='complete']),2)
+        # A recycled PID must not make restart wait on or launch duplicate work.
+        result['jobs']['0'].update(status='running',pid=os.getpid(),created=-1)
+        atomic(folder/'state.json',result)
+        again=run(folder);self.assertEqual(again['stop_reason'],'trial_budget')
+        self.assertEqual(again['jobs']['0']['status'],'complete')
+        self.assertNotIn('pid',again['jobs']['0'])
 
 if __name__=='__main__': unittest.main()

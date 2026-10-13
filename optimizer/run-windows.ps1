@@ -1,87 +1,52 @@
 $ErrorActionPreference = 'Stop'
 $repoPath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$studyPath = Join-Path $PSScriptRoot 'runs/ready-expanded'
-
-# Prefer the Python runtime already used to prepare this study. Fall back to
-# a normal Python installation if the project is moved to another machine.
-$bundledPython = Join-Path $env:USERPROFILE '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
-if (Test-Path -LiteralPath $bundledPython) {
-    $python = $bundledPython
-    $pythonPrefix = @()
-} else {
-    $pythonCommand = Get-Command python.exe -ErrorAction SilentlyContinue
-    if ($pythonCommand) {
-        $python = $pythonCommand.Source
-        $pythonPrefix = @()
-    } else {
-        $pyCommand = Get-Command py.exe -ErrorAction SilentlyContinue
-        if (-not $pyCommand) {
-            Write-Host 'Python was not found. Install Python 3.10 or newer, then reopen this launcher.' -ForegroundColor Red
-            Read-Host 'Press Enter to close'
-            exit 1
-        }
-        $python = $pyCommand.Source
-        $pythonPrefix = @('-3')
-    }
-}
-
-if (-not (Test-Path -LiteralPath (Join-Path $studyPath 'config.json'))) {
-    Write-Host "The prepared study was not found: $studyPath" -ForegroundColor Red
-    Read-Host 'Press Enter to close'
-    exit 1
-}
-
-function Invoke-Optimizer([string[]]$Arguments) {
-    Push-Location $repoPath
-    try {
-        & $python @pythonPrefix -B -m optimizer @Arguments
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Optimizer exited with code $LASTEXITCODE." -ForegroundColor Red
-        } elseif ($Arguments[0] -eq 'report') {
-            & $python @pythonPrefix -B (Join-Path $PSScriptRoot 'windows/report_top.py') --study $studyPath
-            if ($LASTEXITCODE -ne 0) { Write-Host 'Top-five report generation failed.' -ForegroundColor Red }
-        }
-    } finally {
-        Pop-Location
-    }
-    Read-Host 'Press Enter to return to the menu'
-}
-
-$done = $false
-while (-not $done) {
+$studyPath = Join-Path $PSScriptRoot 'runs/service3500'
+$python = Join-Path $env:USERPROFILE '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
+if (-not (Test-Path -LiteralPath $python)) { throw 'Bundled Python is missing; use the manual README commands.' }
+while ($true) {
     Clear-Host
-    Write-Host 'D-ACO optimizer' -ForegroundColor Cyan
-    Write-Host "Study: $studyPath"
-    Write-Host "Python: $python"
-    Write-Host ''
-    Write-Host '1. Run or resume the study'
-    Write-Host '2. Show live progress'
-    Write-Host '3. Request a graceful stop'
-    Write-Host '4. Generate the report'
+    Write-Host 'D-ACO optimizer: 3500 rounds, 90 minutes total; no session cap'
+    Write-Host '1. Start/resume (launches the campaign)'
+    Write-Host '2. Live progress'
+    Write-Host '3. Stop and save'
+    Write-Host '4. Report'
     Write-Host '5. Exit'
     $choice = Read-Host 'Choose 1-5'
-    switch ($choice) {
-        '1' {
-            $defaultWorkers = (Get-Content -LiteralPath (Join-Path $studyPath 'config.json') -Raw | ConvertFrom-Json).max_workers
-            $runtimeFile = Join-Path $studyPath 'launch-runtime.json'
-            if (Test-Path -LiteralPath $runtimeFile) {
-                $defaultWorkers = (Get-Content -LiteralPath $runtimeFile -Raw | ConvertFrom-Json).workers
+    if ($choice -eq '5') { return }
+    if ($choice -eq '1') {
+        Write-Host 'To change worker count: press S to stop/save, wait until stopped, then resume.' -ForegroundColor Yellow
+        Write-Host 'Fewer workers leave extra trials paused; they resume as slots become available and are not deleted.'
+        $ownerFile = Join-Path $studyPath 'owner.json'
+        $running = $false
+        if (Test-Path -LiteralPath $ownerFile) {
+            $owner = Get-Content -LiteralPath $ownerFile -Raw | ConvertFrom-Json
+            $candidate = Get-Process -Id $owner.pid -ErrorAction SilentlyContinue
+            if ($candidate) {
+                $created = ($candidate.StartTime.ToUniversalTime() - [datetime]'1970-01-01').TotalSeconds
+                $running = [math]::Abs($created - $owner.created) -lt 1
             }
-            do {
-                $workerText = Read-Host "Parallel runs (1-32; Enter uses $defaultWorkers)"
-                $workers = 0
-                if ([string]::IsNullOrWhiteSpace($workerText)) { $workers = $defaultWorkers }
-                elseif (-not [int]::TryParse($workerText, [ref]$workers)) { $workers = 0 }
-                if ($workers -lt 1 -or $workers -gt 32) { Write-Host 'Enter a whole number from 1 to 32.' }
-            } while ($workers -lt 1 -or $workers -gt 32)
-            Write-Host 'No session time limit. The remaining overall time budget still applies.'
-            & (Join-Path $PSScriptRoot 'launch.ps1') -Python $python -PythonPrefix $pythonPrefix -Study $studyPath -Workers $workers
-            & (Join-Path $PSScriptRoot 'progress-windows.ps1') -Study $studyPath
         }
-        '2' { & (Join-Path $PSScriptRoot 'progress-windows.ps1') -Study $studyPath }
-        '3' { Invoke-Optimizer @('stop', '--study', $studyPath) }
-        '4' { Invoke-Optimizer @('report', '--study', $studyPath) }
-        '5' { $done = $true }
-        default { Write-Host 'Enter 1, 2, 3, 4 or 5.'; Start-Sleep -Seconds 1 }
+        if (-not $running) {
+            $workers = 0
+            do {
+                $inputText = Read-Host 'Parallel runs (1-4; Enter uses 2)'
+                if ([string]::IsNullOrWhiteSpace($inputText)) { $workers = 2 }
+                else { [int]::TryParse($inputText,[ref]$workers) | Out-Null }
+            } while ($workers -lt 1 -or $workers -gt 4)
+            $quotedStudy = '"' + $studyPath + '"'
+            $process = Start-Process -FilePath $python -ArgumentList @('-B','-m','optimizer','run','--study',$quotedStudy,'--workers',$workers) -WorkingDirectory $repoPath -WindowStyle Hidden -RedirectStandardOutput (Join-Path $studyPath 'controller.out') -RedirectStandardError (Join-Path $studyPath 'controller.err') -PassThru
+            Write-Host "Campaign supervisor PID $($process.Id). Closing the display leaves it running."
+        } else {
+            Write-Host 'Campaign is already running. Worker count is unchanged; opening progress only.'
+        }
+    }
+    if ($choice -in @('1','2')) {
+        & (Join-Path $PSScriptRoot 'progress-windows.ps1') -Study $studyPath
+    } elseif ($choice -in @('3','4')) {
+        $command = if ($choice -eq '3') { 'stop' } else { 'report' }
+        Push-Location $repoPath
+        try { & $python -B -m optimizer $command --study $studyPath }
+        finally { Pop-Location }
+        Read-Host 'Press Enter to return'
     }
 }

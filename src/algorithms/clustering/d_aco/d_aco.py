@@ -143,7 +143,7 @@ class DACOClustering(ClusteringAlgorithm):
         for values in self._score_components.values():
             values.clear()
         self.grid.compute_density(live_sensors, residual_e)
-        return random.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
+        return self.random_source.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
 
     def create_clusters(self, live_sensors, residual_e, start):
         """
@@ -205,7 +205,7 @@ class DACOClustering(ClusteringAlgorithm):
             if weights.sum() <= 0:
                 return None
 
-            selected = random.choices(
+            selected = self.random_source.choices(
                 positions.tolist(),
                 weights=weights.tolist(),
                 k=1,

@@ -28,7 +28,7 @@ class ACACO(Algorithm):
     def __init__(self, network, hparameters, params: ACACOParameters = None, seed=None):
         self._params = params
         self._seed = seed
-        super().__init__(network, hparameters)
+        super().__init__(network, hparameters, seed=seed)
 
     def init_params(self):
         self.params = self._params or ACACOParameters()

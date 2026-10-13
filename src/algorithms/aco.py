@@ -21,9 +21,9 @@ class SimpleACO(Algorithm):
 
     name = "SimpleACO"
 
-    def __init__(self, network, hparameters, aco_params: ACOParameters = None):
+    def __init__(self, network, hparameters, aco_params: ACOParameters = None, seed=None):
         self._aco_params = aco_params
-        super().__init__(network, hparameters)
+        super().__init__(network, hparameters, seed=seed)
 
     def init_params(self):
         self.params = self._aco_params or ACOParameters()

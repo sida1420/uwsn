@@ -1,0 +1,11 @@
+{
+  "prepared_study": "optimizer/runs/service3500",
+  "provenance": "C:\\Users\\hgtfh\\Code\\uwsn\\review_uwsn\\optimizer\\runs\\service3500\\provenance.json",
+  "provenance_sha256": "EC624F82601FEB5ADD6A083F93C058E39C6C058DC96AA7921086D6C2D5483EF3",
+  "tests": "9 optimizer tests passed, including native D-ACO equivalence, private RNG checkpoints, killed-worker recovery, stale PID restart, controller and supervisor resume",
+  "test_log": "optimizer/reports/verification/cleanup-tests.log",
+  "powershell_syntax": "Both Windows launcher scripts passed",
+  "tuning_launched": false,
+  "old_studies_preserved": true,
+  "nested_optimizer_removed": true
+}

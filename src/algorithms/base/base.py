@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import random
 
 
 class ClusteringAlgorithm(ABC):
@@ -19,6 +20,10 @@ class ClusteringAlgorithm(ABC):
     """
 
     name = "base_clustering"
+
+    @property
+    def random_source(self):
+        return getattr(self, '_rng', None) or random
 
     def __init__(self, network, hparameters):
         self.network = network
@@ -100,7 +105,11 @@ class Algorithm(ABC):
 
     name = "base"
 
-    def __init__(self, network, hparameters):
+    def __init__(self, network, hparameters, seed=None):
+        if seed is not None and (type(seed) is not int or seed < 0):
+            raise ValueError('seed must be a nonnegative integer or None')
+        self.seed = seed
+        self._rng = random.Random(seed) if seed is not None else None
         self.network = network
         self.hparameters = hparameters
 
@@ -110,6 +119,14 @@ class Algorithm(ABC):
         self.total_routing_attempts = 0
 
         self.init_params()
+        if hasattr(self, 'clustering'):
+            self.clustering._rng = self._rng
+
+    @property
+    def random_source(self):
+        # None preserves the historical global-RNG API. Explicit seeds isolate
+        # instances and their pickled stream state without reseeding globals.
+        return self._rng or random
 
     @abstractmethod
     def init_params(self):

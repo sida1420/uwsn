@@ -35,7 +35,7 @@ class NodeACOClustering(ClusteringAlgorithm):
         self._log_residual = self.params.beta * np.log(
             np.maximum(residual, np.finfo(float).tiny)
         )
-        return random.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
+        return self.random_source.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
 
     def create_clusters(self, live_sensors, residual_e, start):
         CHs = self._make_path(live_sensors, residual_e, start)
@@ -167,7 +167,7 @@ class NodeACOClustering(ClusteringAlgorithm):
             greatest = np.max(log_weights)
             weights = np.exp(log_weights - greatest)
 
-            current = random.choices(allowed, weights=weights, k=1)[0]
+            current = self.random_source.choices(allowed, weights=weights, k=1)[0]
             CH_list.append(current)
             allowed.remove(current)
         return CH_list

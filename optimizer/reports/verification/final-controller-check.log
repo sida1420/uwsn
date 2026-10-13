@@ -1,0 +1,108 @@
+test_engine_smoke_resume (optimizer.v2.tests.V2Tests.test_engine_smoke_resume) ... C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``constant_liar`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+[I 2026-10-13 08:19:48,775] A new study created in RDB with name: service3500-v2
+[I 2026-10-13 08:19:55,024] Using an existing study with name 'service3500-v2' instead of creating a new one.
+ok
+test_supervised_start_and_resume_ledger (optimizer.v2.tests.V2Tests.test_supervised_start_and_resume_ledger) ... C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``constant_liar`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+C:\Users\hgtfh\Code\uwsn\review_uwsn\optimizer\.deps\optuna\_experimental.py:32: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+  warnings.warn(
+[I 2026-10-13 08:19:58,045] A new study created in RDB with name: service3500-v2
+{
+  "spent_wall": 6.217999999993481,
+  "jobs": {
+    "reference": {
+      "number": "reference",
+      "kind": "simple",
+      "parameters": {},
+      "status": "complete",
+      "created": 1791854398.1578443
+    },
+    "0": {
+      "number": 0,
+      "kind": "daco",
+      "parameters": {
+        "num_ants": 40,
+        "max_clustering_attempts": 10,
+        "CH_proportion": 0.2,
+        "alpha": 1.8443776383168635,
+        "beta": 0.04107401092728735,
+        "gamma": 0.6060200962856602,
+        "density_decay": "parabolic",
+        "load_power": 2.5886206172339983,
+        "load_density_weight": 0.42607079321081437,
+        "reference_memory": 0.8,
+        "calibration_ants": 40,
+        "density_epsilon": 1e-12,
+        "hopping_factor": 0.4,
+        "rho_min": 0.36472343993718964,
+        "rho_max": 0.5203352372897225,
+        "Q": 9.511346558794795,
+        "theta": 0.8363876748180215,
+        "tau0": 1.0,
+        "tau_min": 1.0,
+        "tau_max": 25.281955143438616
+      },
+      "status": "complete",
+      "created": 1791854399.9284787
+    }
+  },
+  "stop_reason": "trial_budget",
+  "next_number": 0
+}
+[I 2026-10-13 08:20:05,821] Using an existing study with name 'service3500-v2' instead of creating a new one.
+{
+  "spent_wall": 10.297000000020489,
+  "jobs": {
+    "reference": {
+      "number": "reference",
+      "kind": "simple",
+      "parameters": {},
+      "status": "complete",
+      "created": 1791854398.1578443
+    },
+    "0": {
+      "number": 0,
+      "kind": "daco",
+      "parameters": {
+        "num_ants": 40,
+        "max_clustering_attempts": 10,
+        "CH_proportion": 0.2,
+        "alpha": 1.8443776383168635,
+        "beta": 0.04107401092728735,
+        "gamma": 0.6060200962856602,
+        "density_decay": "parabolic",
+        "load_power": 2.5886206172339983,
+        "load_density_weight": 0.42607079321081437,
+        "reference_memory": 0.8,
+        "calibration_ants": 40,
+        "density_epsilon": 1e-12,
+        "hopping_factor": 0.4,
+        "rho_min": 0.36472343993718964,
+        "rho_max": 0.5203352372897225,
+        "Q": 9.511346558794795,
+        "theta": 0.8363876748180215,
+        "tau0": 1.0,
+        "tau_min": 1.0,
+        "tau_max": 25.281955143438616
+      },
+      "status": "complete",
+      "created": 1791854399.9284787
+    }
+  },
+  "stop_reason": "trial_budget",
+  "next_number": 0
+}
+ok
+test_outer_deadline_exhausted_never_launches (optimizer.v2.tests.V2Tests.test_outer_deadline_exhausted_never_launches) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 20.805s
+
+OK

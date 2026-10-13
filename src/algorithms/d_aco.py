@@ -24,9 +24,9 @@ class Candidate:
 class DACO(Algorithm):
     name = 'D-ACO'
 
-    def __init__(self, network, hparameters, aco_params=None):
+    def __init__(self, network, hparameters, aco_params=None, seed=None):
         self._aco_params = aco_params
-        super().__init__(network,hparameters)
+        super().__init__(network,hparameters,seed=seed)
 
     def init_params(self):
         self.params = self._aco_params or DACOParameters()
@@ -87,7 +87,7 @@ class DACO(Algorithm):
             return False
         self.clustering.grid.compute_density(live_sensors,residual_e)
         context = self._load_context(live_sensors,residual_e)
-        starts = random.sample(live_sensors,min(self.params.calibration_ants,len(live_sensors)))
+        starts = self.random_source.sample(live_sensors,min(self.params.calibration_ants,len(live_sensors)))
         candidates = [self._run_ant(start,live_sensors,residual_e,context,True) for start in starts]
         candidates = [c for c in candidates if c is not None]
         self.calibration_feasible = len(candidates)

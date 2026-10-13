@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 import pickle
 import platform
-import subprocess
 import time
 import uuid
 from optimizer import ROOT, PACKAGE
@@ -44,22 +43,6 @@ def read(path): return json.loads(Path(path).read_text(encoding='utf-8'))
 def unpickle(path):
     # Only checkpoints produced in this trusted local study directory.
     with Path(path).open('rb') as f: return pickle.load(f)
-
-def audit():
-    result=dict(executable=os.sys.executable,root=str(ROOT))
-    for name,args in dict(head=['rev-parse','HEAD'],branch=['branch','--show-current'],status=['status','--short']).items():
-        result[name]=subprocess.run(['git',*args],cwd=ROOT,capture_output=True,text=True,check=True).stdout.strip()
-    return result
-
-def assert_epoch(folder):
-    cfg=read(Path(folder)/'config.json')
-    if fingerprint(cfg)!=read(Path(folder)/'provenance.json'):
-        raise RuntimeError('Study source/map/runtime changed. Create a new study; existing data are preserved.')
-    if cfg['study_role']=='validation':
-        path=Path(folder)/'shortlist.json'
-        if not path.exists() or not (Path(folder)/'shortlist-hash.json').exists() or digest(path)!=read(Path(folder)/'shortlist-hash.json')['sha256']:
-            raise RuntimeError('Validation requires an unchanged frozen training shortlist')
-    return cfg
 
 def disk_mb(folder):
     total=0

@@ -1,0 +1,14 @@
+test_frozen_reference_retains_historical_first_round (test_ac_aco_balance.BalanceControls.test_frozen_reference_retains_historical_first_round) ... FAIL
+
+======================================================================
+FAIL: test_frozen_reference_retains_historical_first_round (test_ac_aco_balance.BalanceControls.test_frozen_reference_retains_historical_first_round)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\hgtfh\Code\uwsn\review_uwsn\tests\test_ac_aco_balance.py", line 46, in test_frozen_reference_retains_historical_first_round
+    self.assertAlmostEqual(sum(costs.values()),.016821386429811486,places=12)
+AssertionError: 0.01776642969639671 != 0.016821386429811486 within 12 places (0.0009450432665852257 difference)
+
+----------------------------------------------------------------------
+Ran 1 test in 0.142s
+
+FAILED (failures=1)

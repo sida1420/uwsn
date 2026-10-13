@@ -37,9 +37,19 @@ Từ PowerShell tại thư mục gốc, cài dependencies vào môi trường Py
 ```powershell
 python -m pip install -r requirements.txt
 python src/run.py
+python src/run.py --seed 24
 ```
 
-Lệnh trên chạy `AC-ACO`, `SimpleACO` và `PSO`, rồi ghi mỗi lịch sử vào `runs/<timestamp>_<seed>_<algorithm>.csv`. `run.py` tạo một seed ngẫu nhiên cho mỗi lần chạy và dùng lại seed đó trong cùng benchmark; để tái lập giữa các lần chạy, truyền seed cố định khi khởi tạo thuật toán.
+Lệnh trên chạy `PSO`, `D-ACO`, `SimpleACO` và `AC-ACO`, rồi ghi mỗi lịch sử vào `runs/<timestamp>_<seed>_<algorithm>.csv`. Dùng `--seed 24` để tái lập benchmark; nếu bỏ qua, chương trình tạo và in seed của lần chạy.
+
+All five algorithms, including `NodeACO`, accept `seed=24` when constructed.
+An explicit seed gives each instance its own random stream, including D-ACO's
+calibration and PSO's initialization, mutation and movement. Running another
+instance does not affect that stream; pickle checkpoints retain its position.
+Reproducibility requires the same map, parameters, source and runtime, and a
+fresh instance at the start. For compatibility, unseeded SimpleACO, D-ACO,
+NodeACO and PSO still use Python's global RNG; AC-ACO retains its private RNG.
+The benchmark and v2 optimizer always pass explicit seeds.
 
 ## Map mặc định và tạo map mới
 

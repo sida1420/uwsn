@@ -1,407 +1,385 @@
-# PLAN.md — Autonomous Constrained Global Optimization for D-ACO (UWSN 3D)
+# D-ACO AutoTuner v2 — 90-Minute Continuation, 3,500-Round Horizon & Algorithm-Agnostic Architecture
 
-> **Date:** 2026-10-12  
-> **Status:** Implementation-ready plan; **not evidence that any experiment has been run**.  
-> **User decision:** **Maximize completed service lifetime** subject to **at most +2% energy versus pheromone-only SimpleACO: 42.4661 J over the first 2,611 all-alive rounds on the reference experiment**.  
-> **Exact reference energy cap:** `42.4661 × 1.02 = 43.315422 J`.  
-> **Execution mode:** Persistent, bounded, resumable **background multi-process optimization**; user explicitly authorizes starting a run only after inspecting the implementation, configuration, and resource budget.  
-> **Scope:** Optimize D-ACO *parameters*, not algorithm semantics; no production-default promotion without independent validation and approval.
-
-## 0. Read-first instructions for Codex / implementation agent
-
-1. **Inspect reality first.** The reported writable checkout is `C:/Users/hgtfh/Code/uwsn/review_uwsn`; `C:/Users/hgtfh/Code/uwsn/uwsn` is a **read-only sibling reference**. Paths may have moved. Discover repo root; log `git status`, HEAD, branch, unstaged changes, Python/environment, actual runtime parameters, and SHA-256 fingerprints. Never treat this document as proof of current checkout contents.
-2. **Do not revert or overwrite** any accumulated changes/artifacts. Do not `git reset`, commit, push, switch branches, or merge without explicit instructions. Do not alter AC-ACO, SimpleACO, PSO, NodeACO, routing, network topology, acoustic evaluator or simulator physics.
-3. **Read existing evidence** before designing new experiments: `RESULTS.md`, `RESULTS(1).md`, `RESULTS(2).md`, `Pasted text(1).txt`, prior `plan.md` (archived as `plan_research_context_before_autotuner_20261012.md` in this deliverable), plus corresponding repo reports/source. Reported filesystem paths must be checked rather than assumed.
-4. **Implement in phases, with approval gates.** Phase A–C deliver a working, tested tuner and a dry-run/pilot report. **STOP before launching the costly multi-hour optimization**. Once explicitly approved, the bounded background controller may autonomously propose and run trials within its agreed `max_trials`, `max_wall_hours`, `max_workers`, compute and storage limits; it may **not** modify production defaults.
-5. **Success is a robustly validated feasible incumbent**, not a claim of mathematically proven global optimum or a forced victory over SimpleACO/PSO. All historical figures are from attached reports, not freshly reproduced in this plan.
+> **Status:** Implementation plan only; no optimization was started here.
+> **User-approved goal:** Maximize **completed full-service lifetime**, subject to **+2% energy** relative to the matched pheromone-only SimpleACO reference.
+> **New execution limit:** **90 minutes (5,400 seconds) total wall-clock per approved tuning campaign**, including startup, trial execution, checkpoint flush and final report.
+> **New horizon:** **3,500 network rounds** for trajectory scoring **and explicitly audit all formulas using `T_max`/total iterations**.
+> **New engineering objective:** Refactor the AutoTuner into a reusable **algorithm-independent optimization engine** with thin adapters for D-ACO now and PSO/AC-ACO later.
+> **Guardrails:** No production physics/routing changes, no default algorithm changes, no new PSO/AC-ACO tuning runs in this phase, no reset/push/commit, preserve historical studies and outputs.
 
 ---
 
-## 1. Scientific question and exact optimization target
+## 1. Why this new campaign is necessary
 
-### 1.1 Decision variables
+The preceding 3,000-round constrained search identified an excellent **training incumbent**, **Trial 25**, but its outcome is capped at 3,000 rounds and does not identify true service termination or uniquely necessary hyperparameters. We should **continue the investigation**, not relabel old 3,000-round trials as 3,500-round observations.
 
-Let `θ` contain the **effective D-ACO hyperparameters**, independently optimized where meaningful:
+### 1.1 Historical research context — keep provenance labels
 
-`θ = (alpha, beta, gamma, Q, tau_max, rho_min, rho_max [, future approved parameters])`.
-
-Do **not** constrain `beta` and `gamma` to move together as in the historical quarter-heuristic screen. Keep the existing density-depletion fitness and other production mechanisms fixed in the **primary study**; extending the variable set is a separate, versioned study.
-
-### 1.2 Primary objective: capped completed service
-
-For fixed deployment `m`, randomized simulation seed `s`, and time horizon `H=3000`, let:
-
-- `S_H(θ;m,s)`: number of **successfully completed rounds serving the entire current live set**, until native simulator service termination or the cap `H`.
-- `FND(θ;m,s)`: first physical node death, if observed.
-- `E_K(θ;m,s)`: modeled *selected-route physical energy* accumulated over `K=2611` completed **100-node all-alive** rounds on the baseline deployment; not search-evaluation energy.
-
-The intended target is
-
-`maximize_θ  E_{(m,s)~D_train}[S_3000(θ;m,s)]`
-
-subject to a fair, predeclared energy constraint. `S_3000=3000` is **horizon-capped**, not proof that service would terminate at 3000. `no_feasible_tree` is a simulator/search termination result, not automatically a certificate of physical graph disconnection.
-
-### 1.3 Exact initial energy constraint
-
-For the *historical reference cohort* (same map and seeds 24/25/26, with the full common workload):
-
-`mean_s E_2611(θ,s) ≤ 43.315422 J`.
-
-This is equivalent to `mean E_2611(θ) ≤ 1.02 × mean E_2611(SimpleACO)` using the historical **42.4661 J** mean. Because that mean is rounded in the report, the historical cap is correspondingly approximate; use raw per-seed reference CSVs to recover a full-precision cap for authoritative runs, while logging `43.315422 J` as the declared rounded-policy value and any exact-value difference.
-
-**Workload comparability is mandatory.** A candidate that dies before 2,611 rounds, serves fewer nodes, or stops early cannot claim an energy win from a smaller energy sum. Record `energy_status=not_comparable` (do not classify it as meeting the constraint); use an explicitly infeasible trial constraint for the primary comparable-workload study, **not** a zero-energy success. This introduces an eligibility requirement (100 nodes alive through K) to the fixed-window comparison; disclose it explicitly, retain those candidates' measured completed service, and seek approval if an alternative energy-normalization policy is desired.
-
-For a *new seed cohort on the same map*: **rerun matched SimpleACO references** and set the constraint to `1.02 × that cohort's baseline mean E_2611`; never simply transplant the historical absolute 43.315422 J if sampling conditions change. For **new maps/topologies**, define a preregistered comparable full-service window `K_m`, run matched SimpleACO baselines, and enforce an energy *ratio* on that map; do not apply 42.4661 J to another topology.
-
-Secondary robustness: report per-seed energy ratios, standard error/intervals and fraction of violating seeds. The **primary feasibility rule is the paired-cohort mean at +2%**; a stricter chance or upper-confidence energy constraint requires separate authorization, not a silent change in objective.
-
-### 1.4 How to handle energy-vs-lifetime tradeoffs
-
-- The optimizer's objective is **completed service**, not early energy, FND or a subjective weighted energy+service sum.
-- Energy is a **hard constraint** on the declared comparable workload, not a term given an arbitrary penalty multiplier.
-- Use FND, connectivity, alive/served counts, residual distribution, hottest node and CPU/search work as **diagnostics and tie-break evidence** only.
-- Never compare total energy after one run has stopped early against another run still serving full load.
-- Feasibility proof of a fully disconnected survivor requires a graph certificate (as in the node-48 study); a finite heuristic search failure alone is insufficient.
-
----
-
-## 2. Full experimental context and provenance register
-
-### 2.1 Current relevant pipeline and deployment
-
-`map.pkl → NetworkInstance → D-ACO candidate CH sets (one batch, 40 ants) → shared multihop router → shared acoustic evaluator → best candidate selected under D-ACO's native fitness → physical residual-energy deduction → next round`.
-
-- **Current Phase 10–12 reference map:** 100 sensors, `500 × 500 × 500 m`, communication radius `200 m`, each `0.6 J`, sink `(250,250,0)`.
-- **Current Phase 10 source/map fingerprint:** `d9e086fde395ff10a4348122727bc2af6972dffa25d5f92afa37ed0d56ca4b05` (**map SHA-256** from Phase 10); compare with actual bytes.
-- **Reference seeds:** `[24,25,26]`; 3000-round horizon; `K=2611` was an all-alive comparison window across all Phase 10–12 variants.
-- D-ACO and pheromone-only SimpleACO: **one batch of 40 ants** per physical round, ≤10 feasibility attempts per ant, 20% CH; common router and evaluator. Their optimization objective, member-selection policy and pheromone structure differ; they are not an isolated one-factor comparison.
-- Candidate evaluations are hypothetical; only the selected feasible routing tree deducts physical energy. Selected trees in the reported runs covered the entire then-live set.
-- Execution time previously measured under concurrent processes, often with diagnostic overhead; **do not treat those CPU figures as calibrated speed proof**.
-
-**Version precedence:** `Pasted text(1).txt` describes earlier Phase 5–8 and a checkout in which D-ACO's depletion-density weight default was `0`. **Phase 10–12 explicitly report a more recent current D-ACO** with quadratic relative-depletion/grid-density penalty weight **0.25**, geometric reference memory **0.8**, live node pheromone, and 40 throwaway initial calibration ants. Treat the newer reports as the latest *reported* state; inspect effective current code. Do not silently optimize the older baseline.
-
-### 2.2 Current D-ACO reported parameter/method baseline
-
-From Phase 10–12 reports (to verify in source):
-
-| Setting | Latest reported value / policy |
-|---|---|
-| `alpha` | `1` |
-| `beta` | `0.9` |
-| `gamma` | `0.4` |
-| `Q` | `5` |
-| `tau_min`, `tau0`, `tau_max` | `1`, `1`, `8` |
-| Evaporation | Existing adaptive schedule; historical range `rho_min=0.1`, `rho_max=0.6` (confirm actual values) |
-| Fitness | Native D-ACO with quadratic relative depletion divided by structural grid density, weight `0.25`, plus its current normalizations |
-| Geometric reference memory | `0.8` |
-| Pheromone behavior | Live per-ant pheromone, native elite update; inspect exact order and units |
-| Search | 40 ants, one batch, ≤10 retries/ant, 40 throwaway calibration ants at initialization |
-| Density grid | Current reference grid unless explicitly changed in a separate experiment |
-
-**Freeze during optimization:** physical model; routing; candidate-selection implementation; evaluation count; fitness formula and load penalty; density grid; geometric-reference memory; calibration-ant policy; pheromone deposit ordering; stopping criterion; seed handling. Changing any of these makes it a different study. Only expose parameter overrides where necessary **without changing default values**.
-
-### 2.3 Historical evidence — retained as anchors, not all on one code epoch
-
-| Study / context | Result | Limits |
+| Item | Reported previous evidence | Consequence for v2 |
 |---|---|---|
-| Historical AC-ACO Phase 1–4 | Elite tau bounds correctness fix; D0 600-round energy improvement ~0.474%; original beta B0 retained; PSO native 600-round energy below AC-ACO | **Different AC-ACO checkout/config epoch**; not directly comparable to latest D-ACO data |
-| Post-FND graph audit | PSO seeds 0/1: nodes 33 & 65 die together, isolate live node 48, 97 of 98 survivors reachable | Proves full-survivor physical disconnection **only in those checkpoints**; no inference about current D-ACO service on new seeds |
-| AC-ACO calibration / chaos / live-pheromone / weaker E_m | Calibrated AC-ACO Q=0.01, live pheromone, elite weight 0.1, E_m exponent 0.1 | AC-ACO-specific, **not values to transplant to D-ACO** |
-| D-ACO Phase 7 grid | Linear decay slightly improved service; parabolic did not; all alternatives retained | Older D-ACO fitness epoch |
-| D-ACO Phase 8 density fitness | Weight 0.05 gave +8.90% mean service / +38.89% FND vs its older baseline at +2.38% energy | Older weight/default epoch, **not current baseline**; much gain also achieved by density-free depletion control |
-| D-ACO Phase 10 (fresh latest policy) | Pheromone-only SimpleACO has lower energy and longer service than current D-ACO; D-ACO has somewhat later FND | Exactly seeds 24/25/26 and current map |
-| D-ACO Phase 11 | Quarter heuristic `(beta=0.225,gamma=0.1)` gives strongest service improvement among tested D-ACO variants | Beta and gamma **changed together**, so neither independent derivative nor global optimum shown |
-| D-ACO Phase 12 | Increasing Q with cap 8 helps some; increasing cap 8→32 worsens energy, FND and service in tested comparisons | Clipping reduction alone does not imply benefit; do not assume monotonicity |
+| Reference map/workload | 100 sensors, 3D `500×500×500 m`, radius 200 m, sink `(250,250,0)`, initial 0.6 J/node; paired seeds 24–26 | Verify map SHA and real runtime state before comparison |
+| SimpleACO energy reference | `42.4661 J` accumulated during **2,611 common fully alive, fully served rounds** | Rounded policy cap: **43.315422 J = 42.4661 × 1.02**; rerun matched reference if provenance differs |
+| Pre-optimization D-ACO baseline | Mean service about 2,747.33; energy about 43.648 J | Historical control; not current incumbent |
+| Quarter-heuristic D-ACO | `beta=0.225, gamma=0.1`, service about 2,938; energy about 43.1655 J | Historical feasible anchor; do not infer unique optimum |
+| 3,000-round AutoTuner | 32 reported trials; 5 feasible; **Trial 25** reached 3,000 rounds for all seeds, `E_2611≈38.290824 J` | **Seed first** in new v2 study; score again under `T_max=3500` |
+| Trial 25 search space | Previous results reportedly tuned more than seven parameters: `theta`, `load_density_weight`, `load_power`, `density_decay`, etc. | Preserve full effective parameter vector; audit exact meanings before reuse |
+| D-ACO vs PSO CSVs | Two single trajectories to round 3,000: D-ACO retained 100 nodes, PSO 98; D-ACO energy a little lower | Illustrative only; no equal-budget/generalization claim |
+| Previous joint search | Old horizon 3,000; Optuna storage and prior trial artifacts may still exist | **Study migration audit required**; never silently merge objectives |
 
-### 2.4 Phase 10 baseline: current D-ACO vs pheromone-only SimpleACO
+**Historical numbers above are summaries of earlier user-supplied files/conversation, not fresh verification against the current checkout.** Codex must inspect the local source, original CSVs, trial manifest, `PLAN.md`, `final-report.md`, `top-five-parameters.csv`, `top-five-trials.json`, and the optimizer storage DB to confirm exact values/configurations. Missing artifacts should be reported, not reconstructed.
 
-All below are means across seeds `[24,25,26]`; energy uses full common all-alive 2611-round exposure:
+### 1.2 Scientific objective, horizon and energy constraint
 
-| Metric | Current D-ACO | SimpleACO pheromone-only |
-|---|---:|---:|
-| FND rounds | 2675.000 | 2636.000 |
-| Completed service rounds | 2747.333 | **2936.000** |
-| `E_2611` (J) | **43.6483** | **42.4661** |
-| Original report's CPU mean (s, indicative) | 307.755 | 290.594 |
-
-SimpleACO has `beta=gamma=0` for *its own sampling*, but it still evaluates/uses physical energy in candidate selection and pheromone deposits; routing remains ordinary. **Do not assert that D-ACO beta=gamma=0 is the same algorithm.** Current D-ACO's `E_2611` exceeds the selected +2% SimpleACO constraint, but this does not invalidate it as an essential baseline for comparison.
-
-Source: attached `RESULTS.md`; repo `plans/phase10-daco-vs-pheromone/`.
-
-### 2.5 Phase 11: Q and heuristic-strength experiments
-
-| D-ACO variant | Q | beta / gamma | Mean FND | Mean service | `E_2611` J | Meets rounded +2% cap? |
-|---|---:|---|---:|---:|---:|---|
-| Current baseline | 5 | 0.9 / 0.4 | 2675.00 | 2747.33 | 43.6483 | **No** |
-| Q=10 / cap 8 | 10 | 0.9 / 0.4 | 2674.00 | 2790.67 | 43.4428 | **No** |
-| Q=20 / cap 8 | 20 | 0.9 / 0.4 | 2742.67 | 2830.33 | 43.4092 | **No** |
-| Heuristics ×0.5 | 5 | 0.45 / 0.2 | 2734.33 | 2815.67 | 43.2557 | **Yes** |
-| **Heuristics ×0.25** | 5 | **0.225 / 0.1** | **2782.67** | **2938.00** | **43.1655** | **Yes** |
-| SimpleACO control (not a D-ACO parameter trial) | 0.07 | 0 / 0 | 2636.00 | 2936.00 | 42.4661 | Reference |
-
-Quarter-heuristic is the **best reported feasible D-ACO incumbent on this exact cohort**. Its mean service improvement versus SimpleACO is only **+2 rounds**, with paired differences `+13, −13, +6`; do not claim reliable superiority based on this three-seed mean.
-
-Pheromone saturation evidence over the same 2611 rounds:
-
-| D-ACO variant | Mean live nodes at `tau_max` | Lost deposit mass |
-|---|---:|---:|
-| Q=5 / cap 8 | 2.26% | 1.08% |
-| Q=10 / cap 8 | 16.93% | 8.27% |
-| Q=20 / cap 8 | 54.66% | 30.67% |
-| Quarter-heuristic / Q=5 / cap 8 | 0.55% | 0.19% |
-
-Source: attached `RESULTS(1).md`; repo `plans/phase11-daco-concentration/`.
-
-### 2.6 Phase 12: Q × pheromone ceiling interactions
-
-| D-ACO variant | Q | `tau_max` | Mean FND | Mean service | `E_2611` J | Meets +2% cap? |
-|---|---:|---:|---:|---:|---:|---|
-| Q=20 / cap 8 | 20 | 8 | 2742.67 | 2830.33 | 43.4092 | No |
-| Q=20 / cap 32 | 20 | 32 | 2638.67 | 2702.33 | 43.7611 | No |
-| Q=30 / cap 8 | 30 | 8 | 2761.00 | 2849.00 | 43.4038 | No |
-| Q=30 / cap 32 | 30 | 32 | 2644.33 | 2733.67 | 43.6668 | No |
-| Quarter-heuristic Q=5 / cap 8 | 5 | 8 | 2782.67 | 2938.00 | **43.1655** | **Yes** |
-
-Cap 32 greatly reduced clipping but worsened all three mean outcomes at Q=20 and Q=30. Empirical evidence **does not support monotonic Q, tau_max or heuristic tuning**. A large cap may give overly concentrated learned choices, but this is a hypothesis until transition entropy/selection diversity are measured.
-
-Source: attached `RESULTS(2).md`; repo `plans/phase12-daco-higher-cap/`.
-
-### 2.7 Generalization and experiment provenance warnings
-
-- Current evidence: **one map, three seeds**, many comparisons already selected on those seeds; high overfitting/selection-bias risk.
-- Comparisons from different code epochs (older AC-ACO phases, earlier D-ACO weight=0 or 0.05, newer weight=0.25) **must not be pooled**.
-- The original Phase 4 map hash `ebe729…` differs from the latest Phase 10–12 reported `d9e086…`; inspect actual map identity; do not equate physical topologies by description alone.
-- Reference baseline numbers should be **reproduced from source+map+effective config** or marked as historical and re-run when they do not fingerprint-match.
-- No paper-derived constants are universal acoustic-network optima. Avoid claiming statistical significance from n=3.
-
----
-
-## 3. Mathematical and methodological foundation
-
-### 3.1 Why a global adaptive optimizer, not continued one-factor tuning?
-
-A simplified D-ACO transition distribution at a **fixed internal state** is:
-
-`p_i(θ) ∝ exp(alpha·log(tau_i) + beta·log(eta_E,i) + gamma·log(eta_density,i))`,
-
-with actual implementation potentially adding normalization/history terms. Even when an exponent moves linearly, the resulting `p_i` is a nonlinear softmax; a different CH selection changes routing topology, candidate fitness, future residuals and pheromone. Observed service is discontinuous/censored at graph and routing thresholds.
-
-For one fixed-state scale `k` of combined heuristics (`H_i` fixed), `d E[C] / dk = Cov_p(C,H)`; covariance can change sign. This explains **non-monotonicity**, not the direction of the global optimum. Therefore optimize the measured black-box trajectory `S_3000(θ)` under energy constraints and quantify its noise.
-
-The goal is the **best validated feasible point under a finite budget**, not a mathematical certificate of global optimum. A GP's smoothness assumptions may be poor for 3000-round discrete stochastic simulation; **Optuna TPE with recorded constraints** is the recommended initial adaptive engine, with a fixed-budget Sobol/random baseline and optional Differential Evolution comparator.
-
-### 3.2 Acquisition and constraints (implementation-level)
-
-A `trial` is **one complete parameter configuration**, evaluated on a declared cohort of paired seeds (each individual run is a separate `trial_run` child record). Do not present 3 seeds as 3 independent parameter suggestions.
-
-Store in the Optuna trial user attributes:
-
-- `mean_service_capped`, `service_per_seed`, `mean_fnd_observed_only`, `service_terminations`;
-- `energy_K_mean`, `energy_K_reference_mean`, `energy_constraint_delta_j`, `energy_ratio`, `energy_comparable`;
-- `cpu`, `wall`, `attempts`, `routing_attempts`, `feasible_candidates`, `calibration_cost`;
-- map/source/config hashes, seed ids, checkpoint paths, error type and stop reason.
-
-Use Optuna `TPESampler(multivariate=True, constraints_func=...)` **if the installed version supports it**. `constraints_func` must read frozen-trial attributes and return a constraint such as `[energy_K_mean - reference_cap]`, ≤0 feasible; **do not encode impossible/incomplete evaluations as feasible**. Expose noncomparable/no-full-workload cases as strictly positive constraint values with a separate status explaining why; retain their lifetime observations outside the feasible leaderboard. Explicitly test constraints behavior against the installed Optuna version and its treatment of pruned/failed trials.
-
-For asynchronous workers, only **completed valid cohorts** should influence final recommendation. Do not overstate statistical independence of repeated identical checkpoints or repeats.
-
-### 3.3 Proposed search space (to finalize after source inspection)
-
-| D-ACO parameter | Initial suggested domain | Sampling | Notes |
-|---|---|---|---|
-| `alpha` | `[0.25, 3.0]` | continuous | pheromone exponent |
-| `beta` | `[0, 1.5]` | continuous | vary independently of gamma |
-| `gamma` | `[0, 1.0]` | continuous | vary independently of beta |
-| `Q` | `[0.1, 60]` | log continuous | units depend on current deposit implementation |
-| `tau_max` | `[4, 32]` | continuous/validated | retain `tau_min=tau0=1`; `tau_max>tau0` |
-| `rho_min` | `[0.05, 0.4]` | continuous | verify current evaporate formula and bounds |
-| `rho_max` | `[0.4, 0.9]` | continuous | require `rho_min < rho_max` and both in valid range |
-
-These are **candidate exploration intervals**, not paper-certified ranges. Preserve `tau_min`, `tau0`, 40 ants, ≤10 retries, load penalty weight 0.25, depletion power 2, geometric memory 0.8 and calibration policy in primary study. Before search, verify parameter names/ranges and whether `tau_max`, Q, rho are defined in these units. Reject illegal combinations deterministically rather than coercing them silently. Include discrete exact `beta=0`, `gamma=0` and known anchor configurations, because a continuous sampler will otherwise almost never hit exact zero.
-
-**Known D-ACO anchors (evaluate first and reuse only fingerprint-matched data):** current baseline, quarter heuristics, half heuristics, Q20/cap8, Q30/cap8. SimpleACO pheromone-only is an **external reference**, never inserted into the D-ACO hyperparameter study as a D-ACO trial.
-
-**Optional later expansion** (new study/version, approval required): density weight, depletion power, grid decay, elite weight, reference-memory weight, `tau_min`/`tau0`, number of ants, new selection/reinforcement logic. Do not mutate objective/search budget within this initial study.
-
----
-
-## 4. Automation architecture and proposed code layout
-
-Implement an isolated experiment package in the writable repo, for example:
+Let `θ` be one algorithm-specific configuration, `m` a fixed topology, `s` a seed, and `S_H` the number of successfully completed **full-service** rounds up to horizon `H`:
 
 ```text
-plans/phase13-daco-autotuner/
-  README.md                    # setup, objective, constraints, run/resume/stop
-  config.example.yaml          # map, train/validation seeds, limits, paths
-  config.schema.json           # optional strongly typed settings
-  autotune.py                  # CLI orchestration (init/worker/status/stop/report)
-  search_space.py              # bounds and anchor configs
-  evaluate_trial.py            # one config, independent complete seed cohort
-  reference.py                 # matched SimpleACO baseline + energy cap
-  metrics.py                   # service/FND/energy/CPU validation
-  storage.py                   # atomic per-seed persistence and provenance
-  report.py                    # feasible frontier and final evaluation
-  tests/                       # experiment harness tests
-  runs/<study-id>/
-    study.db / journal / DB URL # choose supported robust backend
-    config.snapshot.yaml
+max_θ mean_{m,s}[ S_3500(θ; m,s) ]
+subject to mean_s E_2611(θ; m_reference,s) <= 1.02 * mean_s E_2611(SimpleACO; m_reference,s)
+```
+
+- The **3,500** cap changes the *lifetime objective*; the **2,611** common-workload energy checkpoint is intentionally **retained** from the previously selected +2% policy. It must not silently change to `E_3500` or get compared against `42.4661 J` at a different horizon.
+- Energy is **selected routing-tree physical energy**, not optimizer CPU energy or rejected candidate evaluation energy.
+- To satisfy the reference absolute energy constraint, all relevant runs must complete the same 2,611-round **100-node alive and served** workload. Early death, fewer served nodes or early stop => `energy_comparable=false`, **not** a low-energy victory. Preserve their lifetime observations separately and disclose this eligibility rule.
+- If new topology/seed cohort: generate **new matched SimpleACO reference** and a preregistered comparable service window, then apply the **relative +2%** rule. Never reuse 43.315422 J across different maps, model versions or workloads.
+- `S_3500=3500` is a **right-censored** lifetime, not observed termination or a proof of actual optimum beyond 3,500.
+- Record `FND`, `served_count`, real connectivity and optimizer failure as separate metrics; physical disconnection requires a graph certificate, not merely a failed search.
+
+---
+
+## 2. Critical audit: 3,000 → 3,500 affects the optimization process itself
+
+**Separate these concepts and make them explicit:**
+
+1. `network_round_limit=3500`: simulator observation horizon.
+2. `adaptive_total_rounds` / `T_max=3500` **only if** original D-ACO schedules are defined against network horizon and changing it is the intended experimental policy.
+3. `optimization_inner_iterations`: optimizer steps/ants *within* a network round; **do not** set this to 3,500.
+4. `global_tuner_timeout_seconds=5400`: external **wall-clock search budget**; no relation to either algorithm loop.
+
+### 2.1 Parameter/schedule dependency inventory (must be executed before any full run)
+
+Search every production/config/experiment location where any of the following appears: `T_max`, `total_rounds`, `max_iterations`, `network_round`, `current_iteration`, `beta`, `rho`, `theta`, elite update, aging, temperature/sigmoid schedules, warm-start, PSO inertia schedule, chaotic intensity and caching/termination logic.
+
+Produce a table for every occurrence:
+
+`file:line | equation/code | which clock it actually uses | value at 3000 | value at 3500 | expected effect | unit/regression test`.
+
+At minimum inspect:
+
+- Relative progress `p=t/T_max` versus absolute `t`; when `T_max` grows, a beta/rho transition can shift later **even before round 3000**.
+- Threshold/halfway formulas such as `t − T_max/2` (center shifts from 1,500 to 1,750), including discontinuous near-step schedules.
+- Cumulative pheromone/adaptive-state history, CH selection, deposit normalization and feasibility retries.
+- `theta`: determine whether it is a scalar weighting the elite reward, a quality multiplier, a density factor, or something else in actual code. Do not assign a meaning from its name.
+- Scores/fitness units: confirm whether a lower value is better; avoid multiplying raw scores by scales dependent on absolute network energy when intended as relative reinforcement.
+
+**Required tests:** log schedule values at rounds `[1,600,1500,1750,2611,2999,3000,3500]`; confirm correctness and no off-by-one horizon errors; confirm selected-route-only physical deduction. **Do not copy old checkpoints into a 3,500-round run if adaptive schedules or any prefix decisions differ.** A valid 3,000-to-3,500 continuation requires a proven identical prefix, compatible source/config/T_max/physical/optimizer/RNG state, and successful deterministic replay; otherwise restart from round 0.
+
+---
+
+## 3. `theta` and other population/topology-dependent parameters
+
+**Question:** Is the learned numerical `theta` value intrinsic, or does the *effective impact* depend on number of ants, sensor nodes, chosen CHs, eligible edges, selected-tree score and network geometry?
+
+### 3.1 Trace actual implementation, do not impose an invented formula
+
+Document the exact source formula: where `theta` multiplies quantities, the direction and units of `score`, number of times deposit is applied, normalization denominators, and whether clipping hides differences.
+
+Instrument these dimensionless/scale-sensitive diagnostics per search and per round:
+
+```text
+n_sensors, n_live, n_ants, n_feasible_ants, n_selected_CH, n_rewarded_items,
+score_raw, score_normalized, score_reference, elite_reward_raw,
+per_ant_reward_raw, elite_to_ant_deposit_ratio, post_clamp_actual_delta,
+pheromone_saturation, transition_entropy, coverage, selected_tree_energy
+```
+
+For additive pheromone dynamics, inspect generic
+
+`tau_next = clamp((1-rho)*tau + Q*R_ant + theta*R_elite, tau_min, tau_max)`
+
+as a **conceptual expression only**; map it to the exact source before making predictions or edits. If actual code uses a different order/normalization, preserve and document it.
+
+### 3.2 Compare *hypotheses* about dimensionless effective reinforcement
+
+Candidate experimental parameterizations (not automatic production changes):
+
+- `M0`: current literal `theta` (control).
+- `M1`: normalize elite/per-ant reinforcement according to **number of actually feasible contributing ants** `A`, to control for ant-count changes.
+- `M2`: normalize by **number of rewarded features** (CHs/pairs/edges), if total deposit increases merely because feature count grows with `N`.
+- `M3`: normalize score relative to a **reference solution cost** on the same network/round; e.g. quality ratio `C_ref/(C+eps)` instead of raw score magnitude, *only if the source objective is a positive cost minimized*.
+- `M4`: combined normalization if tests show independent ant-count and sensor-count scaling.
+
+Do **not** blindly implement `theta ∝ score/(num_ants * n_sensors)`. It may double-normalize or change physical units if per-ant deposits already include `1/num_ants`. Test each proposal against the exact formula and units.
+
+**Test cases:** synthetic, deterministic maps with `N=50,100,200` while keeping density/coverage/connectivity comparable as far as possible; `ants=20,40,80`; multiple score scales produced by valid scenario changes or by controlled unit-scale tests (without changing physical scoring). Compare invariant **effective elite-to-ant reinforcement**, clamped fractions and selection entropy, not just service lifetime. Exclude changing `ants` from the *primary fixed-40 D-ACO tuner*; use these as separate **scaling diagnostics**.
+
+**Decision:** if `theta` needs topology-aware reparameterization, introduce it as a **versioned opt-in policy** (e.g. `elite_scaling_policy=raw|per_rewarded_item|relative_quality`); keep the previous search space/fitness semantics reproducible. Future algorithm adapters must be able to register parameter transforms dependent on context, but never silently transform previously stored trial parameters.
+
+---
+
+## 4. Refactor optimizer into a reusable architecture (D-ACO now; PSO/AC-ACO next)
+
+### 4.1 Architecture principle
+
+**Optimization engine** knows nothing about ant pheromone or PSO particles. It owns: search algorithm, trial scheduling, timeout, storage, caching, cohorts/seeds, constraint checks, metrics, audit trails and reporting. An **Algorithm Adapter** owns: parameter schema/search space, safe instantiation, native fitness identity, validation of algorithm-specific semantics, model/time dependencies and optional checkpoint/state handling.
+
+**No monolithic `if algo == "DACO" ... elif ...` in the optimizer core. No copying the whole tuner for each algorithm.** Use registry/factory and typed boundaries. Avoid a giant rewrite of the simulator; wrap existing constructors/runners.
+
+### 4.2 Proposed minimal interfaces (illustrative, refine after source audit)
+
+```python
+@dataclass(frozen=True)
+class StudyContext:
+    algorithm: str
+    model_sha: str
+    map_sha: str
+    n_sensors: int
+    n_ants_or_particles: int
+    network_horizon: int           # 3500
+    adaptive_total_rounds: int      # explicitly recorded
+    energy_reference_window: int    # 2611 on reference map
+    source_fingerprint: str
+    evaluator_fingerprint: str
+
+class AlgorithmAdapter(Protocol):
+    name: str
+    adapter_version: str
+    def baseline_config(self, ctx: StudyContext) -> dict: ...
+    def suggest_config(self, trial, ctx: StudyContext) -> dict: ...
+    def validate_config(self, cfg: dict, ctx: StudyContext) -> None: ...
+    def effective_config(self, cfg: dict, ctx: StudyContext) -> dict: ...
+    def make_algorithm(self, network, hparams, cfg: dict, seed: int): ...
+    def fingerprint_semantics(self, cfg: dict, ctx: StudyContext) -> str: ...
+    # checkpoint/restore is optional; if unsupported restart from round 0
+
+class TrialEvaluator(Protocol):
+    def run_trajectory(self, adapter, cfg, seed, topology, horizon) -> dict: ...
+
+class ConstraintPolicy(Protocol):
+    def evaluate(self, trajectory_cohort, reference_cohort) -> dict: ...
+```
+
+Shared types: `ExperimentSpec`, `TrialSpec`, `SeedRunResult`, `TrialAggregate`, `ReferenceBaseline`, `ConstraintResult`, `Provenance`, `TerminationReason`, `BudgetState`. Use existing repo conventions rather than introducing multiple frameworks. In logs store **requested parameters and resolved effective parameters** separately; resolve map/population-aware scales via adapter only.
+
+### 4.3 Adapter responsibilities and initial registry
+
+| Adapter | Tunable parameters (examples, inspect source) | Do not assume |
+|---|---|---|
+| `DACOAdapter` | `alpha,beta,gamma,Q,tau_max,rho_min/max,theta,load_density_weight,load_power,density_decay`, dependent groups if existing study used them | Raw score units, elite updates and `theta` scaling; preserve current primary study's actual search space when continuing |
+| `PSOAdapter` (implement interface + smoke tests **only**) | inertia/schedule, cognitive/social terms, swarm size, velocity bounds, mutation/reset if actually present | PSO “iteration” means ACO ant count; changing particles also changes evaluation budget; same internal fitness |
+| `ACACOAdapter` (implement interface + smoke tests **only**) | pheromone, chaos, adaptive beta/rho, CH distance, deposit parameters | Identical beta/rho semantics or chaos equations to D-ACO |
+
+Every adapter declares `parameter_space_version`, `time_dependency_version`, `optimizer_native_fitness_id`, `evaluation_budget_policy`, `state_schema_version`, and explicitly which candidate search parameters vary CPU effort. Reject invalid configs early. Common reporting uses the **physical selected-tree energy and completed full-service rounds** regardless of native algorithm fitness, but **do not change native fitness functions during a comparison**.
+
+### 4.4 Reusable core modules — proposed layout
+
+```text
+plans/optimizer_core/
+  __init__.py
+  contracts.py                # typed configs / results / interfaces
+  registry.py                 # algorithm -> adapter registry
+  adapters/
+    daco.py
+    pso.py                    # interface + smoke only
+    acaco.py                  # interface + smoke only
+  search/
+    optuna_engine.py          # TPE and search configuration
+    prior_trials.py           # historic-run importer / compatibility evaluator
+  execution/
+    controller.py             # global wallclock + worker concurrency
+    worker.py                 # independent per-trial process
+    checkpoint.py             # optional deterministic state restore
+  evaluation/
+    trajectory.py             # shared simulator wrapper; selected-tree-only energy
+    constraints.py            # full-load energy +2% policy
+    references.py             # matched reference baselines
+    metrics.py
+  persistence/
+    study_store.py
+    artifacts.py
+    provenance.py
+  reporting/
+    summary.py
+    plots.py
+  tests/
+
+plans/phase13-daco-autotuner-v2/
+  study-config.yaml           # immutable snapshot when launched
+  README.md                   # verified launch/status/stop/resume commands
+  reports/
+  runs/<study-id>/            # collision-safe; old runs untouched
+```
+
+If existing optimizer has equivalent modules, **refactor incrementally** rather than duplicating or relocating everything. Minimize changes to scientific behavior. Use configuration-driven study selection e.g. `algorithm: daco|pso|acaco`, `adapter_version`, `study_version`, `objective_version`, `constraint_version`.
+
+### 4.5 Tests demonstrating generality
+
+- Same `ExperimentSpec`/runner/metrics can run a 5–10 round *smoke-only* trial for each of D-ACO, PSO and AC-ACO, with independent seeded network state.
+- Changing adapter does not require modifying optimizer-core modules; register new adapter through a factory/registry.
+- D-ACO's trial on old config with same seed/topology/horizon yields identical result before and after refactor (deterministic equivalence), accounting for any existing behavior changes separately.
+- PSO and AC-ACO adapters **do not initiate full tuning**, and their production defaults/equations remain unchanged.
+- Adapter introspection reports effective values (including context-dependent `theta`) and differentiates `num_ants`, `swarm_size`, `inner_iterations` and `network_horizon`.
+
+---
+
+## 5. Reuse old Optuna runs safely (highest priority for 90-minute budget)
+
+### 5.1 Old runs are potentially reusable, not automatically valid under the new objective
+
+Build a **RunCompatibilityChecker** that reads old SQLite/Journal/RDB storage, trial/user attrs, CSVs, checkpoints and manifests **read-only**. Classify every existing run into these categories:
+
+| Tier | Conditions | Permitted reuse |
+|---|---|---|
+| **A — exact reuse** | Same algorithm code + adapter + map + energy/routing + seeds + **3500 horizon AND identical adaptive `T_max`** + objective/constraint definition + complete evidence | Can include results in **new** study after checking full trial/censor/energy validity (avoid duplicate count) |
+| **B — deterministic continuation** | Same prefix for all rounds, `T_max` and all effective schedules identical, complete checkpoint includes physical state, pheromone/swarm, RNG and optimizer state, validated by replay | Resume from checkpoint then collect **new 3500** score; do not pretend to resume if schedule changed |
+| **C — parameter-only warm start** | Historical 3000-horizon or different `T_max`/fitness/adapter but legal parameters under current space | Enqueue/retest top settings and diversity anchors in new study; old service/energy are **metadata, not new objective observations** |
+| **D — incompatible** | Missing fingerprints, corrupted/partial state, incompatible physics/topology/score semantics | Archive for provenance only; exclude from surrogate training and ranking |
+
+**Important:** If `T_max` changes from 3000 to 3500 and beta/rho/aging decisions depend on it, **even rounds 1–2611 from old runs may not be exactly reusable**. No `study.add_trial` transfer as if 3000 values were 3500 values. Instead seed new study with old *parameter configurations* (`enqueue_trial` with stable dedupe) and evaluate anew. The Optuna interface supports enqueueing/adding trials, but cross-study objective semantics must be validated at application level. Verify installed Optuna APIs/storage behavior. See official source: https://github.com/optuna/optuna/blob/master/optuna/study/study.py .
+
+### 5.2 Migration policy
+
+1. Freeze legacy database (read-only snapshot + SHA); keep old study and trial IDs intact.
+2. Build `legacy-trials-compatibility.csv` with `old_trial_id`, theta, full params, old `T_max`, objective metric, map SHA, seed set, adapter/fitness schema and tier A/B/C/D with reason.
+3. Create **new** study `daco_service3500_energy2pct_v2` with separate DB/storage; never overwrite the 3000 study.
+4. Seed Trial 25, Trial 30, D-ACO baseline, quarter-heuristic, other top-five and random/diverse configs; dedupe by canonical config+context fingerprint. Re-evaluate under new clock.
+5. If old data are used as auxiliary multifidelity modeling features, clearly label fidelity/selection bias and verify learning is not pretending they are true 3500 outcomes; simplest safe default is `parameter-only warm start`.
+6. New objective if more than one parameter space version exists: `study_version` and `adapter_version` must be pinned; no silent mixing of incompatible spaces, native fitness or adaptive schedules.
+
+---
+
+## 6. Background search controller: hard 90-minute budget
+
+### 6.1 Global hard limits and execution behavior
+
+- **Single global deadline:** monotonic clock, `5400 seconds` from explicitly authorized `start` command; includes worker startup, references/calibration if needed, trial execution, flush, report generation and shutdown. No “each worker gets 90 minutes” loophole.
+- **Grace reserve:** target no new costly trial launches after `T−300 s`; leave ≥5 minutes to flush/mark incomplete safely. At `T=5400`, controller requests graceful stop, then bounded termination of hung workers; **never pretend interrupted 3500 trajectory was completed**.
+- **Concurrency:** begin `max_workers=2`; raise to ≤4 only if memory/CPU pilot proves stable, process-level isolation on Windows `spawn`. Avoid nested 3-seed workers × N outer workers that oversubscribe.
+- **No unrestricted retries:** max retry per failed trial, limited by the same global clock. Background process has PID, logfile, atomic checkpoint artifacts, robust study storage and `status/stop/resume` interface.
+- **Restart semantics:** `resume` continues the **existing budget ledger** and preserves its original 90-minute total. Starting a fresh 90-minute campaign requires an explicitly new study/campaign ID and user authorization; do not reset elapsed time on resume.
+- **No longer workloads if impossible:** track observed trajectory throughput. If a 3-seed full-3500 evaluation does not fit the remaining time, do not launch it; stop or run labeled short diagnostics without treating them as fully evaluated trial objectives.
+
+### 6.2 Intelligent search allocation within the 90-minute cap
+
+Initial rough **suggestion**, not a fixed number of trials:
+
+| Window | Up to | Activities |
+|---|---:|---|
+| 0–10 min | 600 s | Compatibility audit, source fingerprint, smoke & representative 3500 timing estimate. If full reference already compatible, reuse it. |
+| 10–75 min | 3900 s | Prioritized re-evaluation of known high-performing configs; then constrained TPE proposals, diverse exploration; fully budgeted seed cohorts. |
+| 75–85 min | 600 s | Complete already-started cohorts, evaluate a promising configuration only if it can reliably finish, consolidate feasible leaderboard. |
+| 85–90 min | 300 s | Graceful stop, save DB/checkpoints, report and verification manifest. |
+
+The **controller must adapt timing to observed throughput**; on slow hardware, prioritize one full valid cohort over many incomplete ones. Any calibration/time spent after `start` counts against the 90 minutes. If preflight/refactor is not ready, **do not start the budget clock prematurely**; finish implementation and obtain approval to launch.
+
+### 6.3 Search/adaptation strategy
+
+- Preserve original **completed service** objective, hard **2% energy constraint**, paired seeds and common-workload policy.
+- Optuna constrained TPE or existing verified search engine, with source-compatible trial constraints; include old high-performing parameters as anchors and controlled exploration. Never claim Bayes optimization proves exact global optimum.
+- Tune **only D-ACO for this campaign**. Additional algorithm support is an architectural deliverable, not simultaneous PSO/ACACO tuning.
+- Use multiple fidelity levels only for scheduling/diagnostics: checkpoints at e.g. 600/2611/3000 and a full 3500 completion. Do not rank a 3000-censored result as a completed 3500 trial.
+- Safely stop clearly invalid candidates. Do not prune solely because early round energy is higher: lifetime can improve later. Energy exceeding a nonnegative cumulative cap in a *strictly comparable* window may be a legitimate infeasibility signal, but confirm units and monotonicity.
+- Final ranking only from complete, valid matched seed cohorts; mark incomplete/censored properly and show all per-seed raw outputs.
+- Holdout seeds/topologies remain untouched during the 90-minute optimization unless explicitly allocated to final validation **after freezing the candidate**.
+
+---
+
+## 7. Testing and acceptance criteria
+
+**Correctness tests**
+
+- [ ] Original D-ACO source behavior preserved when loaded through new adapter with baseline parameters (equal seed, map, horizon).
+- [ ] 3500 is a **network horizon**, not a change to ants per round or count of inner optimization iterations.
+- [ ] All adaptive expressions depending on 3000/T_max have been inventoried, tested for 3500 and logged at boundary/midpoint.
+- [ ] Theta formula/units explained from actual code; normalization variants do not silently change score interpretation or double-normalize by `n_ants*n_nodes`.
+- [ ] Valid params and probabilities, legal rho/tau bounds, consistent elitist update and finite fitness under candidate extremes.
+- [ ] Rejected search candidates do not deduct physical network energy; selected tree accounting matches shared evaluator.
+- [ ] Same map + seeded run reproducible; checkpoint resume restores all relevant algorithm/physical/RNG state.
+- [ ] Old trial compatibility checker assigns A/B/C/D correctly; 3000 data not silently imported as 3500 complete objectives.
+- [ ] Energy policy: matched 2611 all-alive/all-served rounds and cap `43.315422 J` on reference cohort; early death/incomplete workload never passes energy constraint.
+- [ ] App never confuses FND, optimizer failure and graph disconnection; 3500 cap correctly marks censored service.
+- [ ] D-ACO/PSO/AC-ACO adapters share same engine/evaluator infrastructure; only D-ACO enters active tuner.
+- [ ] Controller survives worker crash and restart without duplicate completed studies; total elapsed wall ledger ≤5400s across resume and start.
+- [ ] Any background metrics include CPU+wall and attempted/unique/feasible counts; no unreported oversubscription.
+- [ ] No simulator/routing/energy model or unrelated algorithm production file changed; unchanged algorithm defaults remain valid.
+
+**Benchmark checks**
+
+- [ ] Confirm previous Trial 25 parameter vector/source fingerprint and re-evaluate under new `T_max=3500` rather than asserting continued superiority.
+- [ ] Save original `3000` results unchanged; report how many legacy trials were compatible versus parameter-only warm-start.
+- [ ] At least one valid full-3500 paired-seed D-ACO cohort completed **if runtime permits**; otherwise explicitly state no full proof and do not select a new winner.
+- [ ] Report all feasible/infeasible/failed/incomplete trials; do not hide the negative outcomes.
+- [ ] Do not promote production defaults automatically; keep 90-minute best as research candidate pending held-out validation.
+
+---
+
+## 8. Phased implementation order and deliverables
+
+### Phase A — Inspect & derive (no background run)
+
+1. Read current optimizer package, Optuna DB schema and latest report/data; confirm the exact actual search space, Trial 25/30 and `theta` uses, `T_max` formulas, map/count dependence.
+2. Validate selected energy policy/cap and old run reuse tiers.
+3. Design adapter contracts/registry; propose minimal file diff and a correct 3500 study fingerprint.
+4. Produce `plans/reports/daco-v2-architecture-and-provenance.md`, `theta-scaling-audit.md`, `legacy-trials-compatibility.csv`, `adaptive-horizon-inventory.csv`.
+5. **Do not launch 90-minute job yet.**
+
+### Phase B — Implement generic engine & adapters (no costly sweep)
+
+1. Extract common engine from D-ACO tuner with small refactor; keep CLI compatibility or provide migration wrapper.
+2. Build D-ACO adapter, PSO/AC-ACO adapters (test/instantiate only), study registry, versioned search space and robust parameter overrides.
+3. Implement 90-minute global resource/deadline ledger, graceful stop/resume, read-only migration/parameter anchor importer.
+4. Run regression tests, tiny smoke trajectories and kill/restart test. Produce `plans/reports/daco-v2-optimizer-refactor-validation.md` and exact launch/config README.
+5. **STOP and obtain explicit user approval before launching expensive tuner.**
+
+### Phase C — 90-minute D-ACO tuning campaign (explicitly approved run)
+
+1. New immutable campaign ID. Log deadline, limits, source SHA, seed cohort, physical model, `T_max=3500`, energy cap and parameter space.
+2. Seed prior best Trial 25/30 and anchors; calibrate throughput; run autonomous constrained search with ≤2 workers initially.
+3. Run best feasible 3500 trials on all agreed paired seeds, preserve incomplete outputs but no fake winners; obey hard timeout.
+4. Produce `plans/reports/daco-v2-90min-3500-results.md`, entire study DB, trial metadata CSV, best-feasible config, energy/service/FND plots, resume manifest.
+5. **STOP: no PSO/AC-ACO tuning and no default promotion.**
+
+### Phase D — Post-hoc scientific validation (separate approval and budget)
+
+1. Freeze best fully completed feasible D-ACO configuration from Phase C.
+2. Compare against matched SimpleACO, previous D-ACO/Trial 25, and optional PSO using native and controlled evaluation budgets clearly separated.
+3. Holdout seeds/maps not used during tuning, longer horizons only with approval; connectivity certificate where needed.
+4. Evaluate whether any `theta` normalization policy generalizes across node counts or merely fits the reference map.
+5. Recommend promotion **only after** independent reproducibility, energy, service and CPU evidence. Report uncertainty/noise.
+
+---
+
+## 9. Final outputs and explicit stop conditions
+
+Proposed outputs (create only when phases execute):
+
+```text
+plans/optimizer_core/                            # Generic reusable engine
+plans/phase13-daco-autotuner-v2/
+  config.example.yaml
+  README.md
+  runs/<campaign-id>/
     provenance.json
-    trials/<trial-id>/<seed>/metrics.json
-    trials/<trial-id>/<seed>/rounds.csv(.gz)
-    trials/<trial-id>/<seed>/checkpoint.pkl  # trusted local outputs only
+    legacy-trials-compatibility.csv
+    adaptive-horizon-inventory.csv
+    theta-scaling-diagnostics.csv
+    study.db / journal
+    trial-results.csv
+    per-seed-results.csv
+    incomplete-trials.csv
+    best-feasible-config.yaml
+    plots/*.png
     logs/*.log
-    status.json
-    plots/
-    final-report.md
+plans/reports/
+  daco-v2-architecture-and-provenance.md
+  theta-scaling-audit.md
+  daco-v2-optimizer-refactor-validation.md
+  daco-v2-90min-3500-results.md
 ```
 
-Paths/filenames are **proposed outputs**, not existing files. Keep original study assets untouched and ensure output paths are collision-safe.
+**All artifacts must include config/source/topology fingerprints and unique directories; do not overwrite previous research results.** Real CLI commands must be documented and tested on the user's current OS. On Windows use `multiprocessing` spawn protection, separate worker logs and trustworthy storage locking; choose a concurrency-compatible Optuna backend supported by the installed version.
 
-### 4.1 Main process and workers
+### Final operational contract for Codex
 
-- **Controller:** validates config, freezes provenance and seed splits, creates/loads persistent study, enforces global trial/wall/disk limits, exposes summary/status, does not directly mutate production algorithms.
-- **Worker process:** acquires one trial/parameter set, spawns/isolates seed runs (or executes them sequentially inside its isolated worker process), saves each seed atomically; reports one complete valid aggregate result to the optimizer.
-- **Per-seed runner:** creates fresh network, D-ACO instance and RNG; applies *explicit* parameter overrides; follows actual simulator service termination or horizon 3000; captures selected-route energy, full-service rounds, FND, physical connectivity and search failures.
-- **Reference runner:** runs version-matched pheromone-only SimpleACO under explicit `beta=gamma=0`, native 40-ants policy, captures 2611 full-all-alive energy and round counters, hashes evidence.
-- **Reporter:** feasible/infeasible counts, best feasible incumbent with provenance, paired seed differences, failures, uncertainty, energy-cap violations, parameter importances (exploratory only), reproducible plots.
+**Proceed incrementally.** First implement **Phase A and B** with regression tests and no long-running jobs. Inspect and tell the user whether any old 3000-horizon trial can truly resume as 3500; if not, enqueue parameter sets without migrating scores. Finish with an explicit proposed launch command and resource settings. **STOP for approval** before Phase C. Once approved, run the **whole background campaign under one strict 90-minute global deadline**, then STOP before PSO/AC-ACO tuning or any default changes.
 
-### 4.2 Reliable background multi-process execution
-
-- Default **`max_workers=2`** until a memory/CPU pilot passes; allow a configurable max of 4 when hardware permits. Never spawn unlimited processes or let many Optuna workers launch overlapping 3-seed process pools unintentionally.
-- Prefer **processes**, not threads: Python global RNG/network/algorithm mutable state must be isolated. For Windows use the `spawn` process model and a `__main__` guard.
-- Persistence options: **PostgreSQL RDBStorage** for robust multi-host/high-concurrency deployment; on one machine, use an Optuna **JournalStorage or suitably configured local RDB** implementation compatible with the installed Optuna version. Test locking, retries, stale trial recovery and a kill/restart before trusting concurrency. Avoid network-shared SQLite DB files.
-- Each experiment writes to `*.tmp`, then atomic rename on successful validation. Checkpoint storage follows safe, versioned/trusted pickle policy; never load arbitrary external pickles.
-- Worker lease/heartbeat + retry counters. A crashed trial must not be reported as success or silently counted twice; resumed full trajectories must restore complete physical, optimizer, Python/NumPy RNG and calibration state deterministically.
-- `--status`, `--stop` (graceful), OS process ID/log location, signal handling, flush on Ctrl+C, load-aware worker admission. Parent/background process exit must not corrupt results.
-- Track process CPU, wall time, memory peak and I/O separately. Compare CPU after controlled re-measurement, not concurrent historical timings.
-
-### 4.3 CLI design (proposed; implement and document, not existing commands)
-
-```powershell
-# From writable repo root, after implementation and explicit approval.
-python -m plans.phase13_daco_autotuner init --config path/to/study.yaml
-python -m plans.phase13_daco_autotuner worker --study <study-id> --workers 2
-python -m plans.phase13_daco_autotuner status --study <study-id>
-python -m plans.phase13_daco_autotuner stop --study <study-id> --graceful
-python -m plans.phase13_daco_autotuner report --study <study-id>
-```
-
-**Note:** directory/module names must be made Python-importable or CLI changed accordingly; these are design examples, not copy/paste runnable commands. Provide real verified Windows PowerShell `Start-Process` and Linux `nohup`/`tmux` usage in `README.md`, with PID and logs. Do not launch until the study limits are confirmed.
-
----
-
-## 5. Experimental strategy: autonomous, cost-aware, and statistically honest
-
-### Stage A — Baseline/constraint reproduction (gate A)
-
-1. Discover actual D-ACO source and baseline effective values, reference map hash, seeds and exact Phase 10–12 runner semantics.
-2. Check whether old `RESULTS.md` etc. match current source/map epoch; reproduce one baseline trajectory exactly if deterministic artifacts exist. Re-run full three-seed reference when hashes/config differ; **do not retrofit old data into new code**.
-3. Run pheromone-only SimpleACO reference for same map/seed/cohort when not exactly reusable; recompute `E_ref,K` and cap at full precision.
-4. Validate accounting: 100 live+served for every one of the `K` comparison rounds; correct physical energy deduction; actual FND/termination semantics; guard all finite values; no energy deduction for hypothetical ant trials.
-5. Anchor comparison: current D-ACO, `beta=0.225,gamma=0.1,Q=5,tau_max=8` and SimpleACO reference. Fail this gate if effective params, source identity or reference energy cannot be verified.
-6. Output `baseline-reproduction.md` with hashes and explicit **PASS/FAIL**. STOP on failure.
-
-### Stage B — Infrastructure, validation and crash-resume (gate B)
-
-1. Implement typed config/search space, storage, worker isolation, trial-aggregate evaluator, energy feasibility rule, status/report and reference cache with source/map hash keys.
-2. Unit/integration tests: seed resets; full candidate/physical accounting; aggregation over exact paired seeds; energy bound; early FND marked noncomparable; horizon censor; `no_feasible_tree` not called physical disconnection; crashes/timeouts; deterministic resume; no overwrite.
-3. Run a cheap smoke test (tiny horizon) **only for infrastructure**, labeled non-scientific and never ranked against full-horizon studies.
-4. Pilot 2 concurrent workers with ≤2–3 small sandbox trials, interrupt and resume, verify same results as uninterrupted runs where possible. Record CPU/RAM/disk/wall throughput.
-5. Output `implementation-review.md`, reproducibility logs and executable manual. **STOP for approval before large sweeps.**
-
-### Stage C — Autonomous adaptive optimization (gate C = explicit user launch)
-
-**Proposed initial bounded budget, adjustable before launch:**
-
-- **Pilot:** first 8 valid parameter configurations, up to 2 workers, training cohort of three paired seeds; learn actual wall/CPU cost.
-- **Main:** maximum **80 complete parameter configurations** (including anchors) or **24 hours wall time**, whichever happens first; at most 2 workers initially, configurable to 4 after pilot; enforce disk/memory ceilings.
-- **Warm-up space coverage:** ~16–24 Sobol/random candidates plus required anchor configs (count anchors toward total), then Optuna TPE proposals. This is a **proposed allocation**, not a guarantee 80 full runs fit within 24h.
-- **Each candidate's authoritative result:** all three training seeds, same map, full 3000-horizon or native termination. Intermediate single-seed runs can be inspected diagnostically, but must not be silently treated as validated parameter winners.
-- Prioritize new configurations when earlier ones finish; update tuner without human micromanagement **within approved cap**.
-- **Pruning:** safe for invalid params, verified infeasible workload, or a known positive accumulated energy exceedance under a fixed comparable K; not based on a naive monotonic inference from 150/600-round energy or FND. Incomplete service trajectories still logged. Prefer full cohort completion for scientifically meaningful service ranking.
-- **No elite cherry picking:** report all attempted configs, no hidden retries to replace bad seeds. Use paired common random numbers and exact effective seeds for all candidates.
-- Run independent random/Sobol-only search for a **separately capped matched-budget control** if compute permits; else mark optimizer advantage untested.
-- Status file keeps `trials_total`, `complete`, `infeasible`, `failed`, `running`, `best_feasible`, `energy_margin`, `ETA_estimate` (uncertain), resource usage and study source hash.
-
-### Stage D — Independent validation and robustness (approval after Stage C shortlist)
-
-1. **Freeze top K feasible candidates** (e.g., 3–5), based solely on the training cohort; do not refit/select on validation data.
-2. Holdout *new* seeds on the reference map (suggest `[40,41,42]`, confirm no prior tuning used them) and matched fresh SimpleACO energy baselines.
-3. If new topology fixtures can be generated reproducibly, hold out multiple geometries: dense, sparse, bridge/cut-set-vulnerable, varied base location and communication radius, with map-specific baseline and preregistered comparable full-service window `K_m`.
-4. Compute pairwise mean/median service changes, energy ratios/constraint pass rate, observed/censored FND, service stop reasons, residual distributions and CPU/search budget; use trajectory or topology/seed pairs as units, not rounds as independent samples.
-5. Sensitivity check of energy constraint on **0%, 2%, 5%** as *post-hoc reporting*, **not** changes to the user-selected +2% primary rule.
-6. Only claim a new default if it passes reference and holdout policy and receives explicit approval. Otherwise keep original defaults and report best conditional research candidate.
-
----
-
-## 6. Decision policy, stopping conditions, and scientific outputs
-
-### 6.1 Feasible leaderboard
-
-Primary ranking: among `energy_comparable=True` trials with `mean E_K ≤ 1.02 × mean E_ref,K`, choose highest `mean S_3000`; identify ties and actual delta from SimpleACO/quarter-heuristic. Show FND and physical energy side by side, but **do not reweight the objective after the fact**.
-
-If `mean service` hits the horizon 3000 in all three training seeds, further apparent service gain is unobservable at that horizon; focus next evaluations on stability/holdouts, not fictitious improvements beyond 3000. For training configurations near boundary, report uncertainties, seed-level effects and number of fully observed versus horizon-censored service outcomes.
-
-Optional conservative ranking: energy upper confidence bound ≤ cap, and a robust service lower bound; **report separately** from the chosen expected-mean criterion. n=3 is insufficient for tight claims.
-
-### 6.2 Mandatory metrics per seed/round
-
-- `round`, `alive_before/after`, `served`, `service_success`, `service_failure_reason`, optional graph reachability certificate when suspicious;
-- `selected_tree_physical_energy`, `total_energy_to_round`, `energy_per_served_sensor_round`, `residual_sum/min/quantiles/std`, `FND/HND/LND` if observed;
-- CH/member/non-CH relay costs, peak relative depletion and node hotspots (including nodes 33, 65, 48 as diagnostics **only on relevant known topology**);
-- ants attempted, CH constructions, router calls, actual feasible energy evaluations, repeated/cached CH sets, retry exhaustion;
-- pheromone summary: cap fraction, clipped updates, lost deposit mass, entropy of actual CH-choice probabilities when implementable without changing selection;
-- `cpu_process`, `wall`, init/calibration vs per-round search timing, memory; fingerprints of map/config/source/harness + seed + trial id.
-
-### 6.3 Stop/abort protections
-
-- Stop after `max_trials`, `max_wall_hours`, operator stop request, confirmed repeated invalidity or storage/process instability. Don't silently extend caps.
-- Failed/hung workers: bounded retries, preserve failure logs, skip final ranking of incomplete cohorts, no zombie processes.
-- No automatic new topology generation or code changes while optimizer runs.
-- No full production deployment default change without manual review and approval.
-
-### 6.4 Required deliverables
-
-1. Runnable parameter-only autotuning harness with verified CLI (Windows + Ubuntu).
-2. `README.md`: architecture, source/version lock, objective/constraint, reproduction commands, launch/status/stop/resume, resource budgets, troubleshooting.
-3. Full seed- and trial-level CSV/JSON exports, Optuna study DB, hashes/checkpoints/logs and an automatic **`best-feasible-config.yaml`** (recommendation only).
-4. Plots: service vs energy with **+2% constraint line**; feasible incumbent vs completed trial number; parameter parallel coordinates/importance; service survival/censoring; energy/load/entropy and optimizer performance vs compute budget.
-5. `final-report.md`: all trials, feasible rate, best incumbent, paired differences vs SimpleACO, D-ACO default and quarter-heuristic, heldout generalization, numerical uncertainty, runtime and failure modes, unresolved limitations.
-6. Full regression suite passes; no original production-source change except narrowly approved parameter exposure with identical defaults/semantics; no files overwritten.
-
----
-
-## 7. Verification checklist (acceptance criteria)
-
-- [ ] **Correct checkout:** current HEAD, status, map SHA, actual code/defaults and reference config fingerprinted. No mix of old D-ACO load-weight-0 epoch and current weight-0.25 epoch.
-- [ ] **Objective:** correct `S_3000` physical completed full-service rounds; censored at 3000; separate observed FND and route/search failure.
-- [ ] **Constraint:** exactly **+2% energy**, `K=2611`, same full-service workload, full-precision matched SimpleACO reference and hard-fail for noncomparable early deaths.
-- [ ] **Param semantics:** beta and gamma independent; Q log scale; legal tau/evaporation bounds; no implicit fitness/search-budget changes.
-- [ ] **Anchors:** fresh quarter-heuristic and D-ACO baseline reproduce earlier outcomes when fingerprints match, or mismatch is disclosed and new baseline established.
-- [ ] **Scientific correctness:** selected-tree physical energy only; evaluations do not deduct energy; no double counting with killed/checkpoint-restored runs.
-- [ ] **Autonomy:** multiple workers can complete trials, report to persistent optimizer, propose new ones, stop at agreed budget and safely resume without duplicates.
-- [ ] **Crash test:** interrupt mid-trial; restart with complete RNG/network/optimizer state; compare deterministic outcome with uninterrupted control.
-- [ ] **Statistical integrity:** training vs validation separation; no cherry-picking seeds; no treating 2611 rounds as 2611 independent replicates.
-- [ ] **Limits:** resource caps enforced; no massive sweep launches before explicit go/no-go approval.
-- [ ] **Reporting:** track raw/capped lifetime, energy status, feasibility, confidence/uncertainty, wall and CPU; mark non-global-optimum guarantee.
-- [ ] **Default safety:** no edits to SimpleACO/AC-ACO/PSO, shared physics, D-ACO behavior or committed defaults without approval.
-
-## 8. Immediate ordered next actions for Codex
-
-**Phase A:** Audit current D-ACO code/parameters and reproduce historical reference cap + quarter heuristic with matching provenance. Show exact executable environment and raw energy calculation. **STOP for review if mismatch.**  
-**Phase B:** Implement tuner infrastructure, constraints and test suite, run controlled smoke/crash/resume pilot. Report measured worker throughput and suggested resource caps. **STOP for user approval.**  
-**Phase C (only after approval):** Launch bounded background exploration, autonomous adaptive optimization, persistent dashboard/status and reports. Stop at approved limits.  
-**Phase D (after shortlist review):** Run heldout seeds/topologies, choose the best validated feasible configuration and write final scientific report. Do not apply defaults automatically.
-
----
-
-## 9. Reference sources used for this plan
-
-- Attached `RESULTS.md` — Phase 10: D-ACO versus pheromone-only SimpleACO, seeds 24–26, latest map SHA.
-- Attached `RESULTS(1).md` — Phase 11: Q variations, quarter/half heuristic, pheromone saturation, 12 runs + controls.
-- Attached `RESULTS(2).md` — Phase 12: Q × ceiling interaction, nine new full trials, cap 8 vs 32.
-- Attached `Pasted text(1).txt` — historical research context and earlier checkout status (through D-ACO Phase 8); **older effective defaults differ**.
-- Previously created research context plan archived alongside this plan: `plan_research_context_before_autotuner_20261012.md`.
-- Repo-reported historical report directories: `plans/phase10-daco-vs-pheromone/`, `plans/phase11-daco-concentration/`, `plans/phase12-daco-higher-cap/` plus earlier phases enumerated in the archived context.
-
-**Scope of evidence:** This document was drafted from supplied reports and conversation. It has **not** inspected the user's live Windows checkout or executed scientific simulations. The very first implementation step is to validate current source, parameters, map and run provenance.
+**Success:** A correct, reusable optimizer architecture plus an honest, time-bounded D-ACO search at a 3500-round algorithmic horizon, with valid energy constraints, reliable provenance, and no disguised reuse of incompatible 3000-round results.

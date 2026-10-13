@@ -1,21 +1,11 @@
+algorithm: daco
 mode: scientific
-study_role: training
-map: map.pkl
-training_seeds: [24, 25, 26]
-validation_seeds: [40, 41, 42]
-horizon: 3000
+horizon: 3500
+adaptive_total_rounds: 3500
 energy_window: 2611
-energy_allowance: 0.02
-max_trials: 32
-max_wall_hours: 6
-max_session_hours: 2
+budget_seconds: 5400
+shutdown_reserve_seconds: 300
 max_workers: 2
-sampler: tpe
-sampler_seed: 20261012
-startup_trials: 12
-checkpoint_every: 25
-max_disk_mb: 4096
-worker_memory_mb: 1024
-seed_timeout_seconds: 3600
-max_worker_retries: 2
-reuse_history: true
+max_trials: 32
+training_seeds: [24, 25, 26]
+map: map.pkl

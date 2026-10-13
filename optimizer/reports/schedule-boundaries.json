@@ -1,0 +1,114 @@
+[
+  {
+    "T_max": 3000,
+    "round": 1,
+    "daco_rho": 0.5998333333333333,
+    "acaco_beta_raw": 1.0,
+    "acaco_beta_normalized": 1.3039004086975126
+  },
+  {
+    "T_max": 3000,
+    "round": 600,
+    "daco_rho": 0.5,
+    "acaco_beta_raw": 1.0,
+    "acaco_beta_normalized": 1.7297020952254254
+  },
+  {
+    "T_max": 3000,
+    "round": 1500,
+    "daco_rho": 0.35,
+    "acaco_beta_raw": 3.0,
+    "acaco_beta_normalized": 3.0
+  },
+  {
+    "T_max": 3000,
+    "round": 1750,
+    "daco_rho": 0.3083333333333333,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 3.410741351913967
+  },
+  {
+    "T_max": 3000,
+    "round": 2611,
+    "daco_rho": 0.16483333333333333,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.457290680059966
+  },
+  {
+    "T_max": 3000,
+    "round": 2999,
+    "daco_rho": 0.10016666666666663,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.696099591302487
+  },
+  {
+    "T_max": 3000,
+    "round": 3000,
+    "daco_rho": 0.09999999999999998,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.696567279915026
+  },
+  {
+    "T_max": 3000,
+    "round": 3500,
+    "daco_rho": 0.09999999999999998,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.862219217335156
+  },
+  {
+    "T_max": 3500,
+    "round": 1,
+    "daco_rho": 0.5998571428571429,
+    "acaco_beta_raw": 1.0,
+    "acaco_beta_normalized": 1.303833555555757
+  },
+  {
+    "T_max": 3500,
+    "round": 600,
+    "daco_rho": 0.5142857142857142,
+    "acaco_beta_raw": 1.0,
+    "acaco_beta_normalized": 1.648306662026056
+  },
+  {
+    "T_max": 3500,
+    "round": 1500,
+    "daco_rho": 0.3857142857142857,
+    "acaco_beta_raw": 1.0,
+    "acaco_beta_normalized": 2.6466055007411287
+  },
+  {
+    "T_max": 3500,
+    "round": 1750,
+    "daco_rho": 0.35,
+    "acaco_beta_raw": 3.0,
+    "acaco_beta_normalized": 3.0
+  },
+  {
+    "T_max": 3500,
+    "round": 2611,
+    "daco_rho": 0.22699999999999998,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.095274297077815
+  },
+  {
+    "T_max": 3500,
+    "round": 2999,
+    "daco_rho": 0.17157142857142854,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.4249010339799355
+  },
+  {
+    "T_max": 3500,
+    "round": 3000,
+    "daco_rho": 0.17142857142857143,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.42560412500616
+  },
+  {
+    "T_max": 3500,
+    "round": 3500,
+    "daco_rho": 0.09999999999999998,
+    "acaco_beta_raw": 5.0,
+    "acaco_beta_normalized": 4.696567279915026
+  }
+]
