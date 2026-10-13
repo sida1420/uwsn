@@ -1,6 +1,0 @@
-test_adapter_smokes_and_physical_accounting (test_optimizer.OptimizerTests.test_adapter_smokes_and_physical_accounting) ... ok
-
-----------------------------------------------------------------------
-Ran 1 test in 4.142s
-
-OK
