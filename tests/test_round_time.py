@@ -14,11 +14,15 @@ class RoundTimeTests(unittest.TestCase):
 
     def test_time_is_per_round_elapsed_seconds(self):
         algorithm=Mock();algorithm.plan_round.return_value=(object(),{0:.1})
+        simulator = self.simulator()
         with patch.object(simulate,'perf_counter',side_effect=[10.,10.25,20.,20.5]):
-            history=self.simulator().run(algorithm,verbose=False)
+            history=simulator.run(algorithm,verbose=False)
         self.assertEqual(list(history.columns),['round','alive_nodes','round_energy','time'])
         self.assertEqual(history['time'].tolist(),[.25,.5])
         self.assertEqual(history['round_energy'].tolist(),[.1,.1])
+        sensor_energy = simulator.sensor_energy_history
+        self.assertEqual(list(sensor_energy.columns),['round','sensor_0'])
+        self.assertEqual(sensor_energy['sensor_0'].tolist(),[.1,.1])
 
     def test_empty_run_still_has_time_header(self):
         algorithm=Mock();algorithm.plan_round.return_value=(None,{})

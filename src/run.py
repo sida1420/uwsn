@@ -59,6 +59,9 @@ def run_algorithm(algo_cls, network, hparameters, seed, run_dir, run_prefix):
     print(f"[{algorithm.name}] started", flush=True)
     history = simulator.run(algorithm)
     history.to_csv(run_dir / f"{run_prefix}_{algorithm.name}.csv", index=False)
+    simulator.sensor_energy_history.to_csv(
+        run_dir / f"{run_prefix}_{algorithm.name}_sensor-energy.csv", index=False
+    )
     print(f"[{algorithm.name}] finished: {len(history)} rounds", flush=True)
     return algorithm.name, history
 

@@ -25,11 +25,15 @@ class Simulator:
         self.network = network
         self.hparameters = hparameters
         self.evaluator = Evaluator(hparameters)
+        self.sensor_energy_history = pd.DataFrame(
+            columns=["round", *[f"sensor_{idx}" for idx in range(network.N)]]
+        )
 
     def run(self, algorithm, verbose=True):
         residual_e = [self.network.init_energy] * self.network.N
         live_nodes = list(range(self.network.N))
         history = []
+        sensor_energy_history = []
 
         for t in range(self.hparameters.T_max):
             round_start = perf_counter()
@@ -58,6 +62,14 @@ class Simulator:
 
             live_nodes = [i for i in live_nodes if residual_e[i] > 0]
 
+            sensor_energy_history.append({
+                "round": t,
+                **{
+                    f"sensor_{idx}": consumption.get(idx, 0.0)
+                    for idx in range(self.network.N)
+                },
+            })
+
             history.append({
                 "round": t,
                 "alive_nodes": len(live_nodes),
@@ -74,4 +86,8 @@ class Simulator:
                     print(f"[{algorithm.name}] round {t}: network died")
                 break
 
+        self.sensor_energy_history = pd.DataFrame(
+            sensor_energy_history,
+            columns=["round", *[f"sensor_{idx}" for idx in range(self.network.N)]],
+        )
         return pd.DataFrame(history, columns=["round", "alive_nodes", "round_energy", "time"])
