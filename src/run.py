@@ -60,14 +60,14 @@ def main(map_path="map.pkl", seed=None):
     if run_seed is None: run_seed = random.SystemRandom().randint(1, 99)
     if type(run_seed) is not int or not 1 <= run_seed <= 99:
         raise ValueError('run seed must be an integer from 1 to 99')
-    print(f'Run seed: {run_seed}')
+    print(f'Run seed: {run_seed:02d}')
 
     results = {}
 
     run_dir = Path("runs")
     run_dir.mkdir(exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d%H")
-    run_prefix = f"{environment_prefix(network)}_{timestamp}_{run_seed}"
+    run_prefix = f"{environment_prefix(network)}_{timestamp}_{run_seed:02d}"
 
     for algo_cls in ALGORITHMS:
         simulator = Simulator(network, hparameters)
