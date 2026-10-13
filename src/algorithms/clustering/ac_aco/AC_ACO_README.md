@@ -28,7 +28,8 @@ network round (`T_max` rounds at most). There is no inner iteration loop.
    `dropping_member_multi_hop_routing` builds the tree; the tree is scored by
    `Evaluator.energy_consumption`. The first feasible attempt (root exists,
    cost finite and > 0) is kept as that ant's candidate.
-3. The candidate with the lowest `(cost, CH path)` wins.
+3. With `load_weight=0`, the lowest `(cost, CH path)` wins. Positive weights
+   use normalized energy and absolute load CV, following D-ACO's selection score.
 4. `post_round` runs exactly once, even if every ant failed: it updates the
    cost window, updates pheromone, and prints the debug line.
 5. `plan_round` returns `(root, consumption)` of the winner, or `(None, {})`
@@ -45,16 +46,27 @@ The counters `total_/failed_clustering_attempts` and
 | `max_clustering_attempts` | 10 | Retries per ant until routing is feasible |
 | `ch_proportion` | 0.20 | Target fraction of live nodes that become CHs |
 | `pheromone_exponent` | 1.0 | Exponent on tau (labelled `alpha` in the debug line) |
-| `energy_cost_exponent` | 1.0 | Exponent on the inverse hop cost (`gamma` in the debug line) |
+| `energy_cost_exponent` | 0.1 | Exponent on the inverse hop cost (`gamma` in the debug line) |
 | `beta_min`, `beta_max`, `beta_slope` | 1, 5, 5 | Eq. (14) heuristic-weight schedule |
-| `rho_min`, `rho_max` | 0.10, 0.90 | Eq. (13) evaporation schedule |
+| `rho_min`, `rho_max` | 0.10, 0.60 | Eq. (13) evaporation schedule |
 | `chaos_min`, `chaos_max` | 0.05, 0.30 | Range of the chaos strength (Eq. 15) |
 | `chaos_r`, `chaos_seed` | 3.61, 0.37 | Logistic map parameter and seed |
-| `Q`, `tau0` | 100, 1 | Deposit constant and initial pheromone |
-| `tau_min`, `tau_max` | 0.10, 10 | Pheromone bounds |
+| `Q`, `tau0` | 0.01, 1 | Deposit constant and initial pheromone |
+| `elite_weight` | 0.1 | Extra best-set deposit multiplier (D-ACO's theta); tunable in [0,1] |
+| `load_weight` | 0.0 | Load-CV share in normalized energy/load selection; tunable in [0,1] |
+| `tau_min`, `tau_max` | 0.01, 20 | Calibrated pheromone bounds |
 | `hopping_factor` | 0.40 | Energy/distance trade-off in the shared router |
 
 Parameters are validated in `__post_init__` (bounds, `chaos_r` in (3.57, 4), etc.).
+
+The deposit constant, pheromone floor/ceiling and evaporation maximum were
+calibrated together on the existing map. The old values (`Q=100`, floor `.1`,
+ceiling `10`, maximum evaporation `.9`) remain an explicit historical control
+in the maintained historical calibration analysis. The new ceiling accounts for both
+ant and elite deposits plus additive chaos at late-round evaporation. These
+are practical defaults for this cost scale, not universally optimal values.
+See [calibration derivation and results](../../../../plans/analysis/acaco-performance.md).
+Valid bounds require `0 < tau_min < tau_max` and `tau_min <= tau0 <= tau_max`.
 
 ## Ant walk
 
@@ -100,22 +112,37 @@ simulator's round limit.
 
 ## Pheromone update (once per round)
 
-For every ordered pair `(i, j)` of live nodes:
+Each feasible ant first adds `Q / (cost * num_ants)` on consecutive pairs of
+its ordered CH path. Selection probabilities read the live pheromone row,
+so these deposits influence later ants in the same round and future rounds.
+Physical residual energy stays fixed while candidates are searched. Then, for every
+distinct ordered pair `(i, j)` of live nodes:
 
 ```text
 tau(i, j) <- clamp( (1 - rho) * tau(i, j)
-                    + [Q / cost  if (i, j) is a consecutive pair in the
-                       winning CH path, else 0]
                     + strength * chaos[i],
                     tau_min, tau_max )
 ```
 
-`cost` is the total energy of the winning routing tree. Each successful ant
-also deposits `Q / (cost * num_ants)` immediately after its route is scored.
-Then `chaos[i]` advances by one logistic step for each live `i`. If every ant
+The elite then adds `elite_weight * Q / best_cost` on its CH path, clamped to `tau_max`.
+`best_cost` is the total energy of the winning routing tree. This ordering
+matters: ant deposits evaporate; the elite deposit does not. Then
+`chaos[i]` has advanced by one logistic step for each live `i`. If every ant
 failed, there is no per-ant deposit, but evaporation and chaos still apply.
 Relay and outlier edges are never reinforced, because ants only choose the CH
 path.
+
+With positive `load_weight=w`, candidate fitness is
+`(1-w)*energy/mean_energy + w*load_cv/mean_load_cv`, where load CV is the
+standard deviation of per-node round costs divided by their mean. If all CVs
+are zero, the normalized CV contribution is constant. Deposits still use
+physical energy, preserving the calibrated pheromone scale. Absolute load CV
+does not account for uneven residual energy; it is not a lifetime guarantee.
+The balance and inner-iteration study is in
+`plans/analysis/acaco-performance.md`.
+The default elite weight is 0.1 to reduce best-set dominance. Load fitness
+remains opt-in with `ACACOParameters(load_weight=0.1)`; the study found a
+small energy cost for lower load variation, without establishing a lifetime gain.
 
 ## Usage
 
@@ -144,9 +171,10 @@ mean over live directed edges (taken after the update).
   names are swapped between the two, so do not compare labels alone.
 - AC-ACO adds a chaos term, decaying `rho`, growing `beta`, and samples start
   nodes with replacement. SimpleACO uses fixed parameters and distinct starts.
-- Both keep pheromone across rounds, clamp it, deposit `Q / cost` on the
-  round-best CH path, and select the minimum current-round energy, which does
-  not directly optimize lifetime.
+- Both keep pheromone across rounds and clamp it. AC-ACO scales its
+  round-best CH-path deposit by `elite_weight`; SimpleACO uses `Q / cost`.
+  AC-ACO selects minimum current-round energy by default, with optional load
+  fitness. Neither objective directly optimizes lifetime.
 
 These are implementation differences, not evidence that either algorithm
 performs better.

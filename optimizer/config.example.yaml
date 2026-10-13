@@ -1,0 +1,12 @@
+algorithm: daco
+mode: scientific
+horizon: 3500
+adaptive_total_rounds: 3500
+energy_window: 2611
+energy_window_policy: reference
+reference_window_fraction: 0.9
+budget_seconds: 5400
+max_workers: 2
+max_trials: 32
+training_seeds: [24, 25, 26]
+map: map.pkl

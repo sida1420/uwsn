@@ -26,10 +26,14 @@ htmlcov/
 Thumbs.db
 
 # Generated simulation output
+/runs/
 *.csv
+*.log
+*.tmp
+.ipynb_checkpoints/
+error_*_round*.png
+!plans/analysis/*.csv
 
 configurations/
-map.pkl
-map_3d.svg
 AGENTS.md
 .*

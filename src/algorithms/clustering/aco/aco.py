@@ -49,7 +49,7 @@ class ACOClustering(ClusteringAlgorithm):
                     self.E_m_heuristic[i][j] = (1 / cost) ** self.params.beta
 
     def pre_round(self, live_sensors, residual_e):
-        return random.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
+        return self.random_source.sample(live_sensors, min(self.params.num_ants, len(live_sensors)))
 
     def create_clusters(self, live_sensors, residual_e, start):
         """
@@ -107,7 +107,7 @@ class ACOClustering(ClusteringAlgorithm):
             if sum(weights) <= 0:
                 return None
 
-            curr = random.choices(allowed, weights=weights, k=1)[0]
+            curr = self.random_source.choices(allowed, weights=weights, k=1)[0]
             CH_list.append(curr)
             CH_set.add(curr)
 

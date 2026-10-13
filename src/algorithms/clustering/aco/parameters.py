@@ -9,8 +9,8 @@ class ACOParameters:
         self.num_ants = 40  # ants per round
         self.CH_proportion = 0.2  # target fraction of live nodes made CH
         self.alpha = 1.0  # pheromone importance
-        self.beta = 0.5  # residual energy / distance importance
-        self.gamma = 1.0  # transmission-energy heuristic importance
+        self.beta = 0.1  # residual energy / distance importance
+        self.gamma = 0.1  # transmission-energy heuristic importance
         self.rho = 0.1  # pheromone evaporation rate
         self.Q = 0.07  # pheromone deposit strength
         self.tau0 = 1.0  # initial pheromone level
