@@ -8,6 +8,8 @@ nothing else in this file needs to change (unless it needs extra
 constructor arguments, see create_algorithm).
 """
 from datetime import datetime
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from multiprocessing import get_context
 import random
 from pathlib import Path
 
@@ -51,6 +53,16 @@ def create_algorithm(algo_cls, network, hparameters, seed=None):
     return algo_cls(network, hparameters, seed=SEED if seed is None else seed)
 
 
+def run_algorithm(algo_cls, network, hparameters, seed, run_dir, run_prefix):
+    simulator = Simulator(network, hparameters)
+    algorithm = create_algorithm(algo_cls, network, hparameters, seed=seed)
+    print(f"[{algorithm.name}] started", flush=True)
+    history = simulator.run(algorithm)
+    history.to_csv(run_dir / f"{run_prefix}_{algorithm.name}.csv", index=False)
+    print(f"[{algorithm.name}] finished: {len(history)} rounds", flush=True)
+    return algorithm.name, history
+
+
 def main(map_path="map.pkl", seed=None):
 
 
@@ -69,24 +81,19 @@ def main(map_path="map.pkl", seed=None):
     timestamp = datetime.now().strftime("%Y%m%d%H")
     run_prefix = f"{environment_prefix(network)}_{timestamp}_{run_seed:02d}"
 
-    for algo_cls in ALGORITHMS:
-        simulator = Simulator(network, hparameters)
-
-        algorithm = create_algorithm(
-            algo_cls,
-            network,
-            hparameters,
-            seed=run_seed,
-        )
-
-        history = simulator.run(algorithm)
-
-        history.to_csv(
-            run_dir / f"{run_prefix}_{algorithm.name}.csv",
-            index=False,
-        )
-
-        results[algorithm.name] = history
+    with ProcessPoolExecutor(max_workers=2, mp_context=get_context("spawn")) as pool:
+        futures = [
+            pool.submit(run_algorithm, algo_cls, network, hparameters,
+                        run_seed, run_dir, run_prefix)
+            for algo_cls in ALGORITHMS
+        ]
+        completed = {}
+        for future in as_completed(futures):
+            name, history = future.result()
+            completed[name] = history
+        for future in futures:
+            name, _ = future.result()
+            results[name] = completed[name]
 
     summarize(results)
     return results

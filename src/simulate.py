@@ -67,7 +67,7 @@ class Simulator:
 
             if verbose and t % 100 == 0:
                 print(f"[{algorithm.name}] round {t}: {len(live_nodes)} alive, "
-                      f"energy used this round {total:.6f}")
+                      f"energy used this round {total:.6f}", flush=True)
 
             if not live_nodes:
                 if verbose:
