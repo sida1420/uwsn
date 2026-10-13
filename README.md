@@ -90,8 +90,12 @@ Khi có ít nhất một round hợp lệ, mỗi CSV có các cột:
 | `round` | Chỉ số round, bắt đầu từ 0. |
 | `alive_nodes` | Số sensor còn năng lượng sau round. |
 | `round_energy` | Tổng năng lượng mô hình tính cho round. |
+| `time` | Elapsed wall-clock seconds for this round: search, evaluation and energy update. |
 
-Một run không tìm được route ngay từ đầu hiện có thể tạo CSV rỗng, không có header. Bảng tổng kết dùng `len(history)` làm số round đã ghi.
+Runs with no feasible round still export the CSV column headers. Timing excludes
+CSV writes and between-round printing; initial calibration is included in the
+first round. Optimizer per-round CSVs use the same `time` field and include their
+observation overhead. Historical CSVs retain their originally recorded columns.
 
 ## Kiểm thử
 

@@ -87,6 +87,7 @@ def run_seed(cfg,requested,seed,folder,epoch,kind='daco',owner=None,pause_after=
         while len(state['records'])<cfg['horizon']:
             if not owner_alive(folder.parents[2],owner) or (pause_after is not None and len(state['records'])>=pause_after):
                 save();return dict(paused=True,seed=seed)
+            round_start=time.perf_counter()
             live=state['live'];before=len(live)
             if hasattr(a,'calibrate') and a.references is None:
                 cal=time.process_time()
@@ -104,7 +105,7 @@ def run_seed(cfg,requested,seed,folder,epoch,kind='daco',owner=None,pause_after=
             if len(state['live'])<before and state['FND'] is None: state['FND']=t
             if len(state['live'])<=network.N/2 and state['HND'] is None: state['HND']=t
             if not state['live']: state['LND']=t;reason='all_nodes_dead'
-            row=dict(round=t,alive_before=before,alive_after=len(state['live']),served=len(costs),
+            row=dict(round=t,time=time.perf_counter()-round_start,alive_before=before,alive_after=len(state['live']),served=len(costs),
                      selected_tree_physical_energy=sum(costs.values()),cost_groups=groups,
                      evaluations=observed['evaluations'],deposit_updates=observed['updates'],
                      requested_deposit=observed['requested'],lost_deposit=observed['lost'],

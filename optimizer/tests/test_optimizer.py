@@ -49,6 +49,9 @@ class OptimizerTests(unittest.TestCase):
             cfg=self.cfg;params=get(name).baseline_config()
             result=run_seed(cfg,params,24,self.root/name,epoch(cfg),kind=name)
             self.assertEqual(result['completed_rounds'],5)
+            from optimizer.storage import unpickle
+            records=unpickle(self.root/name/'checkpoint.pkl')['records']
+            self.assertTrue(all(r['time']>=0 for r in records))
             self.assertTrue(result['horizon_censored'])
             network=NetworkInstance.from_pickle(cfg['map'])
             self.assertAlmostEqual(sum(result['residual']),network.N*network.init_energy-sum(

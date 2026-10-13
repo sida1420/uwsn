@@ -66,7 +66,7 @@ def main(map_path="map.pkl", seed=None):
 
     run_dir = Path("runs")
     run_dir.mkdir(exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d%H")
     run_prefix = f"{environment_prefix(network)}_{timestamp}_{run_seed}"
 
     for algo_cls in ALGORITHMS:

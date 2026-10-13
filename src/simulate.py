@@ -1,4 +1,5 @@
 import pandas as pd
+from time import perf_counter
 
 from evaluate import Evaluator
 
@@ -31,6 +32,7 @@ class Simulator:
         history = []
 
         for t in range(self.hparameters.T_max):
+            round_start = perf_counter()
             root, consumption = algorithm.plan_round(live_nodes, residual_e)
             if root is None:
                 if verbose:
@@ -60,6 +62,7 @@ class Simulator:
                 "round": t,
                 "alive_nodes": len(live_nodes),
                 "round_energy": total,
+                "time": perf_counter() - round_start,
             })
 
             if verbose and t % 100 == 0:
@@ -71,4 +74,4 @@ class Simulator:
                     print(f"[{algorithm.name}] round {t}: network died")
                 break
 
-        return pd.DataFrame(history)
+        return pd.DataFrame(history, columns=["round", "alive_nodes", "round_energy", "time"])
