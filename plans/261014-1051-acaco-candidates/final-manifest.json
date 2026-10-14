@@ -1,0 +1,127 @@
+{
+  "original_files_checked": 48,
+  "original_files_changed": [],
+  "local_links_valid": true,
+  "source_hashes": {
+    "src/algorithms/research_acaco/diagnostics.py": "e1d29795c9a8c66adab3a37566a8312a39b3202f007929a0416f7246a8e00d58",
+    "src/algorithms/research_acaco/operators.py": "6a5e47d001bb2c36ede071978e5389ebb1638d06864b89b4676e227c25324e2f",
+    "src/algorithms/research_acaco/surrogate.py": "9346bb298085ac48bd68281349cbb72a337e306759baac5c1274cac695d66836",
+    "src/algorithms/research_acaco/tree_metrics.py": "4a76cb056bbd58a61811dd23411411b192929370275c0d77eeafc88ab0b5b3fb",
+    "src/algorithms/research_acaco/variants.py": "b314e23e537db24f28203671c018a6d21b3186ae4ab0bb600478241287ed4084",
+    "src/algorithms/research_acaco/__init__.py": "5a12b4a454b68eb435fbe5fe8aa3841727163282bd01c9a5deae22e9ad3bcbfe",
+    "plans/261014-1051-acaco-candidates/check-proxy-ranking.py": "31f7a0dc161d702072d7d9ba0087d2b40e5ee7025e173c592608e2a8ff5a50b4",
+    "plans/261014-1051-acaco-candidates/run-experiments.py": "dd533335cabf617fd64072e3bc26a4c7cd329ebe6a33157d8aaea55ad0fd5757",
+    "plans/261014-1051-acaco-candidates/analysis/analyze-results.py": "a72909ed803ccde90ea7823b9321f93524aa55924571a01b1e9b8e88169a0d7d",
+    "plans/261014-1051-acaco-candidates/analysis/run-holdout.py": "955a38cda4f1dd224b6c52397b60a94d6eef6ccfcd64ca21be9daadaca0ff6e4",
+    "plans/261014-1051-acaco-candidates/analysis/summarize-details.py": "632de554e94bccc083c8164a85e32e274704aa74b55a28bb2de4f1126aa48e59",
+    "tests/test_ac_aco_research.py": "ac10ea8929a0f08a358891cc9d32bdc1de9161d3b721372e5a8d0e49d8982d45",
+    "tests/test_ac_aco_research_analysis.py": "12089e68ada9a1e024ad061617f6a8e5a3487a606a59082dc15c21b8c697551b",
+    "tests/test_ac_aco_research_operators.py": "603102ef28f7c808b23010871842a89e3161d5c36951bc8f4c65e94c15d9d755"
+  },
+  "source_line_counts": {
+    "src/algorithms/research_acaco/diagnostics.py": 195,
+    "src/algorithms/research_acaco/operators.py": 84,
+    "src/algorithms/research_acaco/surrogate.py": 66,
+    "src/algorithms/research_acaco/tree_metrics.py": 63,
+    "src/algorithms/research_acaco/variants.py": 152,
+    "src/algorithms/research_acaco/__init__.py": 4,
+    "plans/261014-1051-acaco-candidates/check-proxy-ranking.py": 111,
+    "plans/261014-1051-acaco-candidates/run-experiments.py": 183,
+    "plans/261014-1051-acaco-candidates/analysis/analyze-results.py": 198,
+    "plans/261014-1051-acaco-candidates/analysis/run-holdout.py": 30,
+    "plans/261014-1051-acaco-candidates/analysis/summarize-details.py": 116,
+    "tests/test_ac_aco_research.py": 180,
+    "tests/test_ac_aco_research_analysis.py": 100,
+    "tests/test_ac_aco_research_operators.py": 55
+  },
+  "validation": {
+    "validation-acaco.xml": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "56",
+        "time": "5.537",
+        "timestamp": "2026-10-14T12:15:49.863699+07:00",
+        "hostname": "LAPTOP-85FBPJSC"
+      }
+    ],
+    "validation-all.xml": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "2",
+        "skipped": "0",
+        "tests": "99",
+        "time": "24.359",
+        "timestamp": "2026-10-14T12:03:19.950930+07:00",
+        "hostname": "LAPTOP-85FBPJSC"
+      }
+    ]
+  },
+  "campaign_snapshots": [
+    {
+      "path": "development-audited",
+      "source_unchanged": true
+    },
+    {
+      "path": "development-topologies",
+      "source_unchanged": true
+    },
+    {
+      "path": "evaporation-control",
+      "source_unchanged": true
+    },
+    {
+      "path": "short-trajectories",
+      "source_unchanged": true
+    },
+    {
+      "path": "smoke",
+      "source_unchanged": true
+    },
+    {
+      "path": "topology-diagnostic",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/clustered-100",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/clustered-200",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/clustered-50",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/normal-100",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/normal-200",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/normal-50",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/uniform-100",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/uniform-200",
+      "source_unchanged": true
+    },
+    {
+      "path": "holdout/uniform-50",
+      "source_unchanged": true
+    }
+  ],
+  "scope": "original baseline/maps preserved; experimental variants opt-in; lifetime unverified",
+  "final_documentation": "final-report.md; README.md; design.md; code-review.md; plan.md"
+}

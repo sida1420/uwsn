@@ -1,0 +1,25 @@
+{
+  "algorithm": "acaco_v2_v6",
+  "mode": "smoke",
+  "study_role": "training",
+  "horizon": 3,
+  "adaptive_total_rounds": 3500,
+  "energy_window": 3,
+  "energy_window_policy": "fixed",
+  "reference_window_fraction": 0.9,
+  "energy_allowance": 0.02,
+  "training_seeds": [
+    24,
+    25
+  ],
+  "budget_seconds": 5400,
+  "max_trials": 3,
+  "max_workers": 1,
+  "checkpoint_every": 25,
+  "max_disk_mb": 4096,
+  "worker_memory_mb": 1024,
+  "startup_trials": 6,
+  "sampler_seed": 20261014,
+  "max_retries": 1,
+  "map": "C:\\Users\\LOQ\\Desktop\\uwsn\\optimizer\\runs\\acaco-v2-v6-check-261014\\map.pkl"
+}

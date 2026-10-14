@@ -7,6 +7,7 @@ To try a new algorithm in the future: subclass Algorithm
 nothing else in this file needs to change (unless it needs extra
 constructor arguments, see create_algorithm).
 """
+
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import get_context
@@ -19,6 +20,7 @@ from simulate import Simulator
 
 from algorithms.aco import SimpleACO
 from algorithms.ac_aco import ACACO
+from algorithms.ac_aco_v2_v6 import ACACO_V2_V6
 from algorithms.d_aco import DACO
 from algorithms.node_aco import NodeACO
 from algorithms.pso import PSO
@@ -27,10 +29,7 @@ SEED = None  # optional programmatic default; main prints the chosen run seed
 
 ALGORITHMS = [
     PSO,
-    DACO,
-    SimpleACO,
-    ACACO,
-    NodeACO,
+    ACACO_V2_V6,
 ]
 
 
@@ -40,17 +39,22 @@ def _filename_value(value):
 
 
 def environment_prefix(network):
-    return "_".join((
-        _filename_value(network.width),
-        _filename_value(network.height),
-        _filename_value(network.depth),
-        str(network.N),
-        network.distribution,
-    ))
+    return "_".join(
+        (
+            _filename_value(network.width),
+            _filename_value(network.height),
+            _filename_value(network.depth),
+            str(network.N),
+            network.distribution,
+        )
+    )
 
 
 def create_algorithm(algo_cls, network, hparameters, seed=None):
-    return algo_cls(network, hparameters, seed=SEED if seed is None else seed)
+    algorithm_seed = SEED if seed is None else seed
+    if algo_cls is ACACO_V2_V6:
+        return ACACO_V2_V6(network, hparameters, seed=algorithm_seed)
+    return algo_cls(network, hparameters, seed=algorithm_seed)
 
 
 def run_algorithm(algo_cls, network, hparameters, seed, run_dir, run_prefix):
@@ -68,14 +72,14 @@ def run_algorithm(algo_cls, network, hparameters, seed, run_dir, run_prefix):
 
 def main(map_path="map.pkl", seed=None):
 
-
     network = NetworkInstance.from_pickle(map_path)
     hparameters = HyperParameters()
     run_seed = seed if seed is not None else SEED
-    if run_seed is None: run_seed = random.SystemRandom().randint(1, 99)
+    if run_seed is None:
+        run_seed = random.SystemRandom().randint(1, 99)
     if type(run_seed) is not int or not 1 <= run_seed <= 99:
-        raise ValueError('run seed must be an integer from 1 to 99')
-    print(f'Run seed: {run_seed:02d}')
+        raise ValueError("run seed must be an integer from 1 to 99")
+    print(f"Run seed: {run_seed:02d}")
 
     results = {}
 
@@ -86,8 +90,15 @@ def main(map_path="map.pkl", seed=None):
 
     with ProcessPoolExecutor(max_workers=2, mp_context=get_context("spawn")) as pool:
         futures = [
-            pool.submit(run_algorithm, algo_cls, network, hparameters,
-                        run_seed, run_dir, run_prefix)
+            pool.submit(
+                run_algorithm,
+                algo_cls,
+                network,
+                hparameters,
+                run_seed,
+                run_dir,
+                run_prefix,
+            )
             for algo_cls in ALGORITHMS
         ]
         completed = {}

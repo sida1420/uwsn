@@ -10,6 +10,7 @@ from algorithms.clustering.aco.parameters import ACOParameters
 from algorithms.clustering.pso.parameters import PSOParameters
 from algorithms.clustering.ac_aco.parameters import ACACOParameters
 from optimizer.search_space import SPACE
+from algorithms.research_acaco import ResearchACACO, ResearchOptions
 
 REGISTRY = {}
 def register(adapter):
@@ -77,4 +78,50 @@ class ACACOAdapter(BaseAdapter):
     def validate_config(self,cfg): ACACOParameters(**cfg)
     def make_algorithm(self,n,h,cfg,seed): return ACACO(n,h,ACACOParameters(**self.effective_config(cfg)),seed=seed)
 
-for adapter in (DACOAdapter(),SimpleAdapter(),PSOAdapter(),ACACOAdapter()): register(adapter)
+class ACACOV2V6Adapter(BaseAdapter):
+    """Fixed V2+V6 operators, with five opt-in smoke parameter coordinates."""
+    name = 'acaco_v2_v6'
+    native_fitness_id = 'physical-energy-marginal-evaporation-only-v1'
+    parameter_space_version = 'five-coordinates-smoke-v1'
+    space = dict(pheromone_exponent=(.5, 2., False), beta_min=(.5, 2., False),
+                 Q=(.003, .03, True), rho_max=(.3, .7, False), elite_weight=(0., .2, False))
+
+    def baseline_config(self):
+        from dataclasses import replace
+        return asdict(replace(ACACOParameters(), num_ants=40, load_weight=0.,
+                              tau_min=.01, tau0=1., tau_max=20.))
+
+    def validate_config(self, cfg):
+        baseline = self.baseline_config()
+        if set(cfg) - set(baseline):
+            raise ValueError('Unknown V2+V6 parameter')
+        values = {**baseline, **cfg}
+        ACACOParameters(**values)
+        for name, value in values.items():
+            if name not in self.space and value != baseline[name]:
+                raise ValueError(f'V2+V6 smoke fixes {name}={baseline[name]}')
+        for name, (low, high, _) in self.space.items():
+            if not low <= values[name] <= high:
+                raise ValueError(f'{name} outside declared smoke search space')
+
+    def make_algorithm(self, network, hp, cfg, seed):
+        algorithm = ResearchACACO(network, hp,
+            params=ACACOParameters(**self.effective_config(cfg)), seed=seed,
+            options=ResearchOptions(heuristic='marginal', chaos_policy='evaporation',
+                                    evaporation_kappa=.5))
+        algorithm.name = 'AC-ACO-V2-V6-parameter-trial'
+        return algorithm
+
+    def diagnostics(self, algorithm):
+        c = algorithm.clustering
+        tau = np.asarray(c.pheromone)
+        return dict(chaos_policy='evaporation', selection_chaos=c.last_exploration,
+            evaporation_kappa=.5, effective_rho_mean=float(np.mean(c.effective_rhos))
+                if c.effective_rhos else None,
+            pheromone_floor=float(np.mean(tau <= c.params.tau_min)),
+            pheromone_ceiling=float(np.mean(tau >= c.params.tau_max)),
+            proxy_cell_operations=c.proxy.operations if c.proxy else 0,
+            proxy_seconds=c.proxy_seconds, n_ants=c.params.num_ants)
+
+
+for adapter in (DACOAdapter(),SimpleAdapter(),PSOAdapter(),ACACOAdapter(),ACACOV2V6Adapter()): register(adapter)

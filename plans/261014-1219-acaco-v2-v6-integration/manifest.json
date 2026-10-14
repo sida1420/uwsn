@@ -1,0 +1,76 @@
+{
+  "existing_files_changed": [
+    "src/run.py",
+    "src/algorithms/research_acaco/operators.py"
+  ],
+  "unchanged_existing_files": 43,
+  "validation": [
+    {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "65",
+      "time": "9.550",
+      "timestamp": "2026-10-14T14:14:22.036170+07:00",
+      "hostname": "LAPTOP-85FBPJSC"
+    }
+  ],
+  "smoke": {
+    "algorithm": "AC-ACO-V2-V6",
+    "seed": 24,
+    "smoke_T_max": 1,
+    "physical_rounds": 1,
+    "alive_nodes": 100,
+    "round_energy": 0.014370245812214022
+  },
+  "code_hashes": {
+    "src/run.py": "0fe18b84f6d5e230de7701951034b9400cd805d4a39d4f8a813b12695c14150e",
+    "src/algorithms/ac_aco_v2_v6.py": "58f4ce8c0574d8109b061cb44286f8142e69fed571f1ac91fb6b8fb84c0edfa1",
+    "src/algorithms/research_acaco/operators.py": "0ccd6847835f7c86c41850f37fc44adb2ae2f5248a00c892a567fb1c565cf6f6",
+    "tests/test_ac_aco_v2_v6_runner.py": "739f8713540b43671c1bf3dcd9d67bd175da9d2de90abeae3441a8488fd8ce32"
+  },
+  "reported_parameters_match": true,
+  "effective_params": {
+    "num_ants": 40,
+    "max_clustering_attempts": 10,
+    "ch_proportion": 0.2,
+    "pheromone_exponent": 1.0,
+    "energy_cost_exponent": 0.1,
+    "distance_weight": 1.0,
+    "beta_min": 1.0,
+    "beta_max": 5.0,
+    "beta_slope": 5.0,
+    "beta_schedule": "raw",
+    "rho_min": 0.1,
+    "rho_max": 0.6,
+    "chaos_min": 0.05,
+    "chaos_max": 0.3,
+    "chaos_r": 3.61,
+    "chaos_seed": 0.37,
+    "Q": 0.01,
+    "elite_weight": 0.1,
+    "load_weight": 0.0,
+    "load_power": 2.0,
+    "reference_memory": 0.8,
+    "calibration_ants": 40,
+    "tau0": 1.0,
+    "tau_min": 0.01,
+    "tau_max": 20.0,
+    "hopping_factor": 0.4
+  },
+  "effective_options": {
+    "heuristic": "marginal",
+    "chaos_policy": "evaporation",
+    "distinct_starts": false,
+    "random_sets": false,
+    "fixed_scale": 0.1,
+    "exploration_max": 0.25,
+    "evaporation_kappa": 0.5
+  },
+  "registry_at_handoff": [
+    "PSO",
+    "ACACO_V2_V6"
+  ],
+  "cleanup_limitation": "review-temp deletion rejected by policy; retained"
+}

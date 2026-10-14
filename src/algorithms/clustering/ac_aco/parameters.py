@@ -27,18 +27,26 @@ class ACACOParameters:
     chaos_r: float = 3.61
     chaos_seed: float = 0.37
     # Coupled acoustic-cost calibration; derivation and seeded measurements:
-    # plans/analysis/acaco-performance.md. Bounds are not universal optima.
+    # plans/phase5-acaco-tuning/README.md. Bounds are not universal optima.
     Q: float = 0.01
     elite_weight: float = 0.1  # balanced best-set contribution; D-ACO's theta
-    load_weight: float = 0.0  # normalized absolute load-CV share in selection
+    load_weight: float = 0.25  # calibrated powered relative-load penalty
+    load_power: float = 2.0
+    reference_memory: float = 0.8
+    calibration_ants: int = 40
     tau0: float = 1.0
-    tau_min: float = 0.01
+    tau_min: float = 1
     tau_max: float = 20.0
     hopping_factor: float = 0.40
 
     def __post_init__(self):
         self._positive_integer("num_ants", self.num_ants)
         self._positive_integer("max_clustering_attempts", self.max_clustering_attempts)
+        self._positive_integer("calibration_ants", self.calibration_ants)
+        if not isfinite(self.load_power) or self.load_power < 1:
+            raise ValueError("load_power must be finite and at least 1")
+        if not 0 <= self.reference_memory < 1:
+            raise ValueError("reference_memory must be in [0, 1)")
         if not 0 < self.ch_proportion <= 1:
             raise ValueError("ch_proportion must be in (0, 1]")
         self._bounds("rho", self.rho_min, self.rho_max, strict_low=True, upper=1)

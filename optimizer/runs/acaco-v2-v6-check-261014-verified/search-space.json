@@ -1,0 +1,27 @@
+{
+  "pheromone_exponent": [
+    0.5,
+    2.0,
+    false
+  ],
+  "beta_min": [
+    0.5,
+    2.0,
+    false
+  ],
+  "Q": [
+    0.003,
+    0.03,
+    true
+  ],
+  "rho_max": [
+    0.3,
+    0.7,
+    false
+  ],
+  "elite_weight": [
+    0.0,
+    0.2,
+    false
+  ]
+}

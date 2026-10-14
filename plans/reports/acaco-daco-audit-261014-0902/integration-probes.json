@@ -1,0 +1,33 @@
+{
+  "empty_ch_cost": 0.00015306072653275654,
+  "empty_ch_tx_packet_equivalents": 2,
+  "underfunded": {
+    "initial_energy": 1e-05,
+    "reported_energy": 0.00015306072653275654,
+    "completed_rounds": 1,
+    "alive_after": 0
+  },
+  "nonmonotone_connected_path": {
+    "hop_lengths": [
+      0.6082762530298219,
+      0.8544003745317532,
+      0.8602325267042628,
+      0.7211102550927979
+    ],
+    "router_returned_none": true
+  },
+  "notebook": {
+    "actual": [
+      100.0,
+      99.0,
+      98.0,
+      48.5
+    ],
+    "terminal_survivor_carry_example_last": 97.5,
+    "caution": "After stop, surviving nodes are censored, not simulated at later times."
+  },
+  "map_test_drift": {
+    "uniform_mean_z": 248.75352021437092,
+    "explicit_normal_mean_z": 99.29300984822704
+  }
+}

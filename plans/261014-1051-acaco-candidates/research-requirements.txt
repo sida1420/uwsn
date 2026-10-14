@@ -1,0 +1,5 @@
+# Optional research/validation tools; production requirements are untouched.
+numpy>=1.26
+scipy>=1.10
+matplotlib>=3.9
+pytest>=8

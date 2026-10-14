@@ -1,0 +1,8 @@
+{
+  "algorithm": "AC-ACO-V2-V6",
+  "seed": 24,
+  "smoke_T_max": 1,
+  "physical_rounds": 1,
+  "alive_nodes": 100,
+  "round_energy": 0.014370245812214022
+}

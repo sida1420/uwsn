@@ -131,6 +131,10 @@ class ACACOClustering(ClusteringAlgorithm):
     def pre_round(self, live_sensors, residual_e):
         """Returns a RoundState, or None if no live node has energy left."""
         self.iteration += 1
+        return self.prepare_round(live_sensors, residual_e, self.iteration)
+
+    def prepare_round(self, live_sensors, residual_e, iteration):
+        """Prepare schedules without advancing the physical clock (calibration)."""
         live = tuple(i for i in live_sensors if residual_e[i] > 0)
         if not live:
             return None
@@ -142,9 +146,9 @@ class ACACOClustering(ClusteringAlgorithm):
         return RoundState(
             live=live,
             target=target,
-            rho=evaporation_rate(self.iteration, self.total_iterations, p.rho_min, p.rho_max),
+            rho=evaporation_rate(iteration, self.total_iterations, p.rho_min, p.rho_max),
             beta=heuristic_weight(
-                self.iteration, self.total_iterations, p.beta_min, p.beta_max,
+                iteration, self.total_iterations, p.beta_min, p.beta_max,
                 p.beta_slope, p.beta_schedule
             ),
             strength=chaos_strength(
@@ -163,13 +167,14 @@ class ACACOClustering(ClusteringAlgorithm):
         return build_clusters(CHs, state.live, self.network.dist_matrix, self.network.radius)
 
     def post_round(self, live_sensors, residual_e, consumption, state=None,
-                   candidate_costs=(), CH_list=None):
+                   candidate_costs=(), CH_list=None, best_fitness=None):
         """
         Args:
             consumption: best tree's {sensor_id: energy} ({} if every ant failed)
             state: the RoundState from pre_round
             candidate_costs: total energy of every feasible candidate this round
             CH_list: ordered CH path of the best candidate (None if none)
+            best_fitness: cached selection score for the elite deposit
         """
         best_cost = sum(consumption.values()) if CH_list is not None else None
 
@@ -181,7 +186,8 @@ class ACACOClustering(ClusteringAlgorithm):
 
         self._update_pheromone(state)
         if CH_list is not None:
-            self.deposit(CH_list, best_cost, per_ant=False)
+            self.deposit(CH_list, best_cost if best_fitness is None else best_fitness,
+                         per_ant=False)
 
         if self.iteration == 1 or self.iteration % 100 == 0 or best_cost is None:
             live = state.live
