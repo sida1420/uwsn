@@ -13,10 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 import run
 from algorithms.ac_aco import ACACO
-from algorithms.ac_aco_v2_v6 import ACACO_V2_V6
+from algorithms.me_aco import ACACO_V2_V6
 from algorithms.clustering.ac_aco.parameters import ACACOParameters
 from algorithms.clustering.ac_aco.ac_aco import evaporation_rate
-from algorithms.clustering.ac_aco.v2_v6 import (
+from algorithms.clustering.ac_aco.me_aco import (
     evaporation_only, marginal_log_quality, normalized_weights,
 )
 from hparameter import HyperParameters

@@ -43,7 +43,7 @@ def evaporation_only(rho, chaos, kappa, low, high):
     return min(high, max(low, rho * (1 - kappa * chaos)))
 
 
-class ACACOV2V6Clustering(ACACOClustering):
+class MEACOClustering(ACACOClustering):
     evaporation_kappa = 0.5
 
     def pre_round(self, live_sensors, residual_e):

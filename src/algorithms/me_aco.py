@@ -3,14 +3,14 @@ from dataclasses import replace
 
 from algorithms.ac_aco import ACACO
 from algorithms.clustering.ac_aco.parameters import ACACOParameters
-from algorithms.clustering.ac_aco.v2_v6 import ACACOV2V6Clustering
+from algorithms.clustering.ac_aco.me_aco import MEACOClustering
 from evaluate import Evaluator
 
 
-class ACACO_V2_V6(ACACO):
+class MEACO(ACACO):
     """Marginal construction and evaporation-only chaos, with audited bounds."""
 
-    name = "AC-ACO-V2-V6"
+    name = "ME-ACO"
 
     def __init__(self, network, hparameters, seed=None):
         params = replace(ACACOParameters(), num_ants=40, load_weight=0.0,
@@ -20,6 +20,6 @@ class ACACO_V2_V6(ACACO):
     def init_params(self):
         self.params = self._params
         self.evaluator = Evaluator(self.hparameters)
-        self.clustering = ACACOV2V6Clustering(
+        self.clustering = MEACOClustering(
             self.network, self.hparameters, self.params, seed=self._seed
         )
