@@ -30,7 +30,8 @@ class MapSeedingTests(unittest.TestCase):
     def test_normal_follows_sink_and_stretches_depth(self):
         sink = Point(400, 600, 500)
         points = gen(width=1000, height=1000, depth=1000, num_sensors=10000,
-                     energy=.6, radius=200, seed=7, base_pos=sink)['sensors']
+                     energy=.6, radius=200, seed=7, base_pos=sink,
+                     distribution='normal')['sensors']
         self.assertAlmostEqual(mean(p.x for p in points), sink.x, delta=15)
         self.assertAlmostEqual(mean(p.y for p in points), sink.y, delta=15)
         self.assertAlmostEqual(mean(p.z for p in points), sink.z, delta=15)
@@ -40,7 +41,7 @@ class MapSeedingTests(unittest.TestCase):
     def test_surface_normal_is_underwater_and_shallower_than_uniform(self):
         kwargs = dict(width=500, height=500, depth=500, num_sensors=5000,
                       energy=.6, radius=200, seed=7)
-        normal = gen(**kwargs)['sensors']
+        normal = gen(**kwargs, distribution='normal')['sensors']
         uniform = gen(**kwargs, distribution='uniform')['sensors']
         self.assertTrue(all(0 <= p.x <= 500 and 0 <= p.y <= 500 and 0 < p.z <= 500
                             for p in normal))
