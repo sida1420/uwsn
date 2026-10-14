@@ -32,7 +32,7 @@ class ACACOParameters:
     elite_weight: float = 0.1  # balanced best-set contribution; D-ACO's theta
     load_weight: float = 0.0  # normalized absolute load-CV share in selection
     tau0: float = 1.0
-    tau_min: float = 0.01
+    tau_min: float = 1
     tau_max: float = 20.0
     hopping_factor: float = 0.40
 

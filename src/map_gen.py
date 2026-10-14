@@ -135,4 +135,4 @@ def new_map(seed=None, save_path="map.pkl", plot=True,
 
 if __name__ == "__main__":
     # Configure the map here: normal, clustered, or uniform.
-    new_map(distribution="uniform", num_cluster_points=0)
+    new_map(distribution="clustered", num_cluster_points=5)

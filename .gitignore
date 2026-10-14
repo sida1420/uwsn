@@ -37,3 +37,6 @@ error_*_round*.png
 configurations/
 AGENTS.md
 .*
+
+tmp/
+*

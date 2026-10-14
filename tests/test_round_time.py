@@ -20,12 +20,22 @@ class RoundTimeTests(unittest.TestCase):
         self.assertEqual(list(history.columns),['round','alive_nodes','round_energy','time'])
         self.assertEqual(history['time'].tolist(),[.25,.5])
         self.assertEqual(history['round_energy'].tolist(),[.1,.1])
-        sensor_energy = simulator.sensor_energy_history
-        self.assertEqual(list(sensor_energy.columns),['round','sensor_0'])
-        self.assertEqual(sensor_energy['sensor_0'].tolist(),[.1,.1])
+        sensor_energy = simulator.sensor_energy_totals
+        self.assertEqual(list(sensor_energy.columns),['sensor','total_energy'])
+        self.assertEqual(sensor_energy['sensor'].tolist(),['sensor_0'])
+        self.assertEqual(sensor_energy['total_energy'].tolist(),[.2])
 
     def test_empty_run_still_has_time_header(self):
         algorithm=Mock();algorithm.plan_round.return_value=(None,{})
-        history=self.simulator().run(algorithm,verbose=False)
+        simulator = self.simulator()
+        history=simulator.run(algorithm,verbose=False)
         self.assertTrue(history.empty)
         self.assertIn('time',history.columns)
+        self.assertEqual(simulator.sensor_energy_totals['total_energy'].tolist(),[0.0])
+
+    def test_sensor_totals_reset_between_runs(self):
+        algorithm=Mock();algorithm.plan_round.return_value=(object(),{0:.1})
+        simulator = self.simulator()
+        simulator.run(algorithm,verbose=False)
+        simulator.run(algorithm,verbose=False)
+        self.assertEqual(simulator.sensor_energy_totals['total_energy'].tolist(),[.2])
