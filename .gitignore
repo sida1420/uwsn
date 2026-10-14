@@ -27,16 +27,15 @@ Thumbs.db
 
 # Generated simulation output
 /runs/
+/plans/
 *.csv
 *.log
 *.tmp
 .ipynb_checkpoints/
 error_*_round*.png
-!plans/analysis/*.csv
 
 configurations/
 AGENTS.md
 .*
 
 tmp/
-*

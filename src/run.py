@@ -17,20 +17,14 @@ from hparameter import HyperParameters
 from network import NetworkInstance
 from simulate import Simulator
 
-from algorithms.aco import SimpleACO
-from algorithms.ac_aco import ACACO
-from algorithms.d_aco import DACO
-from algorithms.node_aco import NodeACO
+from algorithms.ac_aco_v2_v6 import ACACO_V2_V6
 from algorithms.pso import PSO
 
 SEED = None  # optional programmatic default; main prints the chosen run seed
 
 ALGORITHMS = [
     PSO,
-    DACO,
-    SimpleACO,
-    ACACO,
-    NodeACO,
+    ACACO_V2_V6,
 ]
 
 
