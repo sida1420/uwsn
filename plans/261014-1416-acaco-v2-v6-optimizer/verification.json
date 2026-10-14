@@ -1,0 +1,15 @@
+{
+  "changed_existing_files": [
+    "optimizer/adapters.py",
+    "optimizer/__main__.py"
+  ],
+  "all_src_unchanged": true,
+  "map_and_historical_csv_unchanged": true,
+  "hashes": {
+    "optimizer/adapters.py": "c0e8ecb81e3b053858f0a586d2c57d775f337a1fbb69460f05af2ae6be7f779d",
+    "optimizer/__main__.py": "3417d37abc8342db566aeb6242f927c41ae81f8673485025e01147580fd58513",
+    "optimizer/v2_v6_smoke.py": "e1a8e43e46aeb644f01ee4baa1fba934372979b063646c51c5310024d4036049",
+    "optimizer/tests/test_v2_v6_smoke.py": "66d03c229c7b9d0361925255981ea01b294c0ba274033fe25245e883400d590b"
+  },
+  "tests_passed": 89
+}
