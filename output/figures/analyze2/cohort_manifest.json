@@ -1,0 +1,322 @@
+{
+  "purpose": "Historical CSV figure-design preview; not a provenance-verified experimental cohort",
+  "filters": {
+    "start": "0000-00-00-00",
+    "end": "9999-99-99-99",
+    "seeds": null,
+    "algorithms": [
+      "SimpleACO",
+      "NodeACO",
+      "PSO",
+      "AC-ACO",
+      "D-ACO"
+    ],
+    "environments": [
+      "500_500_500_100_uniform"
+    ],
+    "sweep_groups": [
+      [
+        500,
+        500,
+        500,
+        "clustered"
+      ]
+    ],
+    "configured_T_max": 3500,
+    "horizon_overrides": {},
+    "runtime_window": 1000
+  },
+  "style": {
+    "width_mm": 122,
+    "height_mm": 82,
+    "font": "Times New Roman",
+    "font_pt": 9.5,
+    "palette": {
+      "SimpleACO": "#D62728",
+      "NodeACO": "#FF9800",
+      "PSO": "#1976D2",
+      "AC-ACO": "#9C27B0",
+      "D-ACO": "#2E7D32"
+    },
+    "monochrome": false,
+    "show_sample_sd": true,
+    "average_window": 100
+  },
+  "runs": [
+    {
+      "file": "500_500_500_100_clustered_2026101401_56_AC-ACO.csv",
+      "sha256": "ebef445a31c696c11bb159d5bb06a87007f3b671cec764f856dc5787700f7c23",
+      "environment": "500_500_500_100_clustered",
+      "algorithm": "AC-ACO",
+      "seed": 56,
+      "timestamp": "2026101401",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "17799f61011daa932a134225b7190f1a4f957a0ca2bdab1daa5aa78085ca4668"
+    },
+    {
+      "file": "500_500_500_100_clustered_2026101401_56_D-ACO.csv",
+      "sha256": "6bdd3c57e65fe174f9573e26cb74ced652247ea65d2a8ff422c2f16656279e48",
+      "environment": "500_500_500_100_clustered",
+      "algorithm": "D-ACO",
+      "seed": 56,
+      "timestamp": "2026101401",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "a943935d032c450ac87186c6bcbb0f3de61d82275f60a2510087fd1c9f33052c"
+    },
+    {
+      "file": "500_500_500_100_clustered_2026101401_56_NodeACO.csv",
+      "sha256": "dee3f4c6f3b2d60f8291c3aad0772c6cac8401c2f6d9efbaa9a978630690f680",
+      "environment": "500_500_500_100_clustered",
+      "algorithm": "NodeACO",
+      "seed": 56,
+      "timestamp": "2026101401",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "30504ebd556c15a2afcad5c7fcc7f67e9919537741887a14e1158a29e5482afc"
+    },
+    {
+      "file": "500_500_500_100_clustered_2026101401_56_PSO.csv",
+      "sha256": "484f21b70f6c0dfc3d6862457559568834a9ff76e0a0d8eb162f855e650195af",
+      "environment": "500_500_500_100_clustered",
+      "algorithm": "PSO",
+      "seed": 56,
+      "timestamp": "2026101401",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "f3c270812d85b1d70e6bc265524331ed04c341b5ff61d011c936bf4df6a93447"
+    },
+    {
+      "file": "500_500_500_100_clustered_2026101401_56_SimpleACO.csv",
+      "sha256": "d7096051b4cc6a748f8ba157d8bf150e0c5330bb0962ac5a0ed8e274b886ab9a",
+      "environment": "500_500_500_100_clustered",
+      "algorithm": "SimpleACO",
+      "seed": 56,
+      "timestamp": "2026101401",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "e2598f36c19f16642c0d4bb1f0e64500c2d7671b7c05d00e85016004c9069767"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_68_AC-ACO.csv",
+      "sha256": "4ddfab805cf35b35f907ff37f79b30753baf4022f6cba9ca6079aada1bb814dc",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "AC-ACO",
+      "seed": 68,
+      "timestamp": "2026101400",
+      "completed_rounds": 2891,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "1d6d82f80f0af1618bbde1ff9a2b345bc3452b9571411f124b14acb2cb73a394"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_68_D-ACO.csv",
+      "sha256": "49a300a7bc9f3fef077671b1cf635bbc79f65a20cc9454dd6146d62d9d97e1ca",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "D-ACO",
+      "seed": 68,
+      "timestamp": "2026101400",
+      "completed_rounds": 3350,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "5fa1423f43770cf2dfa33507d8a3e121b9b3832a0279ad166ca15ed66be2b3ff"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_68_NodeACO.csv",
+      "sha256": "2aef88369564a1f7af95ae9770bbbee5f0f0323da10d3ea43d979f3d70f9a424",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "NodeACO",
+      "seed": 68,
+      "timestamp": "2026101400",
+      "completed_rounds": 2911,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "cdf01fcae9ec7547f9a04603b0e20f3e93b473197b65d2b31f5f6e7ed4c79cd5"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_68_PSO.csv",
+      "sha256": "65eb8f9e342817c6abc0a1b4bd8bef85fe6d78aa0e1c475399c57d455424ad36",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "PSO",
+      "seed": 68,
+      "timestamp": "2026101400",
+      "completed_rounds": 3107,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "a9af1b48401009b80ce2b88f61ac265b4da17d5701b4a7832c7c1ca96c5c7661"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_68_SimpleACO.csv",
+      "sha256": "85b753b201838a5d798311b99c665884811f4b95140477900a6279494704dd89",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "SimpleACO",
+      "seed": 68,
+      "timestamp": "2026101400",
+      "completed_rounds": 2954,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "e44fb35f812892a368b8c30835e3e59855630e8c27ac4c6833de37b365d15b9f"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_89_AC-ACO.csv",
+      "sha256": "d97172a13f8b6ad31ca23b16f227051432954b276c7caa38727594c1d647f39f",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "AC-ACO",
+      "seed": 89,
+      "timestamp": "2026101400",
+      "completed_rounds": 2897,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "bd9b7f54b3534787578953703041b0b27f16622bf55520e7092c486b24004d06"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_89_D-ACO.csv",
+      "sha256": "765395bf30de48c4c3091846b218f721e5278e099b8eda608119f667be31d80c",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "D-ACO",
+      "seed": 89,
+      "timestamp": "2026101400",
+      "completed_rounds": 3339,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "46636d3ed691d203eeb3ca36a1cd8496f4af593d407559a1f3e805e80de5d00b"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_89_NodeACO.csv",
+      "sha256": "076e7cf424f5bd44d100be4a94da7cc63f67867e9034514461b2885a5e6dd54c",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "NodeACO",
+      "seed": 89,
+      "timestamp": "2026101400",
+      "completed_rounds": 2905,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "7b3728256f1ba00100c99c0952f50e27811bb5498fb44c7a2822cba089d1ee60"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_89_PSO.csv",
+      "sha256": "6594575d82138a40434b4b0073bce377d8d34838f4218fd8b623250d0c6431aa",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "PSO",
+      "seed": 89,
+      "timestamp": "2026101400",
+      "completed_rounds": 3018,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "8998aba8901d9ee8f6522528ebd8130bf5582399e345eb0ff5da3888402f7f27"
+    },
+    {
+      "file": "500_500_500_100_uniform_2026101400_89_SimpleACO.csv",
+      "sha256": "15568c370e7bad389f24af6e41177b91c26228bb195f932f5d0748af13ef3195",
+      "environment": "500_500_500_100_uniform",
+      "algorithm": "SimpleACO",
+      "seed": 89,
+      "timestamp": "2026101400",
+      "completed_rounds": 2944,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "06968c35ee357af152873ba79a32ea24f1fd92bad32e59fdadf2b84315ee90a5"
+    },
+    {
+      "file": "500_500_500_200_clustered_2026101402_46_AC-ACO.csv",
+      "sha256": "2d4f2f0b1d0efb3cb3271fe9927f43499e39a08f5e354bff751c2c071ebbd9b7",
+      "environment": "500_500_500_200_clustered",
+      "algorithm": "AC-ACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "b34eea22c913f0c07068fbe4bb5e1391310170f69f970aa35aeb54bb3dd85b2d"
+    },
+    {
+      "file": "500_500_500_200_clustered_2026101402_46_D-ACO.csv",
+      "sha256": "fb4c90898c68e8b137b06e4f6181ea7e58e9eddb3f6c963fb00af461a35e9f69",
+      "environment": "500_500_500_200_clustered",
+      "algorithm": "D-ACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "81f7f7f92e0cc2960ed9e094ecc446cf91500e03cfb0b8f2095f3090f581cf2c"
+    },
+    {
+      "file": "500_500_500_200_clustered_2026101402_46_NodeACO.csv",
+      "sha256": "434a1aa93770e7b85412ad1072f129aee66852d91817db99152df8f87ed9cf1c",
+      "environment": "500_500_500_200_clustered",
+      "algorithm": "NodeACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "92f64b4239633b6ad44d14e9b672b11c13a6f73fe7e0f37b3de186752e15a54e"
+    },
+    {
+      "file": "500_500_500_200_clustered_2026101402_46_PSO.csv",
+      "sha256": "2f86de8d96a01bae347af432545a29e600af21cdbe37cc15d9549fb48a75b593",
+      "environment": "500_500_500_200_clustered",
+      "algorithm": "PSO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "e3ad4e706b96c97361cc84fdbe1c5a4d746a4d631c599dbc9cbe6f4011ffbdd5"
+    },
+    {
+      "file": "500_500_500_200_clustered_2026101402_46_SimpleACO.csv",
+      "sha256": "5892bae3aecdcc1324cbe674841b8f003ad42f4d18e5601f1e3338998eb8dc51",
+      "environment": "500_500_500_200_clustered",
+      "algorithm": "SimpleACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 3500,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "bb4c9cc73957bb70d5782bd1d9722cd6e294c4f2a91fa54c73a4983c69d39356"
+    },
+    {
+      "file": "500_500_500_50_clustered_2026101402_46_AC-ACO.csv",
+      "sha256": "6b4316cd4b54ba46899dead281e53bc191617f39e21eb55f8b633ccc2b7712f9",
+      "environment": "500_500_500_50_clustered",
+      "algorithm": "AC-ACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 1438,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "910e4d64320abacc55d076969d8c227d68146c1150f82d31705eb90601538b09"
+    },
+    {
+      "file": "500_500_500_50_clustered_2026101402_46_D-ACO.csv",
+      "sha256": "a94ce68f44239601675839a8a2271fb8f3489949a4ba33932597059de08596b2",
+      "environment": "500_500_500_50_clustered",
+      "algorithm": "D-ACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 2013,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "709e6ba134ab7d6b6bacebc09598dfd5c2b376ebf37a92f6072c50446df6fc9b"
+    },
+    {
+      "file": "500_500_500_50_clustered_2026101402_46_NodeACO.csv",
+      "sha256": "94af68d186c3d8155b3cabb3f63e48ee6ef9666d1c09a0c9435b87c42d8743d6",
+      "environment": "500_500_500_50_clustered",
+      "algorithm": "NodeACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 1770,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "62c7902ccc125c5d68b9f1e8c844dc3b440364b364d7a550fcce407a131b23ca"
+    },
+    {
+      "file": "500_500_500_50_clustered_2026101402_46_PSO.csv",
+      "sha256": "77eb223d035cdd6e356c3d416c7207c535abede6ba5ea28974d85cf26f10d1bc",
+      "environment": "500_500_500_50_clustered",
+      "algorithm": "PSO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 1833,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "e6206cfb6b528baf2fdf0d79c0549088cf94ca6491c77bbc3a6bff7a9cb50d36"
+    },
+    {
+      "file": "500_500_500_50_clustered_2026101402_46_SimpleACO.csv",
+      "sha256": "6b78ac4f3f1104dbe579864fd93d60ce5067477ec61222b37efb1038a7291ab9",
+      "environment": "500_500_500_50_clustered",
+      "algorithm": "SimpleACO",
+      "seed": 46,
+      "timestamp": "2026101402",
+      "completed_rounds": 1798,
+      "configured_T_max": 3500,
+      "sensor_energy_sha256": "f1a6415a495cdc4491437881e3c003d3ec3867c89609443c7e27bfb9dd5a97bf"
+    }
+  ]
+}

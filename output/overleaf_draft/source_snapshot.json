@@ -1,0 +1,8 @@
+{
+  "source_main": "C:\\Users\\hgtfh\\Code\\uwsn\\overleaf\\Routing_DC_ACO261026.tex",
+  "source_sha256": "7e469fbcc177bfd729bd4d6762dfd29c8e29ac2c233a25fe89ce6b3e44299ea8",
+  "changes": [
+    "Populate empty Related works section through related_works.tex",
+    "Replace sample bibliography with references.bib and splncs04"
+  ]
+}

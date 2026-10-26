@@ -1,0 +1,50 @@
+[
+  {
+    "filename": "2021_IS-k-means_author_manuscript.pdf",
+    "doi": "10.1109/JIOT.2020.3031272",
+    "note": "Filename uses the verified 2021 journal issue year. The author manuscript was uploaded to arXiv in 2024; exact first-online date not independently verified.",
+    "sha256": "44251057260f31ea09f79f8fa6bbb9b4f6402763f13d30133a2f5d6ebf5e4606"
+  },
+  {
+    "filename": "2021_DEKCS_author_manuscript.pdf",
+    "doi": "10.1109/JSEN.2021.3054943",
+    "note": "Author accepted manuscript with repository cover page.",
+    "sha256": "0930865e48c419e95623f30adf523e04b4a9affd7e6fc75499d134c2349eac34"
+  },
+  {
+    "filename": "2021_EECMR.pdf",
+    "doi": "10.3390/s21020627",
+    "note": "Publisher public PDF.",
+    "sha256": "fb0cceb6ac2be83e8e345d9d4c86c1bb0cf50a70a9cdb5ea20ba12d329090eed"
+  },
+  {
+    "filename": "2024_LLCP.pdf",
+    "doi": "10.3390/jmse12060982",
+    "note": "Publisher public PDF.",
+    "sha256": "428da62df1ec1fc6e0e7e20762711f7a4f8a4d6a5d2cd4ae9802d25ed57ae365"
+  },
+  {
+    "filename": "2019_PUDCRP.pdf",
+    "doi": "10.3390/s19081835",
+    "note": "Publisher public PDF.",
+    "sha256": "69cfa092d996343d66653afb9d5766edb7656395bf72cc368bad82d2ff9a2d8b"
+  },
+  {
+    "filename": "2019_RTC.pdf",
+    "doi": "10.3390/s19194241",
+    "note": "Publisher public PDF.",
+    "sha256": "a9996c6e2b9433a2e0bde48700f7601e42b4752b34579edb12b4c58eaaa071e7"
+  },
+  {
+    "filename": "2019_IEBR.pdf",
+    "doi": "10.1186/s13638-019-1533-y",
+    "note": "Publisher open-access PDF.",
+    "sha256": "d881a6e52a9c95fbd3b6c2d5d91dd67090d658ca5088e3cc2b2ee61ec22fef33"
+  },
+  {
+    "filename": "2020_EECRP.pdf",
+    "doi": "10.3390/app11010312",
+    "note": "First online 2020-12-30, journal issue 2021.",
+    "sha256": "fe1a60e93514d042b1bcf2b5a4f751270e2fa8e4313077121bf03624a3473371"
+  }
+]

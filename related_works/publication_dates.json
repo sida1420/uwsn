@@ -66,6 +66,62 @@
       "date_note": "Already year-prefixed when added during review; publication year confirmed from article first page. Exact online date not needed for requested filename.",
       "doi": "10.1007/s43621-025-01300-y",
       "sha256": "1c2e065565d92914d19cca9c8867dac7be072ff8c5248dffe0aec381fd04548e"
+    },
+    {
+      "old_filename": "An_Energy_Optimization_Clustering_Scheme_for_Multi-Hop_Underwater_Acoustic_Cooperative_Sensor_Networks.pdf",
+      "new_filename": "2020_An Energy Optimization Clustering Scheme for Multi-Hop Underwater Acoustic Cooperative Sensor Networks.pdf",
+      "publication_year": 2020,
+      "first_online_date": "2020-05-11",
+      "doi": "10.1109/ACCESS.2020.2993544",
+      "sha256": "2faa225434706b991e44928b87d37e61558517be4d5ba58e4701b6cb593dfe12"
+    },
+    {
+      "old_filename": "applsci-11-00312-v2.pdf",
+      "new_filename": "2020_Underwater Wireless Sensor Networks - An Energy-Efficient Clustering Routing Protocol Based on Data Fusion and Genetic Algorithms.pdf",
+      "publication_year": 2020,
+      "first_online_date": "2020-12-30",
+      "doi": "10.3390/app11010312",
+      "sha256": "17405bddb5860f7052b5921505deb03fdf23bbbbcd524f1878cccd0793bab68a"
+    },
+    {
+      "old_filename": "jmse-12-00982-v2.pdf",
+      "new_filename": "2024_Node Load and Location-Based Clustering Protocol for Underwater Acoustic Sensor Networks.pdf",
+      "publication_year": 2024,
+      "first_online_date": "2024-06-11",
+      "doi": "10.3390/jmse12060982",
+      "sha256": "5a032140a9e3987091c89a71265fba7a5b833329679462441bb2a4edf989ef62"
+    },
+    {
+      "old_filename": "s13638-019-1533-y.pdf",
+      "new_filename": "2019_Improved energy-balanced algorithm for underwater wireless sensor network based on depth threshold and energy level partition.pdf",
+      "publication_year": 2019,
+      "first_online_date": null,
+      "doi": "10.1186/s13638-019-1533-y",
+      "sha256": "d881a6e52a9c95fbd3b6c2d5d91dd67090d658ca5088e3cc2b2ee61ec22fef33"
+    },
+    {
+      "old_filename": "sensors-19-01835-v3.pdf",
+      "new_filename": "2019_A PSO-Based Uneven Dynamic Clustering Multi-Hop Routing Protocol for Wireless Sensor Networks.pdf",
+      "publication_year": 2019,
+      "first_online_date": "2019-04-17",
+      "doi": "10.3390/s19081835",
+      "sha256": "c3c9d693fedc5acaed97017cc7a815fc47bd31e4f602aa6914725c715a94d440"
+    },
+    {
+      "old_filename": "sensors-19-04241-v3.pdf",
+      "new_filename": "2019_An Energy-Efficient Redundant Transmission Control Clustering Approach for Underwater Acoustic Networks.pdf",
+      "publication_year": 2019,
+      "first_online_date": "2019-09-30",
+      "doi": "10.3390/s19194241",
+      "sha256": "62164eaa5844c89dd972ac85f8df4d44e0ed885306e566843b9e92caa04036f5"
+    },
+    {
+      "old_filename": "sensors-21-00627.pdf",
+      "new_filename": "2021_Energy-Efficient Clustering Multi-Hop Routing Protocol in a UWSN.pdf",
+      "publication_year": 2021,
+      "first_online_date": "2021-01-18",
+      "doi": "10.3390/s21020627",
+      "sha256": "fb0cceb6ac2be83e8e345d9d4c86c1bb0cf50a70a9cdb5ea20ba12d329090eed"
     }
   ],
   "filename_prefix": "First online publication year only; full first-online dates retained below."

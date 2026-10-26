@@ -1,0 +1,58 @@
+{
+  "500_500_500_100_uniform_fnd": {
+    "caption": "fnd comparison: 500 × 500 × 500 m; 100 sensors; uniform deployment. Bars: mean; whiskers: sample SD; dots: selected files. Open triangles mark FND not observed by the recorded endpoint. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "fnd by algorithm with a dashed simulation-limit reference."
+  },
+  "500_500_500_100_uniform_service_rounds": {
+    "caption": "service rounds comparison: 500 × 500 × 500 m; 100 sensors; uniform deployment. Bars: mean; whiskers: sample SD; dots: selected files. Service duration R_end counts completed rounds, even if nodes remain alive; squares indicate the configured horizon was reached. Early-stop causes are available only where per-run metadata exists. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "service rounds by algorithm with a dashed simulation-limit reference."
+  },
+  "500_500_500_100_uniform_fnd_service": {
+    "caption": "Stability and endpoint on a common scale: 500 × 500 × 500 m; 100 sensors; uniform deployment. (a) First node death. (b) Simulation endpoint R_end, the number of completed service rounds. Triangle: FND unobserved; square: configured horizon reached. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "Two panels compare first node death and completed service rounds against the simulation limit."
+  },
+  "500_500_500_100_uniform_alive": {
+    "caption": "Alive sensor nodes versus round: 500 × 500 × 500 m; 100 sensors; uniform deployment. Curves are means over fixed per-algorithm cohorts, ending at the shortest selected run. Pale envelopes show sample SD where enabled and n > 1. Filled endpoints indicate the end of the displayed cohort window, not node death or a known termination cause. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "Alive sensor nodes versus round for the compared algorithms, distinguished by color, marker, and line style."
+  },
+  "500_500_500_100_uniform_cumulative": {
+    "caption": "Cumulative modeled energy demand versus round: 500 × 500 × 500 m; 100 sensors; uniform deployment. Curves are means over fixed per-algorithm cohorts, ending at the shortest selected run. Pale envelopes show sample SD where enabled and n > 1. Filled endpoints indicate the end of the displayed cohort window, not node death or a known termination cause. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "Cumulative modeled energy demand versus round for the compared algorithms, distinguished by color, marker, and line style."
+  },
+  "500_500_500_100_uniform_round": {
+    "caption": "Modeled round-energy demand, 100-round block means: 500 × 500 × 500 m; 100 sensors; uniform deployment. Curves are means over fixed per-algorithm cohorts, ending at the shortest selected run. Pale envelopes show sample SD where enabled and n > 1. Filled endpoints indicate the end of the displayed cohort window, not node death or a known termination cause. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "Modeled round-energy demand, 100-round block means for the compared algorithms, distinguished by color, marker, and line style."
+  },
+  "500_500_500_100_uniform_alive_detail": {
+    "caption": "Survival detail: 500 × 500 × 500 m; 100 sensors; uniform deployment. The y-axis starts at 80%, rather than zero; compare the full-scale version for context. Fixed per-algorithm cohorts, mean and optional sample SD. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "A restricted-y-axis view of the alive-node curves showing differences near the initial node count."
+  },
+  "500_500_500_clustered_fnd_vs_nodes": {
+    "caption": "Fnd versus initial node count in a fixed 500 × 500 × 500 m clustered deployment. FND means/SD use fully observed event groups; service duration counts completed rounds for all files. Upward triangles denote unobserved FND; squares denote the configured horizon was reached; these markers are slightly offset horizontally. A dashed horizontal reference marks T_max when a common horizon is specified. Increasing N also increases density.",
+    "description": "Fnd versus node count, distinguishing observations and configured-horizon limits."
+  },
+  "500_500_500_clustered_service_vs_nodes": {
+    "caption": "Service versus initial node count in a fixed 500 × 500 × 500 m clustered deployment. FND means/SD use fully observed event groups; service duration counts completed rounds for all files. Upward triangles denote unobserved FND; squares denote the configured horizon was reached; these markers are slightly offset horizontally. A dashed horizontal reference marks T_max when a common horizon is specified. Increasing N also increases density.",
+    "description": "Service versus node count, distinguishing observations and configured-horizon limits."
+  },
+  "500_500_500_100_uniform_runtime_mean": {
+    "caption": "Mean computation time per round over the first 1,000 completed rounds: 500 × 500 × 500 m; 100 sensors; uniform deployment. Each file contributes its own K-round mean, including initialization. Bars: mean; whiskers: sample SD; dots: eligible files. Files without a complete timed K-round window are excluded and counted where applicable.",
+    "description": "Algorithm runtime comparison over an identical number of completed service rounds."
+  },
+  "500_500_500_100_uniform_runtime_by_round": {
+    "caption": "Computation runtime, 100-round block means: 500 × 500 × 500 m; 100 sensors; uniform deployment. Logarithmic y-axis; all valid positive block means, including spikes, are retained. Fixed per-algorithm cohorts end at their shortest selected timing history; SD bands are omitted for readability. Timers exclude unrecorded failed attempts and CSV output. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "Computation runtime, 100-round block means versus round, with a dashed configured-horizon reference."
+  },
+  "500_500_500_100_uniform_runtime_cumulative": {
+    "caption": "Cumulative recorded computation time: 500 × 500 × 500 m; 100 sensors; uniform deployment. Raw completed-round timers are accumulated per file before averaging; timing spikes are retained. Fixed per-algorithm cohorts end at their shortest selected timing history; SD bands are omitted for readability. Timers exclude unrecorded failed attempts and CSV output. The dashed reference marks the configured simulation limit T_max = 3,500 rounds; curves are not extended to that limit. ",
+    "description": "Cumulative recorded computation time versus round, with a dashed configured-horizon reference."
+  },
+  "500_500_500_clustered_runtime_vs_nodes": {
+    "caption": "Mean computation time per round over the same first 1,000 completed rounds, in 500 × 500 × 500 m clustered deployments. Includes initialization; error bars show sample SD across files when n > 1. Groups without complete K-round timing in every selected file remain gaps. Historical hardware/concurrency is uncontrolled.",
+    "description": "Computation runtime per round versus sensor count over a fixed service window."
+  },
+  "500_500_500_100_uniform_sensor_energy_rank": {
+    "caption": "Ranked sensor-energy demand: 500 × 500 × 500 m; 100 sensors; uniform deployment. Each run is sorted before rank-wise averaging. Totals come from each run's own endpoint; this is not an equal-service-window balance comparison.",
+    "description": "Ranked per-sensor modeled energy-demand profiles, with no overlapping area fills."
+  }
+}
