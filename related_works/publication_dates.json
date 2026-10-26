@@ -1,0 +1,72 @@
+{
+  "date_basis": "First online publication, as printed in each PDF; issue year can differ.",
+  "checked_on": "2026-10-26",
+  "files": [
+    {
+      "old_filename": "2019_Cluster-based routing protocols in wireless sensor networks A survey based methodology.pdf",
+      "new_filename": "2019_Cluster-based routing protocols in wireless sensor networks A survey based methodology.pdf",
+      "first_online_date": "2019-05-11",
+      "doi": "10.1016/j.jnca.2019.04.021",
+      "sha256": "9d2f2f69e835b88a15cffc5f6478c3d96dcb07169b97f4d984ce0177efa57f8b"
+    },
+    {
+      "old_filename": "2021_A comprehensive survey on LEACH-based clustering routing protocols in WSNs.pdf",
+      "new_filename": "2021_A comprehensive survey on LEACH-based clustering routing protocols in WSNs.pdf",
+      "first_online_date": "2021-01-16",
+      "doi": "10.1016/j.adhoc.2020.102409",
+      "sha256": "83401636c739e4629a473e24e7c39a6c419971a9ce25bb2dab0a448ea05d3cb2"
+    },
+    {
+      "old_filename": "2025_LongMinh_An Efficient Clustering Algorithm for Enhancing the Lifetime and Energy Efficiency of Wireless Sensor Networks (1).pdf",
+      "new_filename": "2025_LongMinh_An Efficient Clustering Algorithm for Enhancing the Lifetime and Energy Efficiency of Wireless Sensor Networks (1).pdf",
+      "first_online_date": "2025-07-30",
+      "doi": "10.32604/cmc.2025.065561",
+      "sha256": "9f64a25106d4e326e6fbdb490fd3ec860b8200083dfb6ccbd0ab27460c24fdd2"
+    },
+    {
+      "old_filename": "A Clustering Routing Algorithm Based on Improved Ant Colony Optimization Algorithms for UWSN.pdf",
+      "new_filename": "2020_A Clustering Routing Algorithm Based on Improved Ant Colony Optimization Algorithms for UWSN.pdf",
+      "first_online_date": "2020-10-01",
+      "doi": "10.3390/a13100250",
+      "sha256": "928f4d2ab360084e1e8202b3f0045b3b82783decaa3fd459934939bca9dd0a7d"
+    },
+    {
+      "old_filename": "A survey on energy efficiency in underwater wireless communications.pdf",
+      "new_filename": "2021_A survey on energy efficiency in underwater wireless communications.pdf",
+      "first_online_date": "2021-12-08",
+      "doi": "10.1016/j.jnca.2021.103295",
+      "sha256": "b536ec67544feb4f23e42e0661c65c080a47c987a74e735899cff704dda41244"
+    },
+    {
+      "old_filename": "An_Unequal_Clustering_Method_Based_on_Particle_Swarm_Optimization_in_Underwater_Acoustic_Sensor_Networks.pdf",
+      "new_filename": "2022_An_Unequal_Clustering_Method_Based_on_Particle_Swarm_Optimization_in_Underwater_Acoustic_Sensor_Networks.pdf",
+      "first_online_date": "2022-08-01",
+      "doi": "10.1109/JIOT.2022.3195223",
+      "sha256": "a8c689c91fc7cf8696e2b00f42fb57518797abd0e82ca3f8d5e7eef12b761550"
+    },
+    {
+      "old_filename": "Two-Tier PSO in Underwater Sensor Networks.pdf",
+      "new_filename": "2020_Two-Tier PSO in Underwater Sensor Networks.pdf",
+      "first_online_date": "2020-10-21",
+      "doi": "10.3390/s20205961",
+      "sha256": "e72d591532c8e22966922fd4bdfb8da5432d2f68a640d16a76d44b69ac569bc0"
+    },
+    {
+      "old_filename": "h3_jmse-13-02374-v3.pdf",
+      "new_filename": "2025_A Q-Learning-Based Link-Aware Routing Protocol for Underwater Wireless Sensor Networks.pdf",
+      "first_online_date": "2025-12-14",
+      "doi": "10.3390/jmse13122374",
+      "sha256": "a52e3b399d15156a20e0fe61826c80c862868e08a98f3412d6d64fa690c9df97"
+    },
+    {
+      "old_filename": "2025_Improving routing in wireless sensor networks technology on data aggregation using fused cluster routing algorithm.pdf",
+      "new_filename": "2025_Improving routing in wireless sensor networks technology on data aggregation using fused cluster routing algorithm.pdf",
+      "publication_year": 2025,
+      "first_online_date": null,
+      "date_note": "Already year-prefixed when added during review; publication year confirmed from article first page. Exact online date not needed for requested filename.",
+      "doi": "10.1007/s43621-025-01300-y",
+      "sha256": "1c2e065565d92914d19cca9c8867dac7be072ff8c5248dffe0aec381fd04548e"
+    }
+  ],
+  "filename_prefix": "First online publication year only; full first-online dates retained below."
+}
