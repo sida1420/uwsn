@@ -1,0 +1,31 @@
+{
+  "algorithm": "ME-ACO",
+  "class_key": "MEACO",
+  "distribution": "clustered",
+  "n_nodes": 50,
+  "seed": 1,
+  "map_seed": 1,
+  "map_file": "configs/maps/clustered_n50_seed1.pkl",
+  "rounds_completed": 10000,
+  "stop_reason": "T_max_reached",
+  "alive_final": 19,
+  "disconnected_final": 16,
+  "strict_rounds_completed": 1104,
+  "strict_stop_reason": "no_feasible_routing",
+  "runtime_s": 112.69565002900003,
+  "T_max_extended": 10000,
+  "T_max_strict": 3500,
+  "total_initial_energy": 30.0,
+  "final_residual_energy_simulator": 3.200648402585006,
+  "cumulative_energy_logged": 26.79935159741764,
+  "energy_balance_error": -2.646771690706373e-12,
+  "diagnostics": {
+    "total_clustering_attempts": 404338,
+    "failed_clustering_attempts": 0,
+    "total_routing_attempts": 404338,
+    "failed_routing_attempts": 4387,
+    "class": "algorithms.me_aco.MEACO",
+    "clustering_class": "algorithms.clustering.ac_aco.me_aco.MEACOClustering",
+    "clustering_iteration": 10005
+  }
+}

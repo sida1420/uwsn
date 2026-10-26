@@ -1,0 +1,3 @@
+35 runs: algorithms=['MEACO'] seeds=[1, 2, 3, 4, 5]
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown: {'/mp-9wnxa_9d', '/mp-t6i2v_w2', '/mp-qbvbqv5g', '/mp-hp5f7bxd', '/mp-t6alebfz'}
+  warnings.warn(

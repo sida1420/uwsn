@@ -1,0 +1,6 @@
+35 runs: algorithms=['PSO'] seeds=[1, 2, 3, 4, 5]
+[1/35] PSO clustered N=100 seed=2: 5280 rounds (no_connected_nodes), strict 2808, 306s
+[2/35] PSO clustered N=100 seed=1: 10000 rounds (T_max_reached), strict 3500, 358s
+[3/35] PSO clustered N=100 seed=3: 7795 rounds (no_connected_nodes), strict 3500, 367s
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown: {'/mp-8qc_a26h', '/mp-jzph9frm', '/mp-u93ls8nj', '/mp-ho8x58lp', '/mp-_2553cb_'}
+  warnings.warn(

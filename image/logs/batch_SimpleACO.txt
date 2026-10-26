@@ -1,0 +1,7 @@
+35 runs: algorithms=['SimpleACO'] seeds=[1, 2, 3, 4, 5]
+[1/35] SimpleACO clustered N=100 seed=1: 10000 rounds (T_max_reached), strict 3500, 349s
+[2/35] SimpleACO clustered N=100 seed=2: 4856 rounds (no_connected_nodes), strict 2733, 383s
+[3/35] SimpleACO clustered N=100 seed=3: 7392 rounds (no_connected_nodes), strict 3432, 330s
+[4/35] SimpleACO clustered N=100 seed=5: skipped (running in another process)
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown: {'/mp-_ysi81cv', '/mp-sxy846ys', '/mp-zy57_5h7', '/mp-ivw3w_iz', '/mp-3boaida8'}
+  warnings.warn(

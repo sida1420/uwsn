@@ -1,0 +1,23 @@
+175 runs: algorithms=['DACO', 'SimpleACO', 'NodeACO', 'PSO', 'ACACO'] seeds=[1, 2, 3, 4, 5]
+[1/175] D-ACO clustered N=100 seed=1: skipped (exists)
+[2/175] NodeACO clustered N=100 seed=1: skipped (exists)
+[3/175] PSO clustered N=100 seed=1: skipped (exists)
+[4/175] AC-ACO clustered N=100 seed=1: skipped (exists)
+[5/175] D-ACO clustered N=100 seed=2: skipped (exists)
+[6/175] SimpleACO clustered N=100 seed=2: skipped (exists)
+[7/175] NodeACO clustered N=100 seed=2: skipped (exists)
+[8/175] PSO clustered N=100 seed=2: skipped (exists)
+[9/175] AC-ACO clustered N=100 seed=2: skipped (running in another process)
+[10/175] D-ACO clustered N=100 seed=3: skipped (exists)
+[11/175] SimpleACO clustered N=100 seed=3: skipped (running in another process)
+[12/175] NodeACO clustered N=100 seed=3: skipped (running in another process)
+[13/175] PSO clustered N=100 seed=3: skipped (exists)
+[14/175] AC-ACO clustered N=100 seed=3: skipped (running in another process)
+[15/175] D-ACO clustered N=100 seed=4: skipped (running in another process)
+[16/175] SimpleACO clustered N=100 seed=4: skipped (running in another process)
+[17/175] NodeACO clustered N=100 seed=4: skipped (running in another process)
+[18/175] PSO clustered N=100 seed=4: skipped (running in another process)
+[19/175] SimpleACO clustered N=100 seed=1: skipped (exists)
+[20/175] D-ACO clustered N=100 seed=5: skipped (running in another process)
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown: {'/mp-t1up3jir', '/mp-z3_paj96', '/mp-ttf7visz', '/mp-g52udxl2', '/mp-qe_9kzg4'}
+  warnings.warn(

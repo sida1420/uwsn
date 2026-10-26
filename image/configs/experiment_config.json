@@ -1,0 +1,24 @@
+{
+  "description": "Shared settings for every algorithm (fair comparison). One map per (distribution, node count, seed); map seed = algorithm seed; every algorithm runs on the identical map with a fresh instance.",
+  "network": {
+    "width": 500,
+    "height": 500,
+    "depth": 500,
+    "base_pos": [250, 250, 0],
+    "init_energy": 0.6,
+    "radius": 200,
+    "num_cluster_points": 5
+  },
+  "T_max_strict": 3500,
+  "T_max_extended": 10000,
+  "seeds": [1, 2, 3, 4, 5],
+  "map_sets": [
+    {"distribution": "clustered", "node_counts": [50, 100, 150, 200, 250]},
+    {"distribution": "uniform",   "node_counts": [100]},
+    {"distribution": "normal",    "node_counts": [100]}
+  ],
+  "lifetime_round_config": {"distribution": "clustered", "n_nodes": 100},
+  "algorithms": ["DACO", "SimpleACO", "NodeACO", "PSO", "ACACO"],
+  "excluded_algorithms": {"MEACO": "stopped at the user's request (not used in the study); partial ME-ACO files in raw_data are ignored by summarize.py and plot_results.py"},
+  "energy_model": "src/hparameter.py HyperParameters defaults (P_0=0.1, E_elec=5e-8, E_integrate=5e-9, 30 kHz, k=1.5, 200-bit packets, 10 kbps); only T_max is overridden"
+}

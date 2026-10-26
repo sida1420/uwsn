@@ -1,0 +1,33 @@
+{
+  "description": "Proposed simulation scenarios for the D-ACO paper (see paper/README.md). One fixed map per scenario: no seed sweep, by request. Values not listed follow src/hparameter.py and src/map_gen.py.",
+  "map_seed": 46,
+  "common": {
+    "volume_m": [500, 500, 500],
+    "sink": "one sink at the surface centre (250, 250, 0)",
+    "frequency_kHz": 30,
+    "absorption": "Thorp",
+    "spreading_factor": 1.5,
+    "packet_bits": 200,
+    "bitrate_bps": 10000,
+    "E_elec_J_per_bit": 5e-8,
+    "E_DA_J_per_bit": 5e-9,
+    "initial_energy_J": 0.6,
+    "T_max_rounds": "long enough to observe LND (decide together with the lifetime definition, README section 4.1)"
+  },
+  "algorithms": ["D-ACO", "AC-ACO", "SimpleACO", "NodeACO", "PSO", "LEACH (to be added)"],
+  "scenarios": [
+    {"id": "S1_scalability", "figures": ["B1", "B2", "B3", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "E4", "E5"],
+     "distribution": "clustered", "radius_m": 200, "n_nodes": [50, 100, 150, 200, 250]},
+    {"id": "S2_range", "figures": ["B4"],
+     "distribution": "clustered", "n_nodes": 100, "radius_m": [150, 200, 250]},
+    {"id": "S3_deployment", "figures": ["B5"],
+     "distribution": ["clustered", "uniform", "normal"], "n_nodes": 100, "radius_m": 200},
+    {"id": "S4_ablation", "figures": ["E3"], "algorithm": "D-ACO", "distribution": "clustered", "n_nodes": 100,
+     "radius_m": 200, "variants": {"full": {}, "no_density": {"gamma": 0.0}, "no_load_density_fitness": {"load_density_weight": 0.0}}},
+    {"id": "S5_sensitivity", "figures": ["E2"], "algorithm": "D-ACO", "distribution": "clustered", "n_nodes": 100,
+     "radius_m": 200, "one_at_a_time": {"alpha": [0.5, 1.0, 1.8, 3.0], "beta": [0.0, 0.04, 0.5, 1.0],
+       "gamma": [0.0, 0.3, 0.6, 1.2], "num_ants": [10, 20, 40, 80], "CH_proportion": [0.1, 0.15, 0.2, 0.3]}},
+    {"id": "S6_convergence", "figures": ["E1"], "algorithm": "D-ACO", "distribution": "clustered", "n_nodes": 100,
+     "radius_m": 200, "log": "per-ant candidate fitness in selected rounds"}
+  ]
+}

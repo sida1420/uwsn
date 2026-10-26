@@ -1,0 +1,31 @@
+{
+  "algorithm": "AC-ACO",
+  "class_key": "ACACO",
+  "distribution": "clustered",
+  "n_nodes": 100,
+  "seed": 1,
+  "map_seed": 1,
+  "map_file": "configs/maps/clustered_n100_seed1.pkl",
+  "rounds_completed": 10000,
+  "stop_reason": "T_max_reached",
+  "alive_final": 37,
+  "disconnected_final": 36,
+  "strict_rounds_completed": 3500,
+  "strict_stop_reason": "T_max_reached",
+  "runtime_s": 583.726580736,
+  "T_max_extended": 10000,
+  "T_max_strict": 3500,
+  "total_initial_energy": 60.0,
+  "final_residual_energy_simulator": 3.128188327362135,
+  "cumulative_energy_logged": 56.87181167263136,
+  "energy_balance_error": 6.508571459562518e-12,
+  "diagnostics": {
+    "total_clustering_attempts": 551894,
+    "failed_clustering_attempts": 0,
+    "total_routing_attempts": 551894,
+    "failed_routing_attempts": 156774,
+    "class": "algorithms.ac_aco.ACACO",
+    "clustering_class": "algorithms.clustering.ac_aco.ac_aco.ACACOClustering",
+    "clustering_iteration": 10002
+  }
+}
