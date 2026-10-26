@@ -1,0 +1,6 @@
+35 runs: algorithms=['DACO'] seeds=[1, 2, 3, 4, 5]
+[1/35] D-ACO clustered N=100 seed=2: 4916 rounds (no_connected_nodes), strict 2792, 327s
+[2/35] D-ACO clustered N=100 seed=1: 10000 rounds (T_max_reached), strict 3500, 375s
+[3/35] D-ACO clustered N=100 seed=3: 7191 rounds (no_connected_nodes), strict 3500, 352s
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown: {'/mp-hxj9hq_h', '/mp-ckoxq7ro', '/mp-9i53qxrg', '/mp-yzg1q7k7', '/mp-245wjhw0'}
+  warnings.warn(

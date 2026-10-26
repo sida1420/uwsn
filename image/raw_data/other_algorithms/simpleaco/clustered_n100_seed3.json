@@ -1,0 +1,30 @@
+{
+  "algorithm": "SimpleACO",
+  "class_key": "SimpleACO",
+  "distribution": "clustered",
+  "n_nodes": 100,
+  "seed": 3,
+  "map_seed": 3,
+  "map_file": "configs/maps/clustered_n100_seed3.pkl",
+  "rounds_completed": 7392,
+  "stop_reason": "no_connected_nodes",
+  "alive_final": 61,
+  "disconnected_final": 61,
+  "strict_rounds_completed": 3432,
+  "strict_stop_reason": "no_feasible_routing",
+  "runtime_s": 329.8399710150002,
+  "T_max_extended": 10000,
+  "T_max_strict": 3500,
+  "total_initial_energy": 60.0,
+  "final_residual_energy_simulator": 9.74159447994179,
+  "cumulative_energy_logged": 50.25840552006275,
+  "energy_balance_error": -4.54036808150704e-12,
+  "diagnostics": {
+    "total_clustering_attempts": 221730,
+    "failed_clustering_attempts": 0,
+    "total_routing_attempts": 221730,
+    "failed_routing_attempts": 1405,
+    "class": "algorithms.aco.SimpleACO",
+    "clustering_class": "algorithms.clustering.aco.aco.ACOClustering"
+  }
+}

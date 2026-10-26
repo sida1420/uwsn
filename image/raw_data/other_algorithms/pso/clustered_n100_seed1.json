@@ -1,0 +1,30 @@
+{
+  "algorithm": "PSO",
+  "class_key": "PSO",
+  "distribution": "clustered",
+  "n_nodes": 100,
+  "seed": 1,
+  "map_seed": 1,
+  "map_file": "configs/maps/clustered_n100_seed1.pkl",
+  "rounds_completed": 10000,
+  "stop_reason": "T_max_reached",
+  "alive_final": 32,
+  "disconnected_final": 31,
+  "strict_rounds_completed": 3500,
+  "strict_stop_reason": "T_max_reached",
+  "runtime_s": 357.9324097460001,
+  "T_max_extended": 10000,
+  "T_max_strict": 3500,
+  "total_initial_energy": 60.0,
+  "final_residual_energy_simulator": 3.66713463451144,
+  "cumulative_energy_logged": 56.332865365480714,
+  "energy_balance_error": 7.844391802791506e-12,
+  "diagnostics": {
+    "total_clustering_attempts": 329058,
+    "failed_clustering_attempts": 0,
+    "total_routing_attempts": 329058,
+    "failed_routing_attempts": 6969,
+    "class": "algorithms.pso.PSO",
+    "clustering_class": "algorithms.clustering.pso.pso.PSOClustering"
+  }
+}

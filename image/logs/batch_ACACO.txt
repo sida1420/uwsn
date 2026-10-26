@@ -1,0 +1,4 @@
+35 runs: algorithms=['ACACO'] seeds=[1, 2, 3, 4, 5]
+[1/35] AC-ACO clustered N=100 seed=1: 10000 rounds (T_max_reached), strict 3500, 584s
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown: {'/mp-xb_533gh', '/mp-qagqadyi', '/mp-wvn9pxl1', '/mp-p2zsv_6s', '/mp-svuuf36r'}
+  warnings.warn(

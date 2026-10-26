@@ -1,0 +1,33 @@
+{
+  "algorithm": "NodeACO",
+  "class_key": "NodeACO",
+  "distribution": "clustered",
+  "n_nodes": 100,
+  "seed": 2,
+  "map_seed": 2,
+  "map_file": "configs/maps/clustered_n100_seed2.pkl",
+  "rounds_completed": 4724,
+  "stop_reason": "no_connected_nodes",
+  "alive_final": 51,
+  "disconnected_final": 51,
+  "strict_rounds_completed": 2593,
+  "strict_stop_reason": "no_feasible_routing",
+  "runtime_s": 458.2394877680001,
+  "T_max_extended": 10000,
+  "T_max_strict": 3500,
+  "total_initial_energy": 60.0,
+  "final_residual_energy_simulator": 6.299887621282209,
+  "cumulative_energy_logged": 53.70011237871764,
+  "energy_balance_error": 1.4921397450962104e-13,
+  "diagnostics": {
+    "total_clustering_attempts": 348151,
+    "failed_clustering_attempts": 0,
+    "total_routing_attempts": 348151,
+    "failed_routing_attempts": 10194,
+    "class": "algorithms.node_aco.NodeACO",
+    "clustering_class": "algorithms.clustering.node_aco.node_aco.NodeACOClustering",
+    "pheromone_min": 1,
+    "pheromone_max": 8.0,
+    "pheromone_mean": 1.07
+  }
+}
