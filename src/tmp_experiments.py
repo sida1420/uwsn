@@ -8,6 +8,8 @@ Main CSVs have one common T_max. Short pilots live in diagnostics/csv.
 Only complete five-algorithm cohorts are published. A frozen source snapshot,
 map hashes, parameters, explicit map/algorithm seeds and termination reasons
 are saved. Resume skips completed work; interrupted jobs restart from round 0.
+Launching without flags resumes the latest compatible unfinished campaign;
+use --new-campaign for an explicit fresh batch.
 The elapsed budget is cumulative across resumes. Create a STOP file in the
 campaign folder to stop its owned workers. Original map.pkl/run.py are intact.
 """
@@ -25,6 +27,7 @@ import shutil
 import statistics
 import subprocess
 import sys
+import tempfile
 import time
 import traceback
 import uuid
@@ -36,11 +39,31 @@ FIELDS = ("round", "alive_nodes", "round_energy", "time", "round_spent_energy",
           "residual_energy_mean", "residual_energy_sd")
 
 
+def replace_with_retry(source, destination, attempts=9):
+    """Windows scanners/readers may briefly deny an otherwise valid rename."""
+    for attempt in range(attempts):
+        try:
+            os.replace(source, destination)
+            return
+        except OSError as error:
+            transient = isinstance(error, PermissionError) or getattr(error, "winerror", None) in (5, 32, 33)
+            if not transient or attempt == attempts-1:
+                raise
+            time.sleep(min(.02 * 2**attempt, .5))
+
+
 def atomic_json(path, value):
     path = Path(path)
-    temporary = path.with_name(path.name + ".tmp")
-    temporary.write_text(json.dumps(value, indent=2, allow_nan=False), encoding="utf-8")
-    temporary.replace(path)
+    payload = json.dumps(value, indent=2, allow_nan=False)
+    # Close the unique temporary file before replacement (required on Windows).
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                     prefix=path.name+".", suffix=".tmp", delete=False) as stream:
+        temporary = Path(stream.name)
+        stream.write(payload)
+    try:
+        replace_with_retry(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def load_json(path):
@@ -267,7 +290,7 @@ def simulate_job(job, clock=time.monotonic):
                 break
     status = "interrupted" if reason == "budget_interrupted" else "complete"
     if status == "complete":
-        history_path.replace(folder/"history.csv")
+        replace_with_retry(history_path, folder/"history.csv")
         with (folder/"sensor-energy.csv").open("w", newline="", encoding="utf-8") as stream:
             writer = csv.writer(stream)
             writer.writerow(("sensor", "total_energy", "spent_energy", "residual_energy"))
@@ -343,7 +366,7 @@ def publish_cohort(folder, config, cohort, results):
             target = destination/(prefix+suffix)
             temporary = target.with_suffix(target.suffix+".tmp")
             shutil.copy2(work/source, temporary)
-            temporary.replace(target)
+            replace_with_retry(temporary, target)
         atomic_json(destination/(prefix+".meta.json"), dict(results[algo], cohort_id=cohort["id"], phase=cohort["phase"]))
 
 
@@ -352,6 +375,9 @@ def run_campaign(folder):
     config, state = load_json(folder/"campaign.json"), load_json(folder/"state.json")
     if tuple(config["algorithms"]) != ALGORITHMS:
         raise ValueError("Campaign algorithm set does not match this runner")
+    recorded_python = config.get("python_version", "").split()
+    if recorded_python and recorded_python[0].split(".")[:2] != list(map(str, sys.version_info[:2])):
+        raise ValueError(f"Resume with the campaign's Python {recorded_python[0]} runtime: {config.get('host_python')}")
     for name, expected in config["source_hashes"].items():
         if digest(folder/"source"/"src"/name) != expected:
             raise ValueError(f"Source snapshot changed: {name}")
@@ -362,13 +388,17 @@ def run_campaign(folder):
     config["rates"].update(state.get("planning_rates", {}))
     spent, begin = float(state["spent_seconds"]), time.monotonic()
     deadline = begin+max(0., config["budget_seconds"]-spent)
-    def tick():
+    last_saved = -math.inf
+    def tick(force=False):
+        nonlocal last_saved
         state["spent_seconds"] = spent+time.monotonic()-begin
         state["planning_rates"] = config["rates"]
-        atomic_json(folder/"state.json", state)
+        if force or time.monotonic()-last_saved >= 5:
+            atomic_json(folder/"state.json", state)
+            last_saved = time.monotonic()
     state.update(controller_pid=os.getpid(), stop_reason="running")
-    tick()
     try:
+        tick(force=True)
         for cohort in config["cohorts"]:
             if cohort["id"] in state["completed"]:
                 continue
@@ -378,7 +408,7 @@ def run_campaign(folder):
             if not cohort["connected"]:
                 state["outcomes"][cohort["id"]] = dict(status="disconnected_deployment", reachable=cohort["reachable_nodes"], nodes=cohort["nodes"])
                 state["completed"].append(cohort["id"])
-                tick()
+                tick(force=True)
                 continue
             expected = cohort_seconds(cohort, config["rates"], config["workers"])
             if expected+60 > deadline-time.monotonic():
@@ -396,17 +426,22 @@ def run_campaign(folder):
                         key = f"{cohort['nodes']}:{algo}"
                         config["rates"][key] = max(result["wall_seconds"]/result["completed_rounds"], config["rates"].get(key, 0))
             print(f"END {cohort['id']} {'complete' if complete else 'incomplete'} spent={(spent+time.monotonic()-begin)/3600:.2f} h", flush=True)
-            tick()
+            tick(force=True)
             if not complete and deadline-time.monotonic() < 30:
                 state["stop_reason"] = "budget_exhausted"
                 break
         else:
             state["stop_reason"] = "queue_finished_or_deferred"
+    except BaseException as error:
+        state["stop_reason"] = "interrupted" if isinstance(error, KeyboardInterrupt) else "controller_error"
+        state["last_error"] = f"{type(error).__name__}: {error}"
+        raise
     finally:
-        tick()
         state["controller_pid"] = None
-        atomic_json(folder/"state.json", state)
-        lock.unlink()
+        try:
+            tick(force=True)
+        finally:
+            lock.unlink(missing_ok=True)
     return state
 
 
@@ -414,6 +449,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--prepare-only", action="store_true")
+    parser.add_argument("--new-campaign", action="store_true", help="Start fresh instead of resuming the latest compatible unfinished campaign")
     parser.add_argument("--campaign", type=Path)
     parser.add_argument("--worker", type=Path, help=argparse.SUPPRESS)
     parser.add_argument("--map", type=Path, default=ROOT/"map.pkl")
@@ -434,6 +470,28 @@ def main():
     if args.campaign:
         run_campaign(args.campaign)
         return
+    if not args.new_campaign and not args.dry_run and not args.prepare_only:
+        for candidate in sorted((ROOT/"runs").glob("paper_*"), reverse=True):
+            if not (candidate/"campaign.json").is_file() or not (candidate/"state.json").is_file():
+                continue
+            config, state = load_json(candidate/"campaign.json"), load_json(candidate/"state.json")
+            compatible = (config.get("algorithms") == list(ALGORITHMS) and
+                          config.get("horizon") == args.horizon and config.get("workers") == args.workers and
+                          config.get("budget_seconds") == args.budget_hours*3600 and
+                          config.get("original_map_sha256") == digest(args.map) and
+                          all((ROOT/"src"/name).is_file() and digest(ROOT/"src"/name) == expected
+                              for name, expected in config.get("source_hashes", {}).items()
+                              if name != "tmp_experiments.py"))
+            unfinished = any(c["id"] not in state["completed"] for c in config["cohorts"])
+            if compatible and unfinished and state["spent_seconds"] < config["budget_seconds"]:
+                if (candidate/"controller.lock").exists():
+                    parser.error(f"Campaign controller lock exists: {candidate}; do not start duplicate work.")
+                if (candidate/"STOP").exists():
+                    parser.error(f"Campaign STOP file exists: {candidate}; remove it only when ready to resume.")
+                print(f"RESUMING={candidate}; {len(state['completed'])} cohorts already completed; "
+                      f"remaining budget {(config['budget_seconds']-state['spent_seconds'])/3600:.2f} h", flush=True)
+                run_campaign(candidate)
+                return
     selected, deferred, estimate = planned_cohorts(configurations(args.horizon), historical_rates(), args.budget_hours*3600, args.workers)
     print(f"Five algorithms: {', '.join(ALGORITHMS)}; {args.workers} workers; hard elapsed budget {args.budget_hours:g} h")
     print(f"Conservative admitted-plan estimate: {estimate/3600:.2f} h; {len(selected)} cohorts ({len(selected)*5} jobs); {len(deferred)} deferred")

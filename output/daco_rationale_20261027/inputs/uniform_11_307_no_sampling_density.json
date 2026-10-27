@@ -1,0 +1,6 @@
+{
+  "distribution": "uniform",
+  "map_seed": 11,
+  "search_seed": 307,
+  "variant": "no_sampling_density"
+}

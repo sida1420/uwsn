@@ -1,0 +1,464 @@
+[
+  {
+    "variant": "full",
+    "completed_rounds": 181,
+    "live_at_failure": 6,
+    "physically_sink_reachable": 6,
+    "remaining_disconnected": [],
+    "death_events": [
+      {
+        "round": 139,
+        "dead": [
+          32
+        ],
+        "alive": 35,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 141,
+        "dead": [
+          5,
+          11,
+          30,
+          35
+        ],
+        "alive": 31,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 144,
+        "dead": [
+          13
+        ],
+        "alive": 30,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 148,
+        "dead": [
+          3,
+          4,
+          31
+        ],
+        "alive": 27,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 150,
+        "dead": [
+          16,
+          29
+        ],
+        "alive": 25,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 154,
+        "dead": [
+          8,
+          22
+        ],
+        "alive": 23,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 156,
+        "dead": [
+          2
+        ],
+        "alive": 22,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 157,
+        "dead": [
+          1,
+          21,
+          23
+        ],
+        "alive": 19,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 169,
+        "dead": [
+          20
+        ],
+        "alive": 18,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 172,
+        "dead": [
+          18,
+          27,
+          34
+        ],
+        "alive": 15,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 173,
+        "dead": [
+          12
+        ],
+        "alive": 14,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 174,
+        "dead": [
+          7,
+          24,
+          25
+        ],
+        "alive": 11,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 177,
+        "dead": [
+          0
+        ],
+        "alive": 10,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 178,
+        "dead": [
+          6
+        ],
+        "alive": 9,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 179,
+        "dead": [
+          9,
+          19
+        ],
+        "alive": 7,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 181,
+        "dead": [
+          17
+        ],
+        "alive": 6,
+        "remaining_disconnected": []
+      }
+    ],
+    "residual": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.009983560440437635,
+      0.0,
+      0.0,
+      0.0,
+      0.003706503116609846,
+      0.0013277572208339763,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.002317805744780575,
+      0.0,
+      0.005786880502590598,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.002106153762101511,
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "variant": "energy_only",
+    "completed_rounds": 209,
+    "live_at_failure": 6,
+    "physically_sink_reachable": 6,
+    "remaining_disconnected": [],
+    "death_events": [
+      {
+        "round": 65,
+        "dead": [
+          13
+        ],
+        "alive": 35,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 85,
+        "dead": [
+          35
+        ],
+        "alive": 34,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 98,
+        "dead": [
+          32
+        ],
+        "alive": 33,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 101,
+        "dead": [
+          7
+        ],
+        "alive": 32,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 112,
+        "dead": [
+          17
+        ],
+        "alive": 31,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 136,
+        "dead": [
+          30
+        ],
+        "alive": 30,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 145,
+        "dead": [
+          31
+        ],
+        "alive": 29,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 149,
+        "dead": [
+          21
+        ],
+        "alive": 28,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 153,
+        "dead": [
+          22
+        ],
+        "alive": 27,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 155,
+        "dead": [
+          5
+        ],
+        "alive": 26,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 156,
+        "dead": [
+          16
+        ],
+        "alive": 25,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 158,
+        "dead": [
+          4
+        ],
+        "alive": 24,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 160,
+        "dead": [
+          11
+        ],
+        "alive": 23,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 165,
+        "dead": [
+          34
+        ],
+        "alive": 22,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 166,
+        "dead": [
+          27
+        ],
+        "alive": 21,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 171,
+        "dead": [
+          2
+        ],
+        "alive": 20,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 173,
+        "dead": [
+          23,
+          29
+        ],
+        "alive": 18,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 175,
+        "dead": [
+          1
+        ],
+        "alive": 17,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 180,
+        "dead": [
+          20
+        ],
+        "alive": 16,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 181,
+        "dead": [
+          8
+        ],
+        "alive": 15,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 184,
+        "dead": [
+          25
+        ],
+        "alive": 14,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 195,
+        "dead": [
+          24
+        ],
+        "alive": 13,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 198,
+        "dead": [
+          6,
+          15
+        ],
+        "alive": 11,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 199,
+        "dead": [
+          18
+        ],
+        "alive": 10,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 200,
+        "dead": [
+          12
+        ],
+        "alive": 9,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 201,
+        "dead": [
+          3
+        ],
+        "alive": 8,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 207,
+        "dead": [
+          9
+        ],
+        "alive": 7,
+        "remaining_disconnected": []
+      },
+      {
+        "round": 209,
+        "dead": [
+          0
+        ],
+        "alive": 6,
+        "remaining_disconnected": []
+      }
+    ],
+    "residual": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.010924707949823517,
+      0.0,
+      0.0,
+      0.0,
+      0.00019724897241659312,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.00019818536499978563,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      5.545335096688187e-05,
+      0.0,
+      0.00315855841869431,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0030204198638063224,
+      0.0,
+      0.0
+    ]
+  }
+]

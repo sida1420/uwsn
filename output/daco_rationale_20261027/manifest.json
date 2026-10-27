@@ -1,0 +1,85 @@
+{
+  "config": {
+    "nodes": 36,
+    "size": [
+      300,
+      300,
+      300
+    ],
+    "radius": 190,
+    "initial_energy": 0.02,
+    "horizon": 240,
+    "ants": 40,
+    "calibration_ants": 40,
+    "retries": 10,
+    "map_seeds": [
+      11,
+      37
+    ],
+    "search_seeds": [
+      101,
+      307
+    ],
+    "distributions": [
+      "uniform",
+      "normal",
+      "clustered"
+    ],
+    "common_energy_window": 20,
+    "workers": 2
+  },
+  "variants": [
+    "full",
+    "energy_only",
+    "no_inverse_density",
+    "no_sampling_density",
+    "flat_kernel",
+    "edge_memory"
+  ],
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "numpy": "2.3.5",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "source_hashes": {
+    "enviroment.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evaluate.py": "e448478de8710dc2f247cb801912954789bb2d2ca431abe71e0194c014a25f4c",
+    "hparameter.py": "24fa8d8d2af531bb2e85235074bcf014699aa4a404069dae3bb48ea71cefe0d0",
+    "map_gen.py": "947b2fa475a1ad5da1753572b3b2dca510e36f0c2cdb3fbb540a5287ba5ae702",
+    "module.py": "ad1013f5f641bc11210450a1ae04b4ceb7b6320f705f8a710b263b4c9354b0cb",
+    "network.py": "f6dc666ea00c3105346710c5bcdc3bf5fcc5db5ddea0a875437ced5692b6e4f5",
+    "node.py": "a3115d62c6ed04ffbaaf472caed4af3dc7b87bf56b0272dcce1df8bf9cf4cec9",
+    "point.py": "774b9820b1878f9eab3cce0fc0c5bafd0c79d0ad94d91cc17b124b63b84b2e10",
+    "run.py": "10a8d071afc999a293d0df71ab85d5d994674a469bdf7f8a44e90796f24705ab",
+    "simulate.py": "a9abbaa6f43018f08bb647ea553a609d051f3c9cd2fafc8532bf24dea6f7aec3",
+    "tmp_experiments.py": "f96192ff892a1340d7836e83b589d4623452946780bf5c67fa1876b44d76c238",
+    "visual.py": "8460989c60ec03170783485dd0c16c18689f7071d6f1b9419e7fffec5d456d7d",
+    "algorithms\\aco.py": "cab516a6741e101e36270230510be3154c76380c2c4eee51f93d40b50a9f7a2c",
+    "algorithms\\ac_aco.py": "41e1bbeedb405e3482a2ca8b9d8c55f4695ff5dd4e47871ef903a5b6f7418a6b",
+    "algorithms\\d_aco.py": "ac91a4da8a5cddd6bd8ef47a5f3e15a1b186a4670b295e98bcfd4232d38145d7",
+    "algorithms\\me_aco.py": "e1dedc60585f6dbddf694c6e8b5a26a1cec3f60a927dc8cda3183ea94d8eca5e",
+    "algorithms\\node_aco.py": "4abb0e447ae1d5bbb90f67a3be0cdcbd1e6b1a88fdbc126a0313e763829a26df",
+    "algorithms\\pso.py": "4b1d92931b75077e4893770931496001dee2d17b9d8f34a829626e3065eed9bf",
+    "algorithms\\base\\base.py": "66609cd582204c71d48b092a641b1922dc3153325d210cd0ec4444f09b2504a8",
+    "algorithms\\base\\__init__.py": "e467dec31dc36910eb0cc984d8e3011b0f6162f5f11b51179cea62a463b10b30",
+    "algorithms\\clustering\\clustering.py": "748df74893e8ed0ab117f5f195b5f5281f32623ab869567e9892290219ad0acf",
+    "algorithms\\clustering\\__init__.py": "816727ef64f27656f3b773bb7af50e12e21d3444a4dd248596b5422fb9117b88",
+    "algorithms\\routing\\routing.py": "61cc27a9cc63ccd3a23cb024e1ac60d70489a6ea9f13fa32568a9389feeca338",
+    "algorithms\\routing\\__init__.py": "fa615cae83ba27f5858a2cc4d1a05a96d9c206fb3ec3bca436a8575949d6c5fb",
+    "algorithms\\clustering\\aco\\aco.py": "c5f708b3efe4904bcbf4ac12beadda976314d75fbfc56790c9c111eba1251262",
+    "algorithms\\clustering\\aco\\parameters.py": "3839c5ac340ca47f594488b55dbdca523208e61cf3198ea1cc0407d198e65843",
+    "algorithms\\clustering\\ac_aco\\ac_aco.py": "42abc30f2fda6508aa3bdf9d6ad904005ed03aa01bcdfcb1813319bc68ba496e",
+    "algorithms\\clustering\\ac_aco\\me_aco.py": "0aeb7c6e60a71d6b5945c2089629d435cd185987db47cdf09f7b6cfe2e03c11c",
+    "algorithms\\clustering\\ac_aco\\parameters.py": "f058be29f872435e0ff06d67bf1e876dab5f5aa078d4204b5bff2d34984e4e1b",
+    "algorithms\\clustering\\ac_aco\\surrogate.py": "669549c5d9093cc9a3fe7c922eefb727f8c9f9f104c6f0a6bef48f5fa42bb8d2",
+    "algorithms\\clustering\\d_aco\\d_aco.py": "b12fd20519e58cbc97d3ae63a9498a477bd2de50f18d1fde568bd4d74e94e79f",
+    "algorithms\\clustering\\d_aco\\fitness.py": "7268163dee36cd9dc5677f0a0d095360624617e1493378c1433482e994b3cff1",
+    "algorithms\\clustering\\d_aco\\helper.py": "c251596942154e39477fae2a7fae15927f60cf825dfb03fe8df54156a6a93e61",
+    "algorithms\\clustering\\d_aco\\parameters.py": "20831ee93e0a947b2e298c27c1c3cef2d01d2334fe5d859a606ba10ebac6fcc4",
+    "algorithms\\clustering\\node_aco\\node_aco.py": "27362c11d34326a48aed3f543ef9ff0de302903f2fd4a90f0f6b78ee35b12705",
+    "algorithms\\clustering\\node_aco\\parameters.py": "d6c15ab4eb114fb041b8e6f6a70d42ae540cf81064749377e8e47fb9d35a1af2",
+    "algorithms\\clustering\\node_aco\\__init__.py": "2f2e717b3f2e1fb346c00fd9fd2989dc7afd1413fbccdd22db194e09450e741a",
+    "algorithms\\clustering\\pso\\parameters.py": "c11be59c5610e89d25917c33c41ce078b963d8fa18986c297ff1b025f074dd21",
+    "algorithms\\clustering\\pso\\pso.py": "5b5b2f507e46518e17cbac75ac9c41bd234b7276d6e79a1c0cc8f7007638a080"
+  },
+  "runner_sha256": "1b80707ac7e4d5ccf0268523d7e7a122f7e632615a610c28b0c1f63865553bbc",
+  "status": "complete"
+}

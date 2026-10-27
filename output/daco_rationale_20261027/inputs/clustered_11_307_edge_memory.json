@@ -1,0 +1,6 @@
+{
+  "distribution": "clustered",
+  "map_seed": 11,
+  "search_seed": 307,
+  "variant": "edge_memory"
+}

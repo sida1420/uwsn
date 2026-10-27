@@ -1,0 +1,70 @@
+% Four narrative paragraphs, then contributions and the six-section roadmap.
+% First-pass text is preserved in first_pass/. Final evaluation is pending.
+\label{sec:introduction}
+
+Underwater wireless sensor networks support repeated data collection using
+battery-powered sensors and acoustic communication. A clustering scheme
+selects cluster heads (CHs), assigns ordinary sensors to them, and forwards
+collected information toward a sink. The CH decision determines not only
+collection distances but also reception, aggregation, and forwarding costs.
+As rounds continue, the resulting differences in consumption produce
+different residual energies across the network. Repeated CH selection must
+therefore be considered together with the distribution of communication
+work, rather than only the geometry of a single round. Energy-aware
+clustering and multi-hop collection are established approaches to this
+task~\cite{Xiao2020ACOCR,Nguyen2021EECMR}.
+
+Residual energy, spatial distribution, and relay burden have already been
+used in CH selection and unequal clustering~\cite{Hou2022UCPSO,Zhu2021SoftKMeans}.
+The issue examined here is more specific: total modeled energy does not
+uniquely describe the severity of the load assigned to individual nodes.
+For example, spending $0.02$~J consumes one fifth of a node's remaining
+$0.10$~J, but only one fiftieth of another node's remaining $1.00$~J.
+Two complete routing trees with the same total consumption can thus
+have different fractional-depletion patterns. Evaluating a completed tree
+captures forwarding costs, yet ranking that tree solely by its total
+energy still does not distinguish these patterns. This difference remains
+relevant even when all compared methods use the same routing procedure.
+
+Uneven deployment adds a spatial dimension to that decision. Local
+support can guide the placement of CHs, but the support still available
+after some CHs are selected differs from the structural support before
+selection. Moreover, a node's neighborhood does not by itself reveal the
+traffic assigned by a completed routing tree. This motivates investigating
+two complementary uses of density: remaining support during candidate
+construction and structural density when weighting evaluated fractional
+depletion. The research question is whether this combination improves
+modeled operation duration and energy use at an acceptable computational
+cost under fixed-position, three-dimensional simulation assumptions.
+
+To investigate this question, we propose density-aware ant colony
+optimization (DACO). Its construction heuristic combines residual energy,
+node pheromone, and a grid-support measure reduced as CHs are added.
+Each candidate is decoded using the common member-assignment and
+multi-hop routing procedure. Its score combines total consumption with
+a powered fractional-depletion penalty divided by base structural
+density. Reference scales are calibrated and held fixed within a round,
+so that candidate comparisons use a common score definition. Completed-tree
+evaluation and between-candidate node-pheromone deposits are shared with
+the energy-only NodeACO reference implementation; the distinguishing
+mechanisms studied here are density-guided construction and the calibrated
+depletion-aware ranking rule. Section~4 specifies the remaining schedule
+differences, while controlled comparisons are needed to identify their effects.
+
+The contributions are organized around these mechanisms:
+\begin{itemize}
+\item A grid-support CH-construction heuristic that distinguishes base
+structural density from remaining support after partial CH selection.
+\item A calibrated candidate score combining total tree consumption and
+density-weighted fractional depletion, with its interpretation and
+comparison context explicitly specified.
+\item \textbf{[Final evaluation required: replace this item with verified
+findings from controlled density/score comparisons, deployment studies,
+and computational-cost measurements.]}
+\end{itemize}
+% No claim that density-aware clustering or node pheromone is first proposed.
+
+The rest of this paper is organized as follows. Section~2 reviews related
+work. Section~3 presents the network model and problem formulation.
+Section~4 describes DACO. Section~5 presents the experiments and their
+analysis. Section~6 concludes the paper.

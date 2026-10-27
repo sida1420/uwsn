@@ -1,0 +1,822 @@
+{
+  "distribution": "uniform",
+  "map_seed": 11,
+  "search_seed": 307,
+  "variant": "no_inverse_density",
+  "completed_rounds": 86,
+  "FND": 86,
+  "LND": null,
+  "termination": "search_failure",
+  "alive_final": 35,
+  "initially_reachable": 36,
+  "energy_at_K": 0.07952483515950302,
+  "all_alive_at_K": true,
+  "residual_sd_at_K": 0.001501546784066511,
+  "nominal_total": 0.36683111036422367,
+  "battery_spent_total": 0.3667499728692682,
+  "wall_seconds": 4.06830899999477,
+  "cpu_seconds": 4.015625,
+  "clustering_attempts": 3446,
+  "routing_attempts": 3446,
+  "calibration_attempts": 36,
+  "calibration_feasible": 36,
+  "failed_routing_attempts": 35,
+  "params": {
+    "num_ants": 40,
+    "max_clustering_attempts": 10,
+    "CH_proportion": 0.2,
+    "alpha": 1.8,
+    "beta": 0.04,
+    "gamma": 0.6,
+    "density_decay": "parabolic",
+    "load_power": 2.6,
+    "load_density_weight": 0.84,
+    "reference_memory": 0.8,
+    "calibration_ants": 40,
+    "density_epsilon": 1e-12,
+    "hopping_factor": 0.4,
+    "rho_min": 0.36,
+    "rho_max": 0.52,
+    "Q": 9.5,
+    "theta": 0.84,
+    "tau0": 1.0,
+    "tau_min": 1.0,
+    "tau_max": 25
+  },
+  "history": [
+    {
+      "round": 1,
+      "alive": 36,
+      "nominal_energy": 0.004223720817204638,
+      "spent_energy": 0.004223720817204568,
+      "residual_sd": 0.00010331377554217848,
+      "max_fraction": 0.019859749990826014,
+      "time": 0.12354030000278726
+    },
+    {
+      "round": 2,
+      "alive": 36,
+      "nominal_energy": 0.0038598577410028046,
+      "spent_energy": 0.0038598577410028367,
+      "residual_sd": 0.00016334217264261128,
+      "max_fraction": 0.0189227701795155,
+      "time": 0.062310999957844615
+    },
+    {
+      "round": 3,
+      "alive": 36,
+      "nominal_energy": 0.0039045172376135687,
+      "spent_energy": 0.003904517237613536,
+      "residual_sd": 0.00023676387103974302,
+      "max_fraction": 0.018420149830336147,
+      "time": 0.06152109999675304
+    },
+    {
+      "round": 4,
+      "alive": 36,
+      "nominal_energy": 0.0038598577410028046,
+      "spent_energy": 0.0038598577410028367,
+      "residual_sd": 0.0003146604850820064,
+      "max_fraction": 0.01933579547606547,
+      "time": 0.06270770000992343
+    },
+    {
+      "round": 5,
+      "alive": 36,
+      "nominal_energy": 0.004042223588748072,
+      "spent_energy": 0.004042223588748062,
+      "residual_sd": 0.0003978535437703787,
+      "max_fraction": 0.019717040131440378,
+      "time": 0.05393340002046898
+    },
+    {
+      "round": 6,
+      "alive": 36,
+      "nominal_energy": 0.0039815994436549025,
+      "spent_energy": 0.003981599443654837,
+      "residual_sd": 0.00048170298294156677,
+      "max_fraction": 0.020113621207986845,
+      "time": 0.056966800009831786
+    },
+    {
+      "round": 7,
+      "alive": 36,
+      "nominal_energy": 0.004124603684204472,
+      "spent_energy": 0.00412460368420442,
+      "residual_sd": 0.0005654582449610059,
+      "max_fraction": 0.020289968177555708,
+      "time": 0.05368089996045455
+    },
+    {
+      "round": 8,
+      "alive": 36,
+      "nominal_energy": 0.003984541524452261,
+      "spent_energy": 0.0039845415244522675,
+      "residual_sd": 0.000646704811298648,
+      "max_fraction": 0.019066636826512988,
+      "time": 0.044153900002129376
+    },
+    {
+      "round": 9,
+      "alive": 36,
+      "nominal_energy": 0.003984541524452261,
+      "spent_energy": 0.0039845415244522675,
+      "residual_sd": 0.000729265655374227,
+      "max_fraction": 0.019437239615165258,
+      "time": 0.0515910999965854
+    },
+    {
+      "round": 10,
+      "alive": 36,
+      "nominal_energy": 0.003984541524452261,
+      "spent_energy": 0.0039845415244522675,
+      "residual_sd": 0.0008127403498345113,
+      "max_fraction": 0.019822534977299015,
+      "time": 0.04723460000241175
+    },
+    {
+      "round": 11,
+      "alive": 36,
+      "nominal_energy": 0.003844442328333,
+      "spent_energy": 0.003844442328333031,
+      "residual_sd": 0.0008665238588750233,
+      "max_fraction": 0.016269204107966447,
+      "time": 0.05177169997477904
+    },
+    {
+      "round": 12,
+      "alive": 36,
+      "nominal_energy": 0.003843572092179973,
+      "spent_energy": 0.003843572092179892,
+      "residual_sd": 0.0009177624479060128,
+      "max_fraction": 0.016538268575005583,
+      "time": 0.04193090001353994
+    },
+    {
+      "round": 13,
+      "alive": 36,
+      "nominal_energy": 0.003964072437032196,
+      "spent_energy": 0.003964072437032229,
+      "residual_sd": 0.0009851278605632235,
+      "max_fraction": 0.02034487509661942,
+      "time": 0.05956500000320375
+    },
+    {
+      "round": 14,
+      "alive": 36,
+      "nominal_energy": 0.003964072437032196,
+      "spent_energy": 0.003964072437032118,
+      "residual_sd": 0.0010548662089667254,
+      "max_fraction": 0.02076738494950042,
+      "time": 0.05668050004169345
+    },
+    {
+      "round": 15,
+      "alive": 36,
+      "nominal_energy": 0.003970925021418278,
+      "spent_energy": 0.00397092502141827,
+      "residual_sd": 0.0011230396011151559,
+      "max_fraction": 0.0180225400328321,
+      "time": 0.03829509997740388
+    },
+    {
+      "round": 16,
+      "alive": 36,
+      "nominal_energy": 0.003964072437032196,
+      "spent_energy": 0.003964072437032229,
+      "residual_sd": 0.0011960837100579878,
+      "max_fraction": 0.021597049514128885,
+      "time": 0.03716449998319149
+    },
+    {
+      "round": 17,
+      "alive": 36,
+      "nominal_energy": 0.003964072437032196,
+      "spent_energy": 0.003964072437032118,
+      "residual_sd": 0.0012704689541857344,
+      "max_fraction": 0.02207377799035037,
+      "time": 0.036962400015909225
+    },
+    {
+      "round": 18,
+      "alive": 36,
+      "nominal_energy": 0.003964072437032196,
+      "spent_energy": 0.003964072437032229,
+      "residual_sd": 0.0013459729982150557,
+      "max_fraction": 0.022572027923526278,
+      "time": 0.04298579995520413
+    },
+    {
+      "round": 19,
+      "alive": 36,
+      "nominal_energy": 0.003970925021418278,
+      "spent_energy": 0.00397092502141827,
+      "residual_sd": 0.001418753454162478,
+      "max_fraction": 0.019624828538511278,
+      "time": 0.036999400006607175
+    },
+    {
+      "round": 20,
+      "alive": 36,
+      "nominal_energy": 0.004124603684204472,
+      "spent_energy": 0.00412460368420442,
+      "residual_sd": 0.001501546784066511,
+      "max_fraction": 0.02587526062701591,
+      "time": 0.05507740000030026
+    },
+    {
+      "round": 21,
+      "alive": 36,
+      "nominal_energy": 0.003970925021418278,
+      "spent_energy": 0.00397092502141827,
+      "residual_sd": 0.0015743855615691302,
+      "max_fraction": 0.02054939281238236,
+      "time": 0.04096950002713129
+    },
+    {
+      "round": 22,
+      "alive": 36,
+      "nominal_energy": 0.0041076915888258875,
+      "spent_energy": 0.004107691588825846,
+      "residual_sd": 0.0016472664134072172,
+      "max_fraction": 0.027119871039239355,
+      "time": 0.037145700014662
+    },
+    {
+      "round": 23,
+      "alive": 36,
+      "nominal_energy": 0.003984541524452261,
+      "spent_energy": 0.0039845415244522675,
+      "residual_sd": 0.0017260589936371868,
+      "max_fraction": 0.02406442890002382,
+      "time": 0.03652539994800463
+    },
+    {
+      "round": 24,
+      "alive": 36,
+      "nominal_energy": 0.0041446269206895274,
+      "spent_energy": 0.004144626920689509,
+      "residual_sd": 0.0017653208918148875,
+      "max_fraction": 0.024567870653477895,
+      "time": 0.03634370001964271
+    },
+    {
+      "round": 25,
+      "alive": 36,
+      "nominal_energy": 0.003963849293494889,
+      "spent_energy": 0.003963849293494914,
+      "residual_sd": 0.0018185614700890096,
+      "max_fraction": 0.026903583539668333,
+      "time": 0.04105390002951026
+    },
+    {
+      "round": 26,
+      "alive": 36,
+      "nominal_energy": 0.004068144869721939,
+      "spent_energy": 0.004068144869721957,
+      "residual_sd": 0.0018926546774724934,
+      "max_fraction": 0.030283515229471095,
+      "time": 0.03741759998956695
+    },
+    {
+      "round": 27,
+      "alive": 36,
+      "nominal_energy": 0.004505942715459178,
+      "spent_energy": 0.004505942715459121,
+      "residual_sd": 0.0019255251987035404,
+      "max_fraction": 0.027535121265490244,
+      "time": 0.035698299994692206
+    },
+    {
+      "round": 28,
+      "alive": 36,
+      "nominal_energy": 0.0039555342069495245,
+      "spent_energy": 0.003955534206949607,
+      "residual_sd": 0.001993577614323561,
+      "max_fraction": 0.026235252657918658,
+      "time": 0.03836810000939295
+    },
+    {
+      "round": 29,
+      "alive": 36,
+      "nominal_energy": 0.004125551595427625,
+      "spent_energy": 0.004125551595427601,
+      "residual_sd": 0.0020395826520792863,
+      "max_fraction": 0.024246766877546472,
+      "time": 0.03423709998605773
+    },
+    {
+      "round": 30,
+      "alive": 36,
+      "nominal_energy": 0.00413365381325073,
+      "spent_energy": 0.004133653813250704,
+      "residual_sd": 0.002107215791026365,
+      "max_fraction": 0.028736632375907487,
+      "time": 0.03356980002718046
+    },
+    {
+      "round": 31,
+      "alive": 36,
+      "nominal_energy": 0.004052392078985573,
+      "spent_energy": 0.004052392078985556,
+      "residual_sd": 0.002181085151440512,
+      "max_fraction": 0.02805674965062288,
+      "time": 0.03755840001394972
+    },
+    {
+      "round": 32,
+      "alive": 36,
+      "nominal_energy": 0.004074283085014732,
+      "spent_energy": 0.004074283085014785,
+      "residual_sd": 0.0022493865366342044,
+      "max_fraction": 0.02886665413905342,
+      "time": 0.032900599995628
+    },
+    {
+      "round": 33,
+      "alive": 36,
+      "nominal_energy": 0.004052392078985573,
+      "spent_energy": 0.004052392078985556,
+      "residual_sd": 0.002323987540438224,
+      "max_fraction": 0.029724706974676107,
+      "time": 0.037987500021699816
+    },
+    {
+      "round": 34,
+      "alive": 36,
+      "nominal_energy": 0.004218303144644521,
+      "spent_energy": 0.004218303144644442,
+      "residual_sd": 0.00236091050377084,
+      "max_fraction": 0.026344313857371935,
+      "time": 0.036326900008134544
+    },
+    {
+      "round": 35,
+      "alive": 36,
+      "nominal_energy": 0.004102028724172668,
+      "spent_energy": 0.004102028724172646,
+      "residual_sd": 0.0024218223281176486,
+      "max_fraction": 0.031001412383134756,
+      "time": 0.0330756000475958
+    },
+    {
+      "round": 36,
+      "alive": 36,
+      "nominal_energy": 0.004102028724172668,
+      "spent_energy": 0.004102028724172757,
+      "residual_sd": 0.0024841867372542206,
+      "max_fraction": 0.031993248266108394,
+      "time": 0.03369569999631494
+    },
+    {
+      "round": 37,
+      "alive": 36,
+      "nominal_energy": 0.004174981121288107,
+      "spent_energy": 0.004174981121288113,
+      "residual_sd": 0.002527604700329916,
+      "max_fraction": 0.02779520418084583,
+      "time": 0.04659919999539852
+    },
+    {
+      "round": 38,
+      "alive": 36,
+      "nominal_energy": 0.004504414801505144,
+      "spent_energy": 0.004504414801505097,
+      "residual_sd": 0.00253828980892207,
+      "max_fraction": 0.024321579943449075,
+      "time": 0.04099460004363209
+    },
+    {
+      "round": 39,
+      "alive": 36,
+      "nominal_energy": 0.004149621879779406,
+      "spent_energy": 0.004149621879779408,
+      "residual_sd": 0.0025831424245321773,
+      "max_fraction": 0.03067529046174074,
+      "time": 0.05234629998449236
+    },
+    {
+      "round": 40,
+      "alive": 36,
+      "nominal_energy": 0.0045712205228905746,
+      "spent_energy": 0.004571220522890496,
+      "residual_sd": 0.0025943062894714436,
+      "max_fraction": 0.026682384322355108,
+      "time": 0.04622429999290034
+    },
+    {
+      "round": 41,
+      "alive": 36,
+      "nominal_energy": 0.004367741808626306,
+      "spent_energy": 0.004367741808626313,
+      "residual_sd": 0.00262847085792906,
+      "max_fraction": 0.03527444202833944,
+      "time": 0.04526500002248213
+    },
+    {
+      "round": 42,
+      "alive": 36,
+      "nominal_energy": 0.004263009043485246,
+      "spent_energy": 0.004263009043485311,
+      "residual_sd": 0.0026616668851597142,
+      "max_fraction": 0.03197123102931027,
+      "time": 0.033340000023599714
+    },
+    {
+      "round": 43,
+      "alive": 36,
+      "nominal_energy": 0.004485821560949788,
+      "spent_energy": 0.004485821560949788,
+      "residual_sd": 0.0026789723339651498,
+      "max_fraction": 0.028414317133820616,
+      "time": 0.04322829999728128
+    },
+    {
+      "round": 44,
+      "alive": 36,
+      "nominal_energy": 0.0049387335884166885,
+      "spent_energy": 0.004938733588416677,
+      "residual_sd": 0.002684027350328639,
+      "max_fraction": 0.029369681581149467,
+      "time": 0.03686340001877397
+    },
+    {
+      "round": 45,
+      "alive": 36,
+      "nominal_energy": 0.004401648191083146,
+      "spent_energy": 0.0044016481910831295,
+      "residual_sd": 0.0027032785766213877,
+      "max_fraction": 0.026571047256176736,
+      "time": 0.04424700001254678
+    },
+    {
+      "round": 46,
+      "alive": 36,
+      "nominal_energy": 0.004442640657882505,
+      "spent_energy": 0.004442640657882468,
+      "residual_sd": 0.002736093476936818,
+      "max_fraction": 0.032282161508127155,
+      "time": 0.04532239999389276
+    },
+    {
+      "round": 47,
+      "alive": 36,
+      "nominal_energy": 0.0044695986078626656,
+      "spent_energy": 0.004469598607862668,
+      "residual_sd": 0.0027338517057565316,
+      "max_fraction": 0.026886375595889377,
+      "time": 0.045225300011225045
+    },
+    {
+      "round": 48,
+      "alive": 36,
+      "nominal_energy": 0.004854260538231326,
+      "spent_energy": 0.0048542605382313475,
+      "residual_sd": 0.002736369167180923,
+      "max_fraction": 0.029839596066915122,
+      "time": 0.034972699999343604
+    },
+    {
+      "round": 49,
+      "alive": 36,
+      "nominal_energy": 0.004531811190953755,
+      "spent_energy": 0.004531811190953805,
+      "residual_sd": 0.0027332296862567058,
+      "max_fraction": 0.02841429015044,
+      "time": 0.03771860001143068
+    },
+    {
+      "round": 50,
+      "alive": 36,
+      "nominal_energy": 0.004663907185586259,
+      "spent_energy": 0.00466390718558618,
+      "residual_sd": 0.002735370316253789,
+      "max_fraction": 0.028475484196889004,
+      "time": 0.03937220002990216
+    },
+    {
+      "round": 51,
+      "alive": 36,
+      "nominal_energy": 0.004545566883086482,
+      "spent_energy": 0.004545566883086494,
+      "residual_sd": 0.0027414122765071565,
+      "max_fraction": 0.03003522310803661,
+      "time": 0.03904719999991357
+    },
+    {
+      "round": 52,
+      "alive": 36,
+      "nominal_energy": 0.004430925713598211,
+      "spent_energy": 0.004430925713598266,
+      "residual_sd": 0.0027445755476061756,
+      "max_fraction": 0.032335418555319975,
+      "time": 0.0605010999715887
+    },
+    {
+      "round": 53,
+      "alive": 36,
+      "nominal_energy": 0.004294469027636709,
+      "spent_energy": 0.004294469027636694,
+      "residual_sd": 0.0027494045910318146,
+      "max_fraction": 0.033415936860109775,
+      "time": 0.040233600011561066
+    },
+    {
+      "round": 54,
+      "alive": 36,
+      "nominal_energy": 0.004403250173658467,
+      "spent_energy": 0.004403250173658446,
+      "residual_sd": 0.0027718916539672955,
+      "max_fraction": 0.029686058962105813,
+      "time": 0.03633919998537749
+    },
+    {
+      "round": 55,
+      "alive": 36,
+      "nominal_energy": 0.004303460017007937,
+      "spent_energy": 0.004303460017007932,
+      "residual_sd": 0.0028033895762256816,
+      "max_fraction": 0.03140210867472451,
+      "time": 0.04449419997399673
+    },
+    {
+      "round": 56,
+      "alive": 36,
+      "nominal_energy": 0.004489762464364192,
+      "spent_energy": 0.0044897624643641665,
+      "residual_sd": 0.0028254776219416716,
+      "max_fraction": 0.038323180266077506,
+      "time": 0.03807429998414591
+    },
+    {
+      "round": 57,
+      "alive": 36,
+      "nominal_energy": 0.004372879292851362,
+      "spent_energy": 0.004372879292851406,
+      "residual_sd": 0.0028522725224329306,
+      "max_fraction": 0.034546748730083406,
+      "time": 0.038821900030598044
+    },
+    {
+      "round": 58,
+      "alive": 36,
+      "nominal_energy": 0.004309683564619554,
+      "spent_energy": 0.004309683564619526,
+      "residual_sd": 0.0028720551883140524,
+      "max_fraction": 0.03745742620705715,
+      "time": 0.04213730001356453
+    },
+    {
+      "round": 59,
+      "alive": 36,
+      "nominal_energy": 0.004372879292851362,
+      "spent_energy": 0.0043728792928513505,
+      "residual_sd": 0.00290141924669206,
+      "max_fraction": 0.0358989326537946,
+      "time": 0.04104959999676794
+    },
+    {
+      "round": 60,
+      "alive": 36,
+      "nominal_energy": 0.004396159207535732,
+      "spent_energy": 0.004396159207535721,
+      "residual_sd": 0.0029252434554861216,
+      "max_fraction": 0.03626619204361437,
+      "time": 0.039595199981704354
+    },
+    {
+      "round": 61,
+      "alive": 36,
+      "nominal_energy": 0.004481781355198269,
+      "spent_energy": 0.004481781355198278,
+      "residual_sd": 0.0029365183906424736,
+      "max_fraction": 0.041843906226965544,
+      "time": 0.041204400011338294
+    },
+    {
+      "round": 62,
+      "alive": 36,
+      "nominal_energy": 0.00416309176127579,
+      "spent_energy": 0.004163091761275772,
+      "residual_sd": 0.0029599914228428657,
+      "max_fraction": 0.04367128331062665,
+      "time": 0.04054459999315441
+    },
+    {
+      "round": 63,
+      "alive": 36,
+      "nominal_energy": 0.004641346730551197,
+      "spent_energy": 0.004641346730551221,
+      "residual_sd": 0.0029655622518020776,
+      "max_fraction": 0.04566555677822606,
+      "time": 0.03722269996069372
+    },
+    {
+      "round": 64,
+      "alive": 36,
+      "nominal_energy": 0.004176734467880678,
+      "spent_energy": 0.004176734467880694,
+      "residual_sd": 0.0029916897718548895,
+      "max_fraction": 0.047850684948624475,
+      "time": 0.041032199980691075
+    },
+    {
+      "round": 65,
+      "alive": 36,
+      "nominal_energy": 0.00416309176127579,
+      "spent_energy": 0.004163091761275772,
+      "residual_sd": 0.003020599305110265,
+      "max_fraction": 0.05025544228432552,
+      "time": 0.0574182000127621
+    },
+    {
+      "round": 66,
+      "alive": 36,
+      "nominal_energy": 0.004102097088030878,
+      "spent_energy": 0.004102097088030887,
+      "residual_sd": 0.003036422145876497,
+      "max_fraction": 0.05291469361530209,
+      "time": 0.049490700010210276
+    },
+    {
+      "round": 67,
+      "alive": 36,
+      "nominal_energy": 0.004249565883996005,
+      "spent_energy": 0.004249565883995998,
+      "residual_sd": 0.0030475702923245065,
+      "max_fraction": 0.05587109551650947,
+      "time": 0.04912370000965893
+    },
+    {
+      "round": 68,
+      "alive": 36,
+      "nominal_energy": 0.004268572362011927,
+      "spent_energy": 0.004268572362011891,
+      "residual_sd": 0.0030644475487398857,
+      "max_fraction": 0.05917740178400232,
+      "time": 0.03919859998859465
+    },
+    {
+      "round": 69,
+      "alive": 36,
+      "nominal_energy": 0.004264380337800373,
+      "spent_energy": 0.004264380337800411,
+      "residual_sd": 0.0030833462932636914,
+      "max_fraction": 0.06289963899274467,
+      "time": 0.05281470000045374
+    },
+    {
+      "round": 70,
+      "alive": 36,
+      "nominal_energy": 0.004393323623654197,
+      "spent_energy": 0.004393323623654188,
+      "residual_sd": 0.0031124074868454665,
+      "max_fraction": 0.0603635384986612,
+      "time": 0.03746349998982623
+    },
+    {
+      "round": 71,
+      "alive": 36,
+      "nominal_energy": 0.004375614023901853,
+      "spent_energy": 0.004375614023901853,
+      "residual_sd": 0.003146422851963479,
+      "max_fraction": 0.06424137522527928,
+      "time": 0.03724760003387928
+    },
+    {
+      "round": 72,
+      "alive": 36,
+      "nominal_energy": 0.004215951688354297,
+      "spent_energy": 0.004215951688354258,
+      "residual_sd": 0.003179584388615883,
+      "max_fraction": 0.06865165174485575,
+      "time": 0.038848299998790026
+    },
+    {
+      "round": 73,
+      "alive": 36,
+      "nominal_energy": 0.004393323623654197,
+      "spent_energy": 0.004393323623654188,
+      "residual_sd": 0.003214922693270004,
+      "max_fraction": 0.07371210983889408,
+      "time": 0.04068929998902604
+    },
+    {
+      "round": 74,
+      "alive": 36,
+      "nominal_energy": 0.004372570165545765,
+      "spent_energy": 0.004372570165545764,
+      "residual_sd": 0.0032464930813488045,
+      "max_fraction": 0.0795779698966739,
+      "time": 0.03858579997904599
+    },
+    {
+      "round": 75,
+      "alive": 36,
+      "nominal_energy": 0.004323309357311371,
+      "spent_energy": 0.0043233093573114,
+      "residual_sd": 0.003281172768700601,
+      "max_fraction": 0.086458132567449,
+      "time": 0.0371197999920696
+    },
+    {
+      "round": 76,
+      "alive": 36,
+      "nominal_energy": 0.0044388575885048465,
+      "spent_energy": 0.004438857588504819,
+      "residual_sd": 0.0033214608646900904,
+      "max_fraction": 0.09464058041525109,
+      "time": 0.039749200048390776
+    },
+    {
+      "round": 77,
+      "alive": 36,
+      "nominal_energy": 0.004330733915793317,
+      "spent_energy": 0.004330733915793361,
+      "residual_sd": 0.003370503586262936,
+      "max_fraction": 0.10453371154923072,
+      "time": 0.036135600006673485
+    },
+    {
+      "round": 78,
+      "alive": 36,
+      "nominal_energy": 0.004262272191823616,
+      "spent_energy": 0.004262272191823568,
+      "residual_sd": 0.003413405345013484,
+      "max_fraction": 0.11673662414481586,
+      "time": 0.040663300023879856
+    },
+    {
+      "round": 79,
+      "alive": 36,
+      "nominal_energy": 0.004376860932204496,
+      "spent_energy": 0.004376860932204518,
+      "residual_sd": 0.0034665441084362537,
+      "max_fraction": 0.13216513594463297,
+      "time": 0.034569400013424456
+    },
+    {
+      "round": 80,
+      "alive": 36,
+      "nominal_energy": 0.004422582700202598,
+      "spent_energy": 0.004422582700202571,
+      "residual_sd": 0.003500480246615153,
+      "max_fraction": 0.1522929550525651,
+      "time": 0.04003439994994551
+    },
+    {
+      "round": 81,
+      "alive": 36,
+      "nominal_energy": 0.004370437791377226,
+      "spent_energy": 0.004370437791377246,
+      "residual_sd": 0.003555072672794541,
+      "max_fraction": 0.17965281279691214,
+      "time": 0.040986399981193244
+    },
+    {
+      "round": 82,
+      "alive": 36,
+      "nominal_energy": 0.004325437448069349,
+      "spent_energy": 0.004325437448069347,
+      "residual_sd": 0.003601826658812535,
+      "max_fraction": 0.2189960733691608,
+      "time": 0.041313499968964607
+    },
+    {
+      "round": 83,
+      "alive": 36,
+      "nominal_energy": 0.004642800333882208,
+      "spent_energy": 0.004642800333882202,
+      "residual_sd": 0.003619345610582796,
+      "max_fraction": 0.27660955208627336,
+      "time": 0.0421224000165239
+    },
+    {
+      "round": 84,
+      "alive": 36,
+      "nominal_energy": 0.005237713873485702,
+      "spent_energy": 0.005237713873485705,
+      "residual_sd": 0.0036419683014143017,
+      "max_fraction": 0.38237932624631854,
+      "time": 0.05987129994900897
+    },
+    {
+      "round": 85,
+      "alive": 36,
+      "nominal_energy": 0.0050963201121004215,
+      "spent_energy": 0.005096320112100428,
+      "residual_sd": 0.0036512614576399713,
+      "max_fraction": 0.6191167855867766,
+      "time": 0.04756129998713732
+    },
+    {
+      "round": 86,
+      "alive": 35,
+      "nominal_energy": 0.004917168365417751,
+      "spent_energy": 0.004836030870462804,
+      "residual_sd": 0.0036840425833754927,
+      "max_fraction": 1.625476687232249,
+      "time": 0.03996869997354224
+    }
+  ]
+}

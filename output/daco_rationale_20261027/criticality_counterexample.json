@@ -1,0 +1,181 @@
+{
+  "note": "Post-design deterministic counterexample, not a population estimate.",
+  "positions": [
+    {
+      "x": 18,
+      "y": 10,
+      "z": 10
+    },
+    {
+      "x": 23.0,
+      "y": 10.0,
+      "z": 10
+    },
+    {
+      "x": 23.15,
+      "y": 10.1,
+      "z": 10
+    },
+    {
+      "x": 23.3,
+      "y": 10.2,
+      "z": 10
+    },
+    {
+      "x": 23.45,
+      "y": 10.3,
+      "z": 10
+    },
+    {
+      "x": 23.6,
+      "y": 10.4,
+      "z": 10
+    },
+    {
+      "x": 23.75,
+      "y": 10.5,
+      "z": 10
+    },
+    {
+      "x": 23.9,
+      "y": 10.6,
+      "z": 10
+    },
+    {
+      "x": 24.05,
+      "y": 10.7,
+      "z": 10
+    },
+    {
+      "x": 24.2,
+      "y": 10.8,
+      "z": 10
+    },
+    {
+      "x": 24.35,
+      "y": 10.9,
+      "z": 10
+    },
+    {
+      "x": 38,
+      "y": 10,
+      "z": 10
+    },
+    {
+      "x": 56,
+      "y": 10,
+      "z": 10
+    },
+    {
+      "x": 74,
+      "y": 10,
+      "z": 10
+    }
+  ],
+  "sink": {
+    "x": 0,
+    "y": 10,
+    "z": 10
+  },
+  "radius": 20,
+  "rows": [
+    {
+      "node": 0,
+      "x": 18,
+      "density": 2.656237630067256,
+      "degree": 11,
+      "other_disconnected": 13
+    },
+    {
+      "node": 1,
+      "x": 23.0,
+      "density": 2.207346029994744,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 2,
+      "x": 23.15,
+      "density": 2.2029573973935426,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 3,
+      "x": 23.3,
+      "density": 2.1988771588258578,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 4,
+      "x": 23.45,
+      "density": 2.195108517395665,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 5,
+      "x": 23.6,
+      "density": 2.1916537504339333,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 6,
+      "x": 23.75,
+      "density": 2.18851422092746,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 7,
+      "x": 23.9,
+      "density": 2.1856903874008475,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 8,
+      "x": 24.05,
+      "density": 2.1831818122931925,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 9,
+      "x": 24.2,
+      "density": 2.1809871688808276,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 10,
+      "x": 24.35,
+      "density": 2.1791042468067614,
+      "degree": 11,
+      "other_disconnected": 0
+    },
+    {
+      "node": 11,
+      "x": 38,
+      "density": 3.431331604647217,
+      "degree": 12,
+      "other_disconnected": 2
+    },
+    {
+      "node": 12,
+      "x": 56,
+      "density": 0.9825234850254236,
+      "degree": 2,
+      "other_disconnected": 1
+    },
+    {
+      "node": 13,
+      "x": 74,
+      "density": 0.3559234318412349,
+      "degree": 1,
+      "other_disconnected": 0
+    }
+  ]
+}

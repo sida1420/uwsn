@@ -1,0 +1,257 @@
+[
+  {
+    "comparator": "energy_only",
+    "map_cells": [
+      {
+        "distribution": "uniform",
+        "map_seed": 11,
+        "delta_completed": 3,
+        "delta_FND": 21.5,
+        "relative_energy_K": 0.061805489387007584
+      },
+      {
+        "distribution": "uniform",
+        "map_seed": 37,
+        "delta_completed": -35.5,
+        "delta_FND": 73,
+        "relative_energy_K": 0.0028611919530737717
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 11,
+        "delta_completed": 0,
+        "delta_FND": 87.5,
+        "relative_energy_K": 0.02576183149042477
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 37,
+        "delta_completed": 0,
+        "delta_FND": 54.5,
+        "relative_energy_K": 0.021194133117502068
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 11,
+        "delta_completed": -36,
+        "delta_FND": 39,
+        "relative_energy_K": 0.039309188291236974
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 37,
+        "delta_completed": -24.5,
+        "delta_FND": 56,
+        "relative_energy_K": 0.028225900697872675
+      }
+    ],
+    "mean_delta_completed": -15.5,
+    "cells_full_longer": 1,
+    "cells_full_shorter": 3,
+    "cells_tied": 2
+  },
+  {
+    "comparator": "no_inverse_density",
+    "map_cells": [
+      {
+        "distribution": "uniform",
+        "map_seed": 11,
+        "delta_completed": 2.5,
+        "delta_FND": 2.5,
+        "relative_energy_K": 0.0658596905806148
+      },
+      {
+        "distribution": "uniform",
+        "map_seed": 37,
+        "delta_completed": -10,
+        "delta_FND": 5.5,
+        "relative_energy_K": -0.012964680021023745
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 11,
+        "delta_completed": 0,
+        "delta_FND": 5,
+        "relative_energy_K": 0.0015597294793296967
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 37,
+        "delta_completed": 0,
+        "delta_FND": 3.5,
+        "relative_energy_K": 0.004085738427649255
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 11,
+        "delta_completed": -10,
+        "delta_FND": -3,
+        "relative_energy_K": -0.0031874721856293697
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 37,
+        "delta_completed": -2,
+        "delta_FND": -1,
+        "relative_energy_K": 0.0004531029789222596
+      }
+    ],
+    "mean_delta_completed": -3.25,
+    "cells_full_longer": 1,
+    "cells_full_shorter": 3,
+    "cells_tied": 2
+  },
+  {
+    "comparator": "no_sampling_density",
+    "map_cells": [
+      {
+        "distribution": "uniform",
+        "map_seed": 11,
+        "delta_completed": -0.5,
+        "delta_FND": -0.5,
+        "relative_energy_K": 0.018192549153010495
+      },
+      {
+        "distribution": "uniform",
+        "map_seed": 37,
+        "delta_completed": -6,
+        "delta_FND": 2,
+        "relative_energy_K": -0.007540137467486108
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 11,
+        "delta_completed": 0,
+        "delta_FND": 1,
+        "relative_energy_K": -0.003602457839580464
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 37,
+        "delta_completed": 0,
+        "delta_FND": 2,
+        "relative_energy_K": 0.010937291644306124
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 11,
+        "delta_completed": -4.5,
+        "delta_FND": -2,
+        "relative_energy_K": -0.0018957066669820777
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 37,
+        "delta_completed": -4,
+        "delta_FND": -1,
+        "relative_energy_K": -0.013514033953788751
+      }
+    ],
+    "mean_delta_completed": -2.5,
+    "cells_full_longer": 0,
+    "cells_full_shorter": 4,
+    "cells_tied": 2
+  },
+  {
+    "comparator": "flat_kernel",
+    "map_cells": [
+      {
+        "distribution": "uniform",
+        "map_seed": 11,
+        "delta_completed": 0.5,
+        "delta_FND": 0.5,
+        "relative_energy_K": 0.0007217739722932826
+      },
+      {
+        "distribution": "uniform",
+        "map_seed": 37,
+        "delta_completed": -4.5,
+        "delta_FND": 1,
+        "relative_energy_K": -0.0028263186785124628
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 11,
+        "delta_completed": 0,
+        "delta_FND": 0,
+        "relative_energy_K": 0.003084744824644048
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 37,
+        "delta_completed": 0,
+        "delta_FND": 2.5,
+        "relative_energy_K": 0.0057569115347752
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 11,
+        "delta_completed": -2.5,
+        "delta_FND": -1.5,
+        "relative_energy_K": -0.016233957238284746
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 37,
+        "delta_completed": 1.5,
+        "delta_FND": -0.5,
+        "relative_energy_K": 0.004990921595336983
+      }
+    ],
+    "mean_delta_completed": -0.8333333333333334,
+    "cells_full_longer": 2,
+    "cells_full_shorter": 2,
+    "cells_tied": 2
+  },
+  {
+    "comparator": "edge_memory",
+    "map_cells": [
+      {
+        "distribution": "uniform",
+        "map_seed": 11,
+        "delta_completed": 1,
+        "delta_FND": 1,
+        "relative_energy_K": -0.04677063778934526
+      },
+      {
+        "distribution": "uniform",
+        "map_seed": 37,
+        "delta_completed": 16,
+        "delta_FND": 3.5,
+        "relative_energy_K": -0.1151676063716518
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 11,
+        "delta_completed": 0,
+        "delta_FND": 6,
+        "relative_energy_K": -0.06568539547785213
+      },
+      {
+        "distribution": "normal",
+        "map_seed": 37,
+        "delta_completed": 0,
+        "delta_FND": 3.5,
+        "relative_energy_K": -0.03898164947422034
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 11,
+        "delta_completed": 3.5,
+        "delta_FND": -3,
+        "relative_energy_K": -0.04333970728328751
+      },
+      {
+        "distribution": "clustered",
+        "map_seed": 37,
+        "delta_completed": 12.5,
+        "delta_FND": 3,
+        "relative_energy_K": -0.0832515300513032
+      }
+    ],
+    "mean_delta_completed": 5.5,
+    "cells_full_longer": 4,
+    "cells_full_shorter": 0,
+    "cells_tied": 2
+  }
+]

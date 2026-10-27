@@ -13,6 +13,76 @@ import tmp_experiments as batch
 
 
 class ExperimentTests(unittest.TestCase):
+    def test_plain_launch_resumes_latest_compatible_campaign(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            map_path = root/"map.pkl"
+            map_path.write_bytes(b"map-identity")
+            folder = root/"runs"/"paper_20261027_070150_test"
+            folder.mkdir(parents=True)
+            batch.atomic_json(folder/"campaign.json", dict(algorithms=list(batch.ALGORITHMS),
+                horizon=3500, workers=2, budget_seconds=32400, original_map_sha256=batch.digest(map_path),
+                source_hashes={}, cohorts=[dict(id="remaining")]))
+            batch.atomic_json(folder/"state.json", dict(spent_seconds=600, completed=[], outcomes={}))
+            with patch.object(batch, "ROOT", root), patch.object(sys, "argv", ["tmp_experiments.py", "--map", str(map_path)]), \
+                 patch.object(batch, "run_campaign") as resume, patch.object(batch, "create_campaign") as create:
+                batch.main()
+            resume.assert_called_once_with(folder)
+            create.assert_not_called()
+
+    def test_complete_workers_are_reused_without_spawning(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            for algo in batch.ALGORITHMS:
+                work = folder/"work"/"cohort"/algo
+                work.mkdir(parents=True)
+                batch.atomic_json(work/"result.json", dict(status="complete"))
+            with patch.object(batch.subprocess, "Popen") as spawn:
+                results = batch.run_cohort(folder, dict(rates={}), dict(id="cohort", nodes=150),
+                                           batch.time.monotonic()+10, lambda: None)
+            spawn.assert_not_called()
+            self.assertEqual(set(results), set(batch.ALGORITHMS))
+
+    def test_atomic_json_retries_transient_windows_denials(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"state.json"
+            batch.atomic_json(path, {"version": 1})
+            real_replace = batch.os.replace
+            calls = []
+            def busy_twice(source, target):
+                calls.append((source, target))
+                if len(calls) <= 2:
+                    self.assertEqual(batch.load_json(path), {"version": 1})
+                    raise PermissionError(5, "Access denied")
+                return real_replace(source, target)
+            with patch.object(batch.os, "replace", side_effect=busy_twice), patch.object(batch.time, "sleep"):
+                batch.atomic_json(path, {"version": 2})
+            self.assertEqual(len(calls), 3)
+            self.assertEqual(batch.load_json(path), {"version": 2})
+            self.assertEqual(list(Path(directory).glob("*.tmp")), [])
+
+    def test_atomic_json_permanent_denial_keeps_previous_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"state.json"
+            batch.atomic_json(path, {"old": True})
+            with patch.object(batch.os, "replace", side_effect=PermissionError(5, "Denied")), \
+                 patch.object(batch.time, "sleep"):
+                with self.assertRaises(PermissionError):
+                    batch.atomic_json(path, {"new": True})
+            self.assertEqual(batch.load_json(path), {"old": True})
+            self.assertEqual(list(Path(directory).glob("*.tmp")), [])
+
+    def test_controller_releases_lock_even_when_final_save_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            batch.atomic_json(folder/"campaign.json", dict(algorithms=list(batch.ALGORITHMS),
+                source_hashes={}, rates={}, budget_seconds=50, cohorts=[]))
+            batch.atomic_json(folder/"state.json", dict(spent_seconds=0, completed=[], outcomes={}))
+            with patch.object(batch, "atomic_json", side_effect=PermissionError(5, "Denied")):
+                with self.assertRaises(PermissionError):
+                    batch.run_campaign(folder)
+            self.assertFalse((folder/"controller.lock").exists())
+
     def job(self, folder, horizon=2, deadline=100):
         return dict(folder=str(folder), deadline=deadline, algorithm="SimpleACO",
                     cohort=dict(map_path="unused.pkl", horizon=horizon, map_sha256="maphash",

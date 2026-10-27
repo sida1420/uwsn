@@ -1,0 +1,6 @@
+{
+  "distribution": "uniform",
+  "map_seed": 11,
+  "search_seed": 101,
+  "variant": "flat_kernel"
+}

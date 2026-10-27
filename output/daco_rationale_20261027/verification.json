@@ -1,0 +1,16 @@
+{
+  "existing_DACO_tests_passed": 13,
+  "simulation_runs": 72,
+  "modeled_rounds": 13297,
+  "all_initial_graphs_connected": true,
+  "common_20_round_windows_all_alive": true,
+  "all_FND_observed": true,
+  "LND_observed": 0,
+  "source_snapshot_sha256_verified": true,
+  "route_inclusion_range_and_battery_conservation_asserted_during_runs": true,
+  "plots_visually_inspected": [
+    "mechanism_panels.png",
+    "endpoints.png"
+  ],
+  "production_sources_edited_by_this_task": false
+}

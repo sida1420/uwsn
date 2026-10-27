@@ -1,0 +1,176 @@
+{
+  "overlap_identity": {
+    "max_absolute_error": 2.7200464103316335e-15,
+    "settings": 8,
+    "status": "pass"
+  },
+  "singleton_plateau": {
+    "fully_covered_cells": 2,
+    "flat_unique_values": 1,
+    "proximity_unique_values": 2,
+    "proximity_weight_range": [
+      0.9231507490798405,
+      0.9884079074906176
+    ],
+    "status": "pass"
+  },
+  "native_variant_parity": {
+    "rounds": 3,
+    "status": "pass"
+  },
+  "allocation": {
+    "uniform": {
+      "mean_dense_heads": 5.9775,
+      "mean_sparse_heads": 2.0225,
+      "mean_pair_distance": 82.19780568951552
+    },
+    "density": {
+      "mean_dense_heads": 6.6,
+      "mean_sparse_heads": 1.4,
+      "mean_pair_distance": 65.49932354518205
+    },
+    "density_no_loss": {
+      "mean_dense_heads": 6.63,
+      "mean_sparse_heads": 1.37,
+      "mean_pair_distance": 63.92273285105852
+    },
+    "short_transition": {
+      "mean_dense_heads": 7.2,
+      "mean_sparse_heads": 0.8,
+      "mean_pair_distance": 36.50132128314314
+    }
+  },
+  "candidate_replay": {
+    "feasible": 600,
+    "attempted": 600,
+    "selected": {
+      "energy_only": {
+        "heads": [
+          7,
+          11,
+          15,
+          17,
+          21,
+          28,
+          34
+        ],
+        "energy": 0.004376720517858371,
+        "weighted": 3.494267768833713e-06,
+        "unweighted": 1.0286314405661483e-05,
+        "max_fraction": 0.038081942779512594,
+        "p95_fraction": 0.020438482401943656,
+        "score_weighted": 0.00575212375196699,
+        "score_unweighted": 0.005372162133273438
+      },
+      "weighted": {
+        "heads": [
+          6,
+          13,
+          15,
+          27,
+          28,
+          32,
+          33
+        ],
+        "energy": 0.004492153583086019,
+        "weighted": 9.964727633276166e-07,
+        "unweighted": 4.009704298535052e-06,
+        "max_fraction": 0.01814064335771052,
+        "p95_fraction": 0.015400691969994643,
+        "score_weighted": 0.004884382213532222,
+        "score_unweighted": 0.004880186299845448
+      },
+      "unweighted": {
+        "heads": [
+          6,
+          13,
+          15,
+          27,
+          28,
+          32,
+          33
+        ],
+        "energy": 0.004492153583086019,
+        "weighted": 9.964727633276166e-07,
+        "unweighted": 4.009704298535052e-06,
+        "max_fraction": 0.01814064335771052,
+        "p95_fraction": 0.015400691969994643,
+        "score_weighted": 0.004884382213532222,
+        "score_unweighted": 0.004880186299845448
+      }
+    }
+  },
+  "criticality": {
+    "nodes": 216,
+    "positive_loss_nodes": 1,
+    "spearman_inverse_density_vs_other_loss": 0.07711012607122081,
+    "caution": "Descriptive pooled correlation, not independent-node significance; null when all losses tie."
+  },
+  "dense_gateway_example": [
+    {
+      "node": 0,
+      "density": 0.8907809894205488,
+      "other_disconnected": 12
+    },
+    {
+      "node": 1,
+      "density": 1.8095900384312822,
+      "other_disconnected": 0
+    },
+    {
+      "node": 2,
+      "density": 1.7563644305554207,
+      "other_disconnected": 0
+    },
+    {
+      "node": 3,
+      "density": 1.7808188970080705,
+      "other_disconnected": 0
+    },
+    {
+      "node": 4,
+      "density": 1.8043853823085272,
+      "other_disconnected": 0
+    },
+    {
+      "node": 5,
+      "density": 1.82700386350942,
+      "other_disconnected": 0
+    },
+    {
+      "node": 6,
+      "density": 1.8486147726576885,
+      "other_disconnected": 0
+    },
+    {
+      "node": 7,
+      "density": 1.8691593318032191,
+      "other_disconnected": 0
+    },
+    {
+      "node": 8,
+      "density": 1.8885799104732062,
+      "other_disconnected": 0
+    },
+    {
+      "node": 9,
+      "density": 1.9068204027634679,
+      "other_disconnected": 0
+    },
+    {
+      "node": 10,
+      "density": 1.403312310356834,
+      "other_disconnected": 2
+    },
+    {
+      "node": 11,
+      "density": 1.0374355643544861,
+      "other_disconnected": 0
+    },
+    {
+      "node": 12,
+      "density": 1.0600755330647653,
+      "other_disconnected": 0
+    }
+  ]
+}

@@ -1,5 +1,34 @@
 # Understanding and screening the DACO related works
 
+## Section 3 study: model, task and method are different layers
+
+27 October 2026. The relevant modeling and problem-definition passages were reread across all sixteen top-level local PDFs, along with the professor's two supplied papers. Three of the sixteen are surveys rather than original optimization formulations. The energy survey is scanned, so its existing OCR was used. The earlier screening decisions below remain in force; inspecting an excluded paper's organization does not validate its results.
+
+| Local paper | Passages checked (PDF pages) | Implication for Section 3 |
+| --- | --- | --- |
+| PUDCRP | 4-5: network/energy; 12-13: CH score | Deployment assumptions and radio costs precede the proposed PSO/clustering choices. Do not import its radio model or turn a search score into the lifetime definition. |
+| RTC | 5: problem statement and preliminaries; 7 onward: protocol | The reporting task includes data reduction and mobile collection. Those application assumptions cannot silently become DACO assumptions. |
+| Fanian survey | 3: taxonomy; 30: synthesis | CH selection, routing and algorithm-specific evaluation criteria must be distinguished; the survey has no single original physical optimization model to imitate. |
+| IEBR | 2: routing context; 8: constrained throughput objective; 10: lifetime measure | The optimization variable, performance quantity and link/energy constraints are stated separately. Its throughput program is not a lifetime theorem. |
+| ACOCR | 5-6: network/energy; subsequent ACO and protocol sections | Physical communication costs are established before search mechanisms. Fixed cubes and CH-only relaying are its choices, not assumptions for our ordinary-relay model. |
+| EOCA | 4-5: AUV, acoustic channel and drift models | Collector assistance and movement belong to the service model. Its noise/drift formulas are not needed in a stationary, fixed-range energy study. |
+| Two-Tier PSO | 6: sensing/reconstruction setting; 10: hop-energy model | The information task determines what traffic counts mean. Compressed sensing and reconstruction quality cannot be replaced with an invented payload story. |
+| EECRP | 6-7: model assumptions; 7: route-cost problem before GA encoding | The mathematical task describes a measurable route cost and explicit constraints; the optimizer and encoding follow it. |
+| LEACH survey | 3-4: taxonomy, set-up and data communication | Election, membership and communication are separate parts of collection, not interchangeable descriptions of the objective. |
+| Underwater energy survey | 1-2 and overview, via OCR | Energy saving spans several layers. The acoustic energy abstraction should state its scope without importing MAC, charging or hardware claims. |
+| EECMR | 5-7: network and channel/energy; 11: lifetime evaluation | Node roles and cost assumptions precede protocol decisions; survival measures are not an arbitrary powered penalty. |
+| UCPSO | 4: Section III model, followed by Section IV CH encoding/fitness | Its distinction between system model and proposed fitness was missing from the earlier drafts. The calibrated DACO penalty belongs to Section 4, not the definition of lifetime. |
+| LLCP | 4-5: problem statement and network model | Formulate the performance actually being sought: capacity/complexity there, lifetime here. A convenient search criterion cannot substitute for that task. |
+| QLAR | 4-5: graph, assumptions and MDP | State the network decision and accumulated objective before the learning procedure; do not borrow its mobility assumptions. |
+| FCRA | 7-8: energy equations and clustering procedure | Retains its earlier evidence exclusion. Its radio model, loose terminology and missing service distinctions are not a template for our formulation. |
+| AC-ACO | 7-8: model definition, residual-energy update and method boundary | Retains its earlier evidence exclusion. Separate energy accounting from search updates and do not import its terrestrial cost law. |
+
+The professor's ASC paper builds the physical exposure quantity in Section 3.1, Eqs. (4)-(16), before the formal task in Section 3.2, Eq. (17). Her ESWA paper similarly derives exposure in Eqs. (6)-(8) and states the task in Eq. (9). Crucially, their derived quantity is the problem's exposure measure; that does not justify treating DACO's calibrated search fitness as network lifetime. The detailed page-based reading remains in `professor_study/CLOSE_READING.md`.
+
+The revised Section 3 therefore contains the reporting graph, packet/energy accounting and admissible collection schedules, followed by duration maximization and an energy preference among schedules of equal duration. It does not claim that the implemented heuristic solves this full sequential optimization. The fixed two-packet CH rule and clipped battery update remain explicit model conventions. Grid support, powered depletion, calibration, pheromone and bounded construction are Section 4 material; no part of Section 4 was rewritten in this pass. Source comparisons and citations remain in Introduction/Related works, as requested.
+
+Additional previously studied manuscripts were also checked: IS-k-means pp. 3-4 distinguishes clustering cost and membership constraints from KDE and the proposed algorithm; DEKCS pp. 3-4 separates RF/AUV channel assumptions from the clustering rule. The cached GTC download was not a readable PDF, so no fresh full-text claim is made for it here.
+
 Review date: 26 October 2026. Scope: all **nine local PDFs and ten previously recommended papers**, followed by replacement candidates. Read this document instead of treating the earlier recommendation table as a quality assessment.
 
 ## What changed after reading

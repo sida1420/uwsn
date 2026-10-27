@@ -1,0 +1,310 @@
+{
+  "termination": {
+    "search_failure": 48,
+    "all_dead": 0,
+    "horizon": 24
+  },
+  "FND_observed": 72,
+  "paired": [
+    {
+      "comparator": "energy_only",
+      "cells": [
+        {
+          "distribution": "uniform",
+          "map_seed": 11,
+          "service": 3,
+          "fnd": 21.5,
+          "energy_ratio": 0.061805489387007584,
+          "cpu_ratio": 0.0909146267202533
+        },
+        {
+          "distribution": "uniform",
+          "map_seed": 37,
+          "service": -35.5,
+          "fnd": 73,
+          "energy_ratio": 0.0028611919530737717,
+          "cpu_ratio": 0.01505984907624247
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 11,
+          "service": 0,
+          "fnd": 87.5,
+          "energy_ratio": 0.02576183149042477,
+          "cpu_ratio": 0.030691106042930016
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 37,
+          "service": 0,
+          "fnd": 54.5,
+          "energy_ratio": 0.021194133117502068,
+          "cpu_ratio": 0.1057285705391906
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 11,
+          "service": -36,
+          "fnd": 39,
+          "energy_ratio": 0.039309188291236974,
+          "cpu_ratio": 0.20689443132624946
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 37,
+          "service": -24.5,
+          "fnd": 56,
+          "energy_ratio": 0.028225900697872675,
+          "cpu_ratio": -0.06814101814162321
+        }
+      ],
+      "service": -15.5,
+      "fnd": 55.25,
+      "energy_ratio": 0.02985962248951964,
+      "cpu_ratio": 0.06352459426054044,
+      "longer": 1,
+      "shorter": 3,
+      "tied": 2
+    },
+    {
+      "comparator": "no_inverse_density",
+      "cells": [
+        {
+          "distribution": "uniform",
+          "map_seed": 11,
+          "service": 2.5,
+          "fnd": 2.5,
+          "energy_ratio": 0.0658596905806148,
+          "cpu_ratio": 0.3748141469741546
+        },
+        {
+          "distribution": "uniform",
+          "map_seed": 37,
+          "service": -10,
+          "fnd": 5.5,
+          "energy_ratio": -0.012964680021023745,
+          "cpu_ratio": -0.06895986000218746
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 11,
+          "service": 0,
+          "fnd": 5,
+          "energy_ratio": 0.0015597294793296967,
+          "cpu_ratio": 0.02972588732946746
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 37,
+          "service": 0,
+          "fnd": 3.5,
+          "energy_ratio": 0.004085738427649255,
+          "cpu_ratio": 0.013711806561705175
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 11,
+          "service": -10,
+          "fnd": -3,
+          "energy_ratio": -0.0031874721856293697,
+          "cpu_ratio": 0.2272541581558214
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 37,
+          "service": -2,
+          "fnd": -1,
+          "energy_ratio": 0.0004531029789222596,
+          "cpu_ratio": -0.08083060934691194
+        }
+      ],
+      "service": -3.25,
+      "fnd": 2.0833333333333335,
+      "energy_ratio": 0.00930101820997715,
+      "cpu_ratio": 0.08261925494534154,
+      "longer": 1,
+      "shorter": 3,
+      "tied": 2
+    },
+    {
+      "comparator": "no_sampling_density",
+      "cells": [
+        {
+          "distribution": "uniform",
+          "map_seed": 11,
+          "service": -0.5,
+          "fnd": -0.5,
+          "energy_ratio": 0.018192549153010495,
+          "cpu_ratio": -0.010591829520779694
+        },
+        {
+          "distribution": "uniform",
+          "map_seed": 37,
+          "service": -6,
+          "fnd": 2,
+          "energy_ratio": -0.007540137467486108,
+          "cpu_ratio": -0.05076535921742259
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 11,
+          "service": 0,
+          "fnd": 1,
+          "energy_ratio": -0.003602457839580464,
+          "cpu_ratio": -0.02884468724222189
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 37,
+          "service": 0,
+          "fnd": 2,
+          "energy_ratio": 0.010937291644306124,
+          "cpu_ratio": 0.02844286589505407
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 11,
+          "service": -4.5,
+          "fnd": -2,
+          "energy_ratio": -0.0018957066669820777,
+          "cpu_ratio": 0.017950161581207214
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 37,
+          "service": -4,
+          "fnd": -1,
+          "energy_ratio": -0.013514033953788751,
+          "cpu_ratio": -0.038497798096418845
+        }
+      ],
+      "service": -2.5,
+      "fnd": 0.25,
+      "energy_ratio": 0.0004295841449132032,
+      "cpu_ratio": -0.013717774433430288,
+      "longer": 0,
+      "shorter": 4,
+      "tied": 2
+    },
+    {
+      "comparator": "flat_kernel",
+      "cells": [
+        {
+          "distribution": "uniform",
+          "map_seed": 11,
+          "service": 0.5,
+          "fnd": 0.5,
+          "energy_ratio": 0.0007217739722932826,
+          "cpu_ratio": 0.22839877372951306
+        },
+        {
+          "distribution": "uniform",
+          "map_seed": 37,
+          "service": -4.5,
+          "fnd": 1,
+          "energy_ratio": -0.0028263186785124628,
+          "cpu_ratio": -0.08095592931658507
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 11,
+          "service": 0,
+          "fnd": 0,
+          "energy_ratio": 0.003084744824644048,
+          "cpu_ratio": 0.002303933747411946
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 37,
+          "service": 0,
+          "fnd": 2.5,
+          "energy_ratio": 0.0057569115347752,
+          "cpu_ratio": 0.0006490476059751726
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 11,
+          "service": -2.5,
+          "fnd": -1.5,
+          "energy_ratio": -0.016233957238284746,
+          "cpu_ratio": 0.003355823863636309
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 37,
+          "service": 1.5,
+          "fnd": -0.5,
+          "energy_ratio": 0.004990921595336983,
+          "cpu_ratio": -0.13254296272504917
+        }
+      ],
+      "service": -0.8333333333333334,
+      "fnd": 0.3333333333333333,
+      "energy_ratio": -0.000750987331624616,
+      "cpu_ratio": 0.00353478115081704,
+      "longer": 2,
+      "shorter": 2,
+      "tied": 2
+    },
+    {
+      "comparator": "edge_memory",
+      "cells": [
+        {
+          "distribution": "uniform",
+          "map_seed": 11,
+          "service": 1,
+          "fnd": 1,
+          "energy_ratio": -0.04677063778934526,
+          "cpu_ratio": 0.025431999283731743
+        },
+        {
+          "distribution": "uniform",
+          "map_seed": 37,
+          "service": 16,
+          "fnd": 3.5,
+          "energy_ratio": -0.1151676063716518,
+          "cpu_ratio": 0.07926354808075231
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 11,
+          "service": 0,
+          "fnd": 6,
+          "energy_ratio": -0.06568539547785213,
+          "cpu_ratio": 0.0897530864197531
+        },
+        {
+          "distribution": "normal",
+          "map_seed": 37,
+          "service": 0,
+          "fnd": 3.5,
+          "energy_ratio": -0.03898164947422034,
+          "cpu_ratio": 0.07418203692480252
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 11,
+          "service": 3.5,
+          "fnd": -3,
+          "energy_ratio": -0.04333970728328751,
+          "cpu_ratio": 0.06768486482137104
+        },
+        {
+          "distribution": "clustered",
+          "map_seed": 37,
+          "service": 12.5,
+          "fnd": 3,
+          "energy_ratio": -0.0832515300513032,
+          "cpu_ratio": -0.05842798709340985
+        }
+      ],
+      "service": 5.5,
+      "fnd": 2.3333333333333335,
+      "energy_ratio": -0.06553275440794337,
+      "cpu_ratio": 0.04631459140616681,
+      "longer": 4,
+      "shorter": 0,
+      "tied": 2
+    }
+  ]
+}

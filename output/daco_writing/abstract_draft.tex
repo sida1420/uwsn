@@ -1,0 +1,24 @@
+% Working revision after close reading of the supplied ASC/ESWA papers.
+% Text only: insert inside the existing abstract environment.
+Repeated clustering determines how sensing and forwarding work are
+distributed in energy-limited underwater wireless sensor networks.
+In each collection round, selected cluster heads organize sensor reports
+into routes toward a sink.
+The task is to choose these heads as residual energies change, while
+accounting for the consumption induced by the resulting routing tree.
+Such decisions affect both network expenditure and the fractions of
+remaining energy consumed at individual nodes.
+However, ranking candidates by total energy alone can give similar scores
+to trees that impose substantially different fractional drains on weak nodes.
+This paper investigates a density-weighted fractional-depletion criterion
+for repeated cluster-head selection in three-dimensional deployments.
+The criterion combines modeled total consumption with a powered penalty
+on node depletion, using calibrated reference scales to compare candidates
+within a round.
+We propose DACO, a density-aware ant colony optimization method that uses
+remaining grid support during candidate construction and the proposed
+criterion when ranking completed trees.
+Shared tree construction and node-pheromone feedback provide the framework
+for evaluating the effects of the density and depletion mechanisms.
+\textbf{[Final experimental sentence required: state the supported findings,
+the relevant deployment conditions, and the observed computational trade-off.]}
